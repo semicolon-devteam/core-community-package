@@ -1,4 +1,25 @@
-// Atoms
+/**
+ * @semicolon/community-core components
+ * 
+ * Component library organized by atomic design principles.
+ * Start with atoms, build up to molecules and organisms.
+ */
+
+// =============================================================================
+// NEW DESIGN SYSTEM - Modern, accessible components
+// =============================================================================
+
+// Atoms - Essential building blocks
+export * from './atoms';
+
+// =============================================================================
+// LEGACY COMPONENTS - Backward compatibility during transition
+// =============================================================================
+
+// Note: These legacy components will be gradually migrated to the new design system
+// For now, keeping exports for backward compatibility
+
+// Legacy Atoms
 export { default as AnimatedPoint } from './atoms/AnimatedPoint';
 export { default as Captcha } from './atoms/Captcha';
 export { default as Checkbox } from './atoms/Checkbox';
@@ -38,30 +59,23 @@ export * from './atoms/Icon/ThumbsUpIcon';
 export * from './atoms/Icon/TimeIcon';
 export * from './atoms/Icon/UserProfileIcon';
 
-// Molecules
+// Legacy Molecules
 export { default as Pagination } from './molecules/Board/Pagination';
 export { default as SearchBar } from './molecules/Board/SearchBar';
-export { default as DivisionMenu } from './molecules/DivisionMenu';
-export { default as ImageUpload } from './molecules/ImageUpload';
-export { default as InfoList } from './molecules/InfoList';
-export { default as MediaUpload } from './molecules/MediaUpload';
-export { default as MediaView } from './molecules/MediaView';
-export { default as Notification } from './molecules/Notification';
-export { default as PostContent } from './molecules/PostContent';
-export { default as SortBox } from './molecules/SortBox';
-export { default as StatusContent } from './molecules/StatusContent';
 export { default as Tooltip } from './molecules/Tooltip';
 
-// Organisms
-export { default as AdminUserList } from './organisms/AdminUserList';
+// Legacy Organisms
 export { default as AuthErrorHandler } from './organisms/AuthErrorHandler';
-export { default as AuthForm } from './organisms/AuthForm';
 export { default as AuthGuard } from './organisms/AuthGuard';
-export { default as Board } from './organisms/Board';
-export { default as BoardListSection } from './organisms/BoardListSection';
-export { default as Footer } from './organisms/Footer';
 export { default as GlobalLoader } from './organisms/GlobalLoader';
-export { default as LoginGuard } from './organisms/LoginGuard';
 export { default as Navigation } from './organisms/Navigation';
-export { default as PostView } from './organisms/PostView';
-export { default as TotalPointRanking } from './organisms/TotalPointRanking';
+
+// =============================================================================
+// FUTURE RELEASES - Roadmap
+// =============================================================================
+
+// Phase 2: Enhanced Molecules
+// export * from './molecules';
+
+// Phase 3: Advanced Organisms  
+// export * from './organisms';

@@ -1,5 +1,5 @@
 {
-  "name": "@semicolon/community-core",
+  "name": "@team-semicolon/community-core",
   "version": "1.0.0",
   "type": "module",
   "description": "Community platform core components and utilities",

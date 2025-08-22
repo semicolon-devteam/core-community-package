@@ -14,11 +14,13 @@ export default {
       file: packageJson.main,
       format: 'cjs',
       sourcemap: true,
+      inlineDynamicImports: true,
     },
     {
       file: packageJson.module,
       format: 'esm',
       sourcemap: true,
+      inlineDynamicImports: true,
     },
   ],
   plugins: [
@@ -29,7 +31,8 @@ export default {
     commonjs(),
     typescript({
       tsconfig: './tsconfig.package.json',
-      declaration: false,
+      declaration: true,
+      declarationDir: './dist',
       noEmitOnError: false,
       compilerOptions: {
         skipLibCheck: true,

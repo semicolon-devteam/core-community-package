@@ -1,4 +1,8 @@
-import type { LevelInfo } from "@model/common";
+// 임시 타입 정의 (Phase 2에서 적절한 위치로 이동 예정)
+interface LevelInfo {
+  level: number;
+  required_points: number;
+}
 
 /**
  * 레벨 관련 유틸리티 함수들

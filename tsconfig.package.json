@@ -30,12 +30,26 @@
       "@constants/*": ["./lib/constants/*"]
     }
   },
-  "include": ["lib/**/*"],
+  "include": [
+    "lib/index.ts",
+    "lib/utils/**/*",
+    "lib/types/User/index.ts",
+    "lib/types/common.ts",
+    "lib/config/init.ts",
+    "lib/constants/index.ts",
+    "lib/components/atoms/Button/**/*",
+    "lib/components/atoms/Badge/**/*",
+    "lib/components/atoms/Avatar/**/*",
+    "lib/components/atoms/index.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
+    "**/*.test.ts", 
     "**/*.test.tsx",
-    "**/*.stories.tsx"
+    "**/*.stories.tsx",
+    "lib/utils/sessionTestUtils.ts",
+    "lib/config/axios.ts",
+    "lib/config/Supabase/**/*"
   ]
 }

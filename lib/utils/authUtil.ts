@@ -2,8 +2,17 @@
  * 통합 인증 및 권한 관리 유틸리티
  */
 
-import { User, permissionType } from '@model/User';
-import type { JWTUserPayload } from './jwtUtil';
+import type { User } from '../types/User';
+
+// 임시 타입 정의 (Phase 2에서 적절한 위치로 이동 예정)
+export type permissionType = 'super_admin' | 'admin' | 'user' | 'anonymous';
+
+interface JWTUserPayload {
+  sub: string;
+  user_metadata: any;
+  is_admin?: boolean;
+  level?: number;
+}
 
 export interface AuthUser {
   id: string;

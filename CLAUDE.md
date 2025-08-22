@@ -595,6 +595,222 @@ The project includes a Supabase Image Transformation utility (`@util/imageUtil`)
 
 Always create PRs from task branches to dev, then from dev to main.
 
+## 📋 @semicolon/community-core 사용가능한 기능 명세
+
+### ✅ Phase 1: 현재 구현된 기능
+
+**🔧 Core Utilities** (필수 유틸리티)
+```typescript
+// 숫자 포맷팅
+import { formatNumberWithComma } from '@semicolon/community-core';
+formatNumberWithComma(1234567); // "1,234,567"
+
+// 날짜 포맷팅
+import { formatDate, timeAgo } from '@semicolon/community-core';
+formatDate("2024-01-15T10:30:00"); // "2024.01.15. 10:30:00"
+timeAgo("2024-01-15T10:30:00"); // "2시간 전"
+
+// 권한 체크
+import { isAdmin } from '@semicolon/community-core';
+isAdmin(user); // boolean
+```
+
+**🧩 Essential Components** (핵심 컴포넌트)
+```typescript
+// Button 컴포넌트 (5가지 variant, 로딩 상태, 아이콘 지원)
+import { Button, type ButtonProps } from '@semicolon/community-core';
+<Button variant="primary" size="lg" loading={isSubmitting}>저장</Button>
+
+// Badge 컴포넌트 (상태 표시, 레벨, 태그)
+import { Badge, type BadgeProps } from '@semicolon/community-core';
+<Badge variant="success" dot>온라인</Badge>
+
+// Avatar 컴포넌트 (프로필 이미지, 상태 표시, 폴백)
+import { Avatar, type AvatarProps } from '@semicolon/community-core';
+<Avatar src="/profile.jpg" name="김철수" size="lg" status="online" />
+```
+
+**📐 Core Types** (필수 타입 정의)
+```typescript
+import type { User, CommonResponse } from '@semicolon/community-core';
+
+interface User {
+  id: string;
+  name: string;
+  email?: string;
+  level?: number;
+  is_admin?: boolean;
+  profileImage?: string;
+}
+
+interface CommonResponse<T> {
+  successOrNot: string;
+  statusCode: number;
+  message?: string;
+  data: T | null;
+}
+```
+
+**⚙️ Package Configuration** (패키지 설정)
+```typescript
+import { initializeCommunityCore } from '@semicolon/community-core';
+
+initializeCommunityCore({
+  apiUrl: process.env.REACT_APP_API_URL,
+  supabase: {
+    url: process.env.REACT_APP_SUPABASE_URL,
+    anonKey: process.env.REACT_APP_SUPABASE_ANON_KEY,
+  },
+  locale: 'ko-KR',
+  development: process.env.NODE_ENV === 'development'
+});
+```
+
+**📦 Import Strategies** (최적화된 import 방식)
+```typescript
+// ✅ 메인 패키지에서 직접 import (권장)
+import { Button, formatNumberWithComma, isAdmin } from '@semicolon/community-core';
+
+// ✅ 카테고리별 import (Tree Shaking 최적화)
+import { Button } from '@semicolon/community-core/components';
+import { formatNumberWithComma } from '@semicolon/community-core/utils';
+
+// ✅ 네임스페이스 import (고급 사용)
+import { Utils, Constants } from '@semicolon/community-core';
+const formatted = Utils.formatNumberWithComma(12345);
+```
+
+### 🚧 Phase 2: 계획된 기능 (구현 예정)
+
+**Form Components**:
+- Input, Select, Checkbox, RadioButton 컴포넌트
+- Form validation 및 상태 관리
+
+**React Query Hooks**:
+- useAuth, useUserData, usePostData 등
+- 서버 상태 관리 및 캐싱
+
+**API Service Layer**:
+- BaseService, UserService, PostService
+- 표준화된 HTTP 통신 및 에러 핸들링
+
+### 🔮 Phase 3: 향후 기능 (로드맵)
+
+**Advanced Components**:
+- DataTable, Calendar, Chart 컴포넌트
+- Modal, Drawer, Notification 시스템
+
+**Theme System**:
+- 다크모드, 커스텀 테마 지원
+- CSS-in-JS 또는 CSS Variables 활용
+
+**Internationalization**:
+- 다국어 지원 (ko, en 등)
+- 지역별 날짜/숫자 포맷팅
+
+## 🔄 기능 업데이트 관리 규칙
+
+### 📝 CLAUDE.md 갱신 규칙
+
+**새로운 기능이 추가될 때마다 다음 사항을 필수로 업데이트해야 합니다:**
+
+1. **기능 명세 업데이트** (`📋 @semicolon/community-core 사용가능한 기능 명세` 섹션)
+   - 새 컴포넌트/유틸리티를 해당 Phase에 추가
+   - 완성된 기능은 Phase 1로 이동
+   - 실제 import 문과 사용 예제 포함
+
+2. **Package Version 확인**
+   ```bash
+   # package.json의 version을 확인하고 업데이트
+   npm version patch  # 버그 수정
+   npm version minor  # 새로운 기능 추가  
+   npm version major  # 호환성 변경
+   ```
+
+3. **Documentation 동기화**
+   - `API_REFERENCE.md`: 상세한 API 문서 업데이트
+   - `USAGE_EXAMPLES.md`: 실제 사용 예제 추가
+   - `CHANGELOG.md`: 변경사항 기록 (없으면 생성)
+
+4. **Build 및 Export 검증**
+   ```bash
+   # 빌드가 성공하는지 확인
+   npm run build
+   
+   # 타입 체크 통과 확인
+   npm run type-check
+   
+   # 새로운 export가 정상 작동하는지 확인
+   node -e "console.log(require('./dist/index.js'))"
+   ```
+
+### 🏷️ 기능 분류 및 상태 태그
+
+**기능 상태 표시 방법:**
+- ✅ **구현 완료**: Phase 1에 포함, 프로덕션 사용 가능
+- 🔄 **개발 중**: Phase 2에 포함, 구현 진행 중
+- 📋 **계획됨**: Phase 3에 포함, 향후 개발 예정
+- ⚠️ **실험적**: 베타 기능, 변경 가능성 있음
+- 🚫 **지원 중단**: 더 이상 권장하지 않는 기능
+
+### 📅 업데이트 체크리스트 템플릿
+
+**새로운 기능을 추가할 때 사용할 체크리스트:**
+
+```markdown
+## 기능 업데이트 체크리스트
+
+### 📋 구현 완료 확인
+- [ ] 컴포넌트/유틸리티 구현 완료
+- [ ] TypeScript 타입 정의 완료
+- [ ] 단위 테스트 작성 및 통과
+- [ ] 빌드 및 export 검증 완료
+
+### 📝 문서화 완료 확인
+- [ ] CLAUDE.md 기능 명세 섹션 업데이트
+- [ ] API_REFERENCE.md 상세 문서 추가
+- [ ] USAGE_EXAMPLES.md 사용 예제 추가
+- [ ] 실제 import 문과 사용법 검증
+
+### 🚀 배포 준비 확인
+- [ ] package.json 버전 업데이트
+- [ ] CHANGELOG.md 변경사항 기록
+- [ ] lib/index.ts export 추가
+- [ ] Tree shaking 최적화 확인
+
+### 🧪 품질 검증 확인
+- [ ] eslint 및 prettier 규칙 준수
+- [ ] 기존 기능 회귀 테스트
+- [ ] 메모리 누수 및 성능 검증
+- [ ] 접근성(a11y) 가이드라인 준수 (UI 컴포넌트만)
+```
+
+### 🔍 정기 검토 및 유지보수
+
+**월간 검토 사항:**
+- Phase 1 기능의 사용성 피드백 수집
+- Phase 2 개발 진행도 점검 및 우선순위 조정
+- Phase 3 로드맵 검토 및 업데이트
+- 의존성 업데이트 및 보안 취약점 점검
+
+**분기별 검토 사항:**
+- 전체 아키텍처 및 디자인 패턴 일관성 검토
+- 번들 사이즈 최적화 및 Tree shaking 효율성 분석
+- 사용자 피드백 기반 API 개선사항 도출
+- 경쟁 라이브러리 분석 및 차별화 포인트 강화
+
+### 📞 기능 관련 문의 및 지원
+
+**기능 요청 및 버그 리포트:**
+- GitHub Issues 활용하여 체계적 관리
+- 템플릿 기반 이슈 생성으로 정보 표준화
+- 라벨링 시스템으로 우선순위 및 카테고리 관리
+
+**커뮤니티 기여 가이드:**
+- 새로운 기능 제안 시 RFC(Request for Comments) 프로세스
+- 기여자 가이드라인 및 코딩 컨벤션 문서화
+- 코드 리뷰 기준 및 승인 프로세스 명시
+
 ## Important Notes
 
 - Never commit sensitive information (API keys, tokens)
@@ -603,6 +819,8 @@ Always create PRs from task branches to dev, then from dev to main.
 - The global loading system is automatic - don't create duplicate loading states
 - Permission checks are centralized - don't implement custom authorization logic
 - All API responses follow the `CommonResponse<T>` pattern
+- **새로운 기능 추가 시 반드시 위의 업데이트 관리 규칙을 준수할 것**
+- **문서와 코드의 동기화를 위해 체크리스트를 활용할 것**
 
 # 미디어 프로세서 API 사용 가이드 (v2.0)
 
