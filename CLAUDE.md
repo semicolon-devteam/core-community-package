@@ -1348,3 +1348,4 @@ uploader.uploadFiles(selectedFiles)
 - 사용자 정보를 저장할때는, @src/model/User/index.ts 의 User타입에 맞게 저장되도록 할 것..
 - 프로젝트 전역적으로 페이지네이션 구현은 @src/component/molecules/Board/Pagination/index.tsx 컴포넌트를 사용 할 것.
 - 로그인한 사용자 정보를 얻을 땐 다음 방법 사용; - 서버사이드 컴포넌트: @src/services/userServiceByServerSide.ts:getUserInfoDirect() - 클라이언트 사이드 컴포넌트 : @src/redux/Features/User/userSlice.ts:selectUserInfo()
+- 앞으로 외부 공개용 문서는 `/docs`에, 내부 개발 참고용 문서는 `./docs`에 저장해줘
