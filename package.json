@@ -1,56 +1,94 @@
 {
-  "name": "fe-client",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@semicolon/community-core",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Community platform core components and utilities",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.esm.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "require": "./dist/components/index.js",
+      "import": "./dist/components/index.esm.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./hooks": {
+      "require": "./dist/hooks/index.js",
+      "import": "./dist/hooks/index.esm.js",
+      "types": "./dist/hooks/index.d.ts"
+    },
+    "./services": {
+      "require": "./dist/services/index.js",
+      "import": "./dist/services/index.esm.js",
+      "types": "./dist/services/index.d.ts"
+    },
+    "./utils": {
+      "require": "./dist/utils/index.js",
+      "import": "./dist/utils/index.esm.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./styles": {
+      "import": "./dist/styles/globals.css"
+    }
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build --no-lint",
-    "start": "next start",
-    "lint": "next lint",
+    "build": "npm run clean && npm run build:lib",
+    "build:lib": "rollup -c",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
     "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:unit": "vitest --run --globals",
-    "test:unit:watch": "vitest --globals",
-    "test:unit:watch:ui": "vitest --globals --ui",
-    "test:unit:coverage": "vitest --run --globals --coverage",
-    "create-deploy": "chmod +x scripts/create-deploy.sh && ./scripts/create-deploy.sh",
-    "create-deploy:windows": "powershell -ExecutionPolicy Bypass -File scripts/create-deploy.ps1"
+    "type-check": "tsc --noEmit",
+    "dev": "rollup -c -w"
+  },
+  "peerDependencies": {
+    "next": "^13.0.0 || ^14.0.0 || ^15.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@number-flow/react": "^0.5.10",
     "@reduxjs/toolkit": "^2.5.1",
-    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",
     "@tanstack/react-query": "^5.69.0",
-    "@toast-ui/react-editor": "^3.2.3",
     "axios": "^1.8.1",
-    "cookies-next": "^6.1.0",
-    "lodash": "^4.17.21",
-    "next": "15.1.4",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-redux": "^9.2.0",
-    "react-simple-captcha": "^9.3.1",
-    "react-spinners": "^0.17.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@types/lodash": "^4.17.15",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@vitejs/plugin-react": "^4.4.1",
-    "@vitest/coverage-v8": "^3.1.2",
-    "@vitest/ui": "^3.1.2",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.3",
-    "jsdom": "^26.1.0",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "rollup": "^4.47.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.0.0",
     "vitest": "^3.1.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/semicolon-community/community-core"
+  },
+  "keywords": [
+    "react",
+    "nextjs",
+    "community",
+    "components",
+    "ui"
+  ],
+  "author": "Semicolon Community",
+  "license": "MIT"
 }

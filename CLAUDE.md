@@ -8,98 +8,198 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Next.js 15.1.4 community service frontend application called "오늘의 놀람" built with React 19, TypeScript, Redux Toolkit, React Query, TailwindCSS, and Supabase for authentication and database.
+**@semicolon/community-core**는 세미콜론 커뮤니티 플랫폼의 핵심 기능을 재사용 가능한 React 패키지로 제공하는 라이브러리입니다. 
+
+### 패키지 특성
+- **패키지 타입**: React 컴포넌트 라이브러리 + 유틸리티 패키지
+- **빌드 시스템**: Rollup (ESM + CJS 이중 빌드)
+- **타입 시스템**: TypeScript 5.0+ (점진적 타입 강화 전략)
+- **아키텍처**: Atomic Design + Service Layer Pattern
+- **의존성 전략**: Minimal Dependencies + Peer Dependencies
 
 ## Development Commands
 
 ```bash
-# Development
-npm run dev                    # Start development server
-npm run build                  # Build for production (no linting)
-npm run start                  # Start production server
-npm run lint                   # Run ESLint
-npm run create-deploy          # Create deployment bundle (Linux/Mac)
-npm run create-deploy:windows  # Create deployment bundle (Windows)
+# Package Development
+npm run dev                    # Rollup watch 모드 (패키지 개발용)
+npm run build                  # 패키지 빌드 (ESM + CJS)
+npm run build:lib              # Rollup 빌드만 실행
+npm run clean                  # dist 디렉토리 정리
+npm run type-check             # TypeScript 타입 체크
 
-# Testing
-npm run test                   # Run tests with Vitest
-npm run test:ui                # Run tests with UI
-npm run test:unit              # Run unit tests once
-npm run test:unit:watch        # Run unit tests in watch mode
-npm run test:unit:watch:ui     # Run unit tests in watch mode with UI
-npm run test:unit:coverage     # Run tests with coverage report
+# Quality Assurance  
+npm test                       # Vitest 테스트 실행
+npm run lint                   # ESLint 실행 (향후 추가)
+
+# Package Management
+npm run prepublishOnly         # 배포 전 자동 빌드
+npm publish --access public    # NPM에 패키지 배포
 ```
 
-## Architecture Overview
+## Package Architecture Overview
 
-### Core Patterns
+### 📦 패키지 구조 원칙
 
-**Service Layer Architecture**: All API communication flows through a unified service layer pattern:
-
-- `baseService.ts` provides standardized HTTP methods (get, post, put, delete) with typed responses
-- Domain services (`userService.ts`, `postService.ts`, etc.) extend the base service
-- Automatic global loading indicators for all API calls (use `*Silent` methods to bypass)
-- `CommonResponse<T>` wrapper ensures consistent API response structure
-
-**Atomic Component Design**: Components follow strict atomic design principles:
-
-- **atoms/**: Stateless, independent UI elements (buttons, icons, inputs)
-- **molecules/**: Stateless composite components dependent on other components
-- **organisms/**: Stateful complex components with business logic integration
-
-**State Management Strategy**:
-
-- **Redux Toolkit**: Global application state (user auth, UI state, modals)
-- **React Query**: Server state management with caching and synchronization
-- **Local State**: Component-specific UI state with useState
-
-**Authentication System**: JWT-based authentication with Supabase integration:
-
-- Automatic token refresh in axios interceptors
-- Server and client-side session validation
-- Level-based permission system for content access
-- Route protection via Next.js middleware
-
-### Key Directory Structure
-
-```text
-src/
-├── app/              # Next.js App Router pages and API routes
-├── component/        # Atomic design components (atoms/molecules/organisms)
-├── hooks/            # Custom hooks organized by domain
-│   ├── queries/      # React Query hooks for data fetching
-│   ├── commands/     # Business operation hooks
-│   └── common/       # Shared utility hooks
-├── services/         # API service layer with baseService pattern
-├── redux/            # Redux Toolkit store and feature slices
-├── model/            # TypeScript type definitions by domain
-├── templates/        # Page-level layout templates
-├── util/             # Utility functions including image optimization
-└── config/           # Configuration (Supabase, axios setup)
-```
-
-### Path Aliases
-
-The project uses comprehensive path aliases configured in both `next.config.ts` and `vitest.config.ts`:
+**Modular Library Design**: 모든 기능이 독립적으로 import 가능한 모듈 구조:
 
 ```typescript
-@atoms           # src/component/atoms
-@molecules       # src/component/molecules  
-@organisms       # src/component/organisms
-@common          # src/component/common
-@templates       # src/templates
-@hooks           # src/hooks
-@services        # src/services
-@redux           # src/redux
-@model           # src/model
-@util            # src/util
-@config          # src/config
-@constants       # src/constants
+// 전체 패키지 import
+import { Button, useAuth, BaseService } from '@semicolon/community-core';
+
+// 개별 모듈 import (Tree Shaking 최적화)
+import { Button } from '@semicolon/community-core/components';
+import { useAuth } from '@semicolon/community-core/hooks';
+import { BaseService } from '@semicolon/community-core/services';
 ```
 
-## Development Guidelines
+### 🏗️ 계층별 아키텍처
 
-### API Integration
+**🔧 Service Layer**: HTTP 통신 및 외부 서비스 추상화
+- `BaseService`: 표준화된 HTTP 메서드 (get, post, put, delete)
+- Domain Services: `UserService`, `PostService`, `BoardService` 등
+- 글로벌 로딩 인디케이터 자동 처리 (Silent 메서드로 바이패스 가능)
+- `CommonResponse<T>` 래퍼로 일관된 API 응답 구조
+
+**🧩 Component Layer**: Atomic Design 기반 컴포넌트 시스템
+- **atoms/**: 독립적인 기본 UI 요소 (Button, Icon, Input)
+- **molecules/**: 조합된 UI 컴포넌트 (SearchBar, Pagination)
+- **organisms/**: 비즈니스 로직을 포함한 복합 컴포넌트 (GlobalLoader, AuthGuard)
+
+**🪝 Hooks Layer**: 비즈니스 로직 캡슐화
+- **common/**: 범용 유틸리티 훅 (useGlobalLoader, useDeviceType)
+- **queries/**: React Query 기반 데이터 페칭
+- **commands/**: 데이터 변경 및 비즈니스 액션
+
+**🏪 State Management**: 전역 상태 관리 (선택적 사용)
+- **Redux Toolkit**: 사용자 인증, UI 상태, 모달 관리
+- **React Query**: 서버 상태 관리 및 캐싱
+- **Local State**: 컴포넌트별 UI 상태
+
+**🔐 Authentication System**: JWT 기반 인증 시스템 (Supabase 통합)
+- Axios interceptors의 자동 토큰 갱신
+- 레벨 기반 권한 시스템
+- 서버/클라이언트 세션 검증
+
+### 📁 패키지 디렉토리 구조
+
+```text
+lib/                          # 패키지 소스 (src/ 대신)
+├── components/               # UI 컴포넌트 (Atomic Design)
+│   ├── atoms/               # 기본 UI 요소
+│   ├── molecules/           # 조합된 컴포넌트
+│   └── organisms/           # 비즈니스 로직 포함 컴포넌트
+├── hooks/                   # Custom React 훅
+│   ├── common/              # 범용 유틸리티 훅
+│   ├── queries/             # React Query 데이터 페칭
+│   └── commands/            # 데이터 변경 및 비즈니스 액션
+├── services/                # API 서비스 레이어
+├── utils/                   # 순수 함수 유틸리티
+├── types/                   # TypeScript 타입 정의
+├── redux/                   # Redux Toolkit (선택적)
+├── config/                  # 설정 및 초기화
+└── constants/               # 상수 정의
+
+dist/                        # 빌드 출력
+├── index.js                 # CommonJS 번들
+├── index.esm.js             # ESM 번들
+├── index.d.ts               # TypeScript 선언 파일
+└── components/              # 개별 모듈 번들
+    ├── index.js
+    └── index.d.ts
+
+scripts/                     # 빌드 및 배포 스크립트
+├── reorganize.sh            # 파일 재구성 스크립트
+└── (기타 스크립트)
+
+.docs/                       # 패키지 문서
+├── IMPLEMENTATION_STRATEGY.md
+├── PACKAGING_GUIDE.md
+└── (기타 문서)
+```
+
+### 🎯 Import Path 전략
+
+패키지 사용자를 위한 명확한 import 경로:
+
+```typescript
+// ✅ 메인 패키지에서 직접 import (권장)
+import { Button, useAuth } from '@semicolon/community-core';
+
+// ✅ 카테고리별 import (Tree Shaking 최적화)
+import { Button } from '@semicolon/community-core/components';
+import { useAuth } from '@semicolon/community-core/hooks';
+import { BaseService } from '@semicolon/community-core/services';
+import { formatNumberWithComma } from '@semicolon/community-core/utils';
+
+// ❌ 내부 경로 직접 import (지양)
+import Button from '@semicolon/community-core/dist/components/atoms/Button';
+```
+
+## 🛠️ 패키지 개발 가이드라인
+
+### 🎯 개발 우선순위 및 단계
+
+**Phase 1: 기반 구조** (✅ 완료)
+- [x] 패키지 구조 및 빌드 시스템
+- [x] 기본 유틸리티 함수
+
+**Phase 2: 핵심 서비스** (🔄 진행중)
+- [ ] BaseService 클래스
+- [ ] UserService, PostService 등
+- [ ] 인증/권한 시스템
+
+**Phase 3: 훅 시스템**
+- [ ] useAuth, useGlobalLoader
+- [ ] React Query 기반 훅들
+- [ ] 권한 체크 훅들
+
+**Phase 4: 컴포넌트 시스템**
+- [ ] Atoms: Button, Icon, Input
+- [ ] Molecules: Pagination, SearchBar
+- [ ] Organisms: GlobalLoader, AuthGuard
+
+### 📝 코딩 컨벤션
+
+**TypeScript 우선**: 모든 새로운 코드는 TypeScript로 작성
+```typescript
+// ✅ 명확한 타입 정의
+interface UserServiceProps {
+  userId: string;
+  includePermissions?: boolean;
+}
+
+// ✅ Generic 활용
+export class BaseService<T = any> {
+  protected async get<R = T>(url: string): Promise<CommonResponse<R>> {
+    // ...
+  }
+}
+```
+
+**Framework Agnostic 설계**: Next.js 의존성 최소화
+```typescript
+// ❌ Next.js 종속적
+import Link from 'next/link';
+
+// ✅ 추상화된 인터페이스
+interface NavigationProps {
+  href: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+}
+```
+
+**Tree Shaking 친화적**: Named Export 우선 사용
+```typescript
+// ✅ Tree Shaking 지원
+export const formatNumber = (num: number) => { ... };
+export const formatDate = (date: Date) => { ... };
+
+// ❌ Tree Shaking 어려움
+export default { formatNumber, formatDate };
+```
+
+### 🔧 API 통합
 
 **Use the Global Loading System**: All API calls automatically show loading indicators unless using silent methods:
 

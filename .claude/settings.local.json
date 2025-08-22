@@ -10,7 +10,13 @@
       "Bash(npx tsc:*)",
       "Bash(git restore:*)",
       "Bash(grep:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(mkdir:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/reorganize.sh:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run clean:*)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": []
   }
