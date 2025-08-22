@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": "./src",
+    "paths": {
+      "@client/*": ["./client/*"],
+      "@styles/*": ["./styles/*"],
+      "@atoms/*": ["./component/atoms/*"],
+      "@atoms": ["./component/atoms"],
+      "@molecules/*": ["./component/molecules/*"],
+      "@molecules": ["./component/molecules"],
+      "@organisms/*": ["./component/organisms/*"],
+      "@organisms": ["./component/organisms"],
+      "@common/*": ["./component/common/*"],
+      "@common": ["./component/common"],
+      "@templates/*": ["./templates/*"],
+      "@templates": ["./templates"],
+      "@constants/*": ["./constants/*"],
+      "@constants": ["./constants"],
+      "@hooks/*": ["./hooks/*"],
+      "@config/*": ["./config/*"],
+      "@model/*": ["./model/*"],
+      "@page/*": ["./page/*"],
+      "@api/*": ["./api/*"],
+      "@redux/*": ["./redux/*"],
+      "@util/*": ["./util/*"],
+      "@services/*": ["./services/*"],
+      "@mocks/*": ["./mocks/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"],
+  "types": ["vitest/globals", "@testing-library/jest-dom"]
+}

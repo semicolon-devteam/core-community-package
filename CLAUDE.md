@@ -1,0 +1,1032 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Communication Guidelines
+
+**언어 사용**: 모든 응답은 한국어로 작성해주세요. 코드 주석이나 기술 문서는 영어로 작성하되, 설명과 대화는 한국어를 사용합니다.
+
+## Project Overview
+
+This is a Next.js 15.1.4 community service frontend application called "오늘의 놀람" built with React 19, TypeScript, Redux Toolkit, React Query, TailwindCSS, and Supabase for authentication and database.
+
+## Development Commands
+
+```bash
+# Development
+npm run dev                    # Start development server
+npm run build                  # Build for production (no linting)
+npm run start                  # Start production server
+npm run lint                   # Run ESLint
+npm run create-deploy          # Create deployment bundle (Linux/Mac)
+npm run create-deploy:windows  # Create deployment bundle (Windows)
+
+# Testing
+npm run test                   # Run tests with Vitest
+npm run test:ui                # Run tests with UI
+npm run test:unit              # Run unit tests once
+npm run test:unit:watch        # Run unit tests in watch mode
+npm run test:unit:watch:ui     # Run unit tests in watch mode with UI
+npm run test:unit:coverage     # Run tests with coverage report
+```
+
+## Architecture Overview
+
+### Core Patterns
+
+**Service Layer Architecture**: All API communication flows through a unified service layer pattern:
+
+- `baseService.ts` provides standardized HTTP methods (get, post, put, delete) with typed responses
+- Domain services (`userService.ts`, `postService.ts`, etc.) extend the base service
+- Automatic global loading indicators for all API calls (use `*Silent` methods to bypass)
+- `CommonResponse<T>` wrapper ensures consistent API response structure
+
+**Atomic Component Design**: Components follow strict atomic design principles:
+
+- **atoms/**: Stateless, independent UI elements (buttons, icons, inputs)
+- **molecules/**: Stateless composite components dependent on other components
+- **organisms/**: Stateful complex components with business logic integration
+
+**State Management Strategy**:
+
+- **Redux Toolkit**: Global application state (user auth, UI state, modals)
+- **React Query**: Server state management with caching and synchronization
+- **Local State**: Component-specific UI state with useState
+
+**Authentication System**: JWT-based authentication with Supabase integration:
+
+- Automatic token refresh in axios interceptors
+- Server and client-side session validation
+- Level-based permission system for content access
+- Route protection via Next.js middleware
+
+### Key Directory Structure
+
+```text
+src/
+├── app/              # Next.js App Router pages and API routes
+├── component/        # Atomic design components (atoms/molecules/organisms)
+├── hooks/            # Custom hooks organized by domain
+│   ├── queries/      # React Query hooks for data fetching
+│   ├── commands/     # Business operation hooks
+│   └── common/       # Shared utility hooks
+├── services/         # API service layer with baseService pattern
+├── redux/            # Redux Toolkit store and feature slices
+├── model/            # TypeScript type definitions by domain
+├── templates/        # Page-level layout templates
+├── util/             # Utility functions including image optimization
+└── config/           # Configuration (Supabase, axios setup)
+```
+
+### Path Aliases
+
+The project uses comprehensive path aliases configured in both `next.config.ts` and `vitest.config.ts`:
+
+```typescript
+@atoms           # src/component/atoms
+@molecules       # src/component/molecules  
+@organisms       # src/component/organisms
+@common          # src/component/common
+@templates       # src/templates
+@hooks           # src/hooks
+@services        # src/services
+@redux           # src/redux
+@model           # src/model
+@util            # src/util
+@config          # src/config
+@constants       # src/constants
+```
+
+## Development Guidelines
+
+### API Integration
+
+**Use the Global Loading System**: All API calls automatically show loading indicators unless using silent methods:
+
+```typescript
+// Shows global loader
+const data = await postService.getPost(params);
+
+// No loader for background operations
+const data = await baseService.getSilent("/api/background-endpoint");
+```
+
+**Loading States with Global Loader**: Use `useGlobalLoader` hook for all loading states instead of rendering custom loading UI:
+
+```typescript
+// ✅ Correct - Use global loader for async operations
+import { useGlobalLoader } from "@hooks/common/useGlobalLoader";
+
+export default function SomeComponent() {
+  const { withLoader, showLoader, hideLoader } = useGlobalLoader();
+  
+  const fetchData = async () => {
+    await withLoader(async () => {
+      showLoader("데이터를 불러오는 중...");
+      const response = await someService.getData();
+      // Process response
+    });
+  };
+
+  // For initial load, return null to show global loader
+  if (isInitialLoading) {
+    return null; // Global loader is shown
+  }
+}
+
+// ❌ Avoid - Don't render custom loading text in UI
+export default function SomeComponent() {
+  if (isLoading) {
+    return (
+      <div>
+        <span>데이터를 불러오는 중...</span> {/* Don't do this */}
+      </div>
+    );
+  }
+}
+```
+
+**Skeleton Loading for Data Fetching**: When fetching data that needs to be rendered, use skeleton loaders alongside global loaders for better UX:
+
+```typescript
+// ✅ Correct - Use skeleton loaders for content areas during pagination/updates
+import { Skeleton } from "@atoms/Skeleton";
+import { useGlobalLoader } from "@hooks/common/useGlobalLoader";
+
+export default function SomeDataComponent() {
+  const { withLoader } = useGlobalLoader();
+  const [data, setData] = useState([]);
+  const [isPaginating, setIsPaginating] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const fetchData = async (page: number) => {
+    if (isInitialLoad) {
+      // Initial load - use global loader
+      await withLoader(async () => {
+        const response = await someService.getData(page);
+        setData(response.data);
+        setIsInitialLoad(false);
+      });
+    } else {
+      // Pagination - use skeleton loader
+      setIsPaginating(true);
+      const response = await someService.getData(page);
+      setData(response.data);
+      setIsPaginating(false);
+    }
+  };
+
+  // Initial loading - return null to show global loader
+  if (isInitialLoad) {
+    return null;
+  }
+
+  return (
+    <div>
+      {isPaginating ? (
+        // Show skeleton during pagination
+        <SomeDataSkeleton />
+      ) : (
+        // Show actual data
+        data.map(item => <SomeDataItem key={item.id} item={item} />)
+      )}
+    </div>
+  );
+}
+
+// Skeleton component example
+function SomeDataSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[...Array(5)].map((_, index) => (
+        <div key={index} className="border rounded p-4">
+          <Skeleton className="w-32 h-6 mb-2" />
+          <Skeleton className="w-full h-4 mb-1" />
+          <Skeleton className="w-3/4 h-4" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ❌ Avoid - Don't render loading text during pagination
+export default function SomeComponent() {
+  if (isPaginating) {
+    return <div>페이지를 불러오는 중...</div>; // Don't do this
+  }
+}
+```
+
+**Navigation with Loading**: Use `useRouterWithLoader` for page transitions with loading indicators:
+
+```typescript
+import { useRouterWithLoader } from "@hooks/common";
+const router = useRouterWithLoader();
+router.push("/some-page"); // Shows loader during navigation
+```
+
+**User Information Access**: Use the appropriate method based on component type:
+
+```typescript
+// ✅ Server Component - Use UserServiceByServerSide
+import UserServiceByServerSide from "@services/userServiceByServerSide";
+
+export default async function SomePage() {
+  const { data } = await UserServiceByServerSide.getUserInfoDirect();
+  const user = data?.user;
+}
+
+// ✅ Client Component - Use Redux userSlice
+import { useAppSelector } from "@hooks/common";
+import { selectUserInfo } from "@redux/Features/User/userSlice";
+
+export default function SomeClientComponent() {
+  const { userInfo } = useAppSelector(selectUserInfo);
+  const userId = userInfo?.user_id;
+}
+
+// ❌ Avoid - Don't make additional API calls for user data that's already available
+const userIdResponse = await userService.getUserUuid(); // Unnecessary API call
+```
+
+### Component Development
+
+**Follow Atomic Design Principles**:
+
+- Keep atoms stateless and dependency-free
+- Use molecules for composite UI without business logic
+- Place all business logic and state in organisms
+- Use consistent TypeScript interfaces for props
+
+**Page Component Structure**: Keep pages as server components and extract client-side logic:
+
+```typescript
+// ✅ Correct - app/[...]/page.tsx as server component
+export default async function SomePage() {
+  const { data } = await UserServiceByServerSide.getUserInfoDirect();
+  
+  return (
+    <div className="container">
+      <SomeContainer initialData={data} />
+    </div>
+  );
+}
+
+// ✅ Correct - components/organisms/SomeContainer/index.tsx as client component
+'use client';
+export default function SomeContainer({ initialData }) {
+  // Client-side logic here
+}
+
+// ❌ Avoid - Don't make page.tsx a client component directly
+'use client'; // Don't add this to page.tsx files
+export default function SomePage() {
+  // Client logic in page component
+}
+```
+
+**Permission Integration**: Use the unified permission system:
+
+- Wrap pages with `AuthGuard` for admin-only access
+- Wrap pages with `LoginGuard` for authenticated access
+- Use `usePermission` hook for level-based content access
+
+**Error Handling**: Use common hooks and components for consistent error handling:
+
+```typescript
+// ✅ Client Component - Use useAuth and useAuthGuard hooks
+import { useAuth } from "@hooks/User/useAuth";
+import { useAuthGuard } from "@hooks/common/useAuthGuard";
+import AuthErrorHandler from "@organisms/AuthErrorHandler";
+
+export default function SomeClientComponent() {
+  const { user, isLoggedIn } = useAuth();
+  const { hasPermission, errorType, isLoading } = useAuthGuard({
+    requiredLevel: 0, // Minimum level required
+    adminOnly: false, // Admin only access
+  });
+
+  // Handle auth errors with common component
+  if (errorType) {
+    return <AuthErrorHandler errorType={errorType} redirectTo="/" />;
+  }
+
+  // Handle loading state
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+}
+
+// ❌ Avoid - Don't implement custom auth/error logic
+export default function SomeComponent() {
+  const [error, setError] = useState("");
+  
+  if (!userInfo) {
+    setError("로그인이 필요합니다"); // Don't do this
+  }
+}
+```
+
+### State Management
+
+**Redux Usage**: For global state that persists across page navigations:
+
+- User authentication state
+- UI settings (theme, mobile menu state)
+- Global modals and popups
+
+**React Query Usage**: For all server data with automatic caching:
+
+- Use query hooks in `/hooks/queries/` for data fetching
+- Use mutation hooks in `/hooks/commands/` for data modifications
+- Leverage built-in caching, background refetching, and error handling
+
+**Data Fetching Architecture**: Follow the server-first approach with React Query integration:
+
+```typescript
+// ✅ Correct - Server component fetches initial data
+export default async function SomePage() {
+  const { data: userData } = await UserServiceByServerSide.getUserInfoDirect();
+  
+  // Fetch domain-specific initial data on server
+  let initialSomeData = null;
+  try {
+    const response = await someService.getSomeData(userData.user.user_id.toString(), 1, 10);
+    if (response.successOrNot === 'Y' && response.data) {
+      initialSomeData = response.data;
+    }
+  } catch (error) {
+    console.error('서버사이드 데이터 조회 실패:', error);
+  }
+
+  return (
+    <div className="container">
+      <SomeContainer 
+        initialData={userData}
+        initialSomeData={initialSomeData}
+        userId={userData.user.user_id.toString()}
+      />
+    </div>
+  );
+}
+
+// ✅ Correct - Client component uses React Query with initialData
+'use client';
+import { useSomeDataQuery } from "@hooks/queries/useSomeQuery";
+
+export default function SomeContainer({ initialData, initialSomeData, userId }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isPaginating, setIsPaginating] = useState(false);
+  const pageSize = 10;
+
+  // React Query with server-side initial data
+  const {
+    data: someData,
+    error: queryError,
+    isLoading: isQueryLoading,
+  } = useSomeDataQuery({
+    userId,
+    page: currentPage,
+    pageSize,
+    enabled: hasPermission && !authLoading,
+    initialData: initialSomeData, // Server-side data as initial data
+  });
+
+  // Handle pagination with skeleton loading
+  const handlePageChange = async (page: number) => {
+    if (page !== currentPage) {
+      setIsPaginating(true);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      setCurrentPage(page);
+      setTimeout(() => setIsPaginating(false), 300);
+    }
+  };
+
+  return (
+    <>
+      {isPaginating ? (
+        <SomeDataSkeleton />
+      ) : (
+        <SomeDataList data={someData?.items || []} />
+      )}
+      
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={someData?.totalPages || 0}
+        onPageChange={handlePageChange}
+      />
+    </>
+  );
+}
+```
+
+**Query Hook Naming Convention**: Use consistent naming for domain-specific query hooks:
+
+```typescript
+// ✅ Correct - Domain-specific query hook naming
+// File: /hooks/queries/use{DomainName}Query.ts
+export const use{DomainName}Query = ({ userId, page, pageSize, enabled, initialData }) => {
+  return useQuery({
+    queryKey: ['{domainName}', userId, page, pageSize],
+    queryFn: async () => {
+      const response = await {domainName}Service.get{DomainName}(userId, page, pageSize);
+      if (response.successOrNot === 'Y' && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message || '{DomainName} 조회 중 오류가 발생했습니다.');
+    },
+    enabled: enabled && !!userId,
+    initialData: page === 1 && initialData ? initialData : undefined,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Examples:
+// usePointQuery (for point-related data)
+// usePostQuery (for post-related data)  
+// useUserQuery (for user-related data)
+// useBoardQuery (for board-related data)
+```
+
+**Data Flow Rules**:
+
+1. **Server-Side Initial Rendering**: Always fetch initial data on server components using domain services
+2. **React Query Integration**: Use `use{DomainName}Query` hooks for all data fetching with initialData from server
+3. **Client-Side Interactions**: Handle pagination, filtering, and user interactions dynamically on client with React Query
+4. **Loading States**: Use global loader for initial load, skeleton loaders for pagination/updates
+
+### Testing
+
+Tests use Vitest with React Testing Library. Run tests before committing:
+
+- Components should have corresponding `.test.tsx` files
+- Focus on user interactions and behavior rather than implementation details
+- Use the configured path aliases in test files
+
+### Image Optimization
+
+The project includes a Supabase Image Transformation utility (`@util/imageUtil`):
+
+- Use `transformSupabaseImageUrl()` for automatic image optimization
+- Leverage `generateImageSrcSet()` for responsive images
+- Integrate with Next.js Image component using `supabaseImageLoader()`
+
+### Authentication & Permissions
+
+**Permission Levels**:
+
+- Level 0 (`'free'`): Open access for all users
+- Level 1+: Restricted based on user level
+- Admin: Special `adminOnly` checks
+
+**Implementation**:
+
+- Page-level protection in `layout.tsx` files using `AuthGuard`/`LoginGuard`
+- Component-level checks using `usePermission` hook
+- Server-side validation in middleware and API routes
+
+## Branch Management
+
+- **main**: Production releases only
+- **dev**: Development integration branch  
+- **task-[number]**: Feature development branches
+- **fix/***: Bug fix branches
+
+Always create PRs from task branches to dev, then from dev to main.
+
+## Important Notes
+
+- Never commit sensitive information (API keys, tokens)
+- Use TypeScript strictly - all components and functions should be properly typed
+- Follow the existing code patterns and architectural decisions
+- The global loading system is automatic - don't create duplicate loading states
+- Permission checks are centralized - don't implement custom authorization logic
+- All API responses follow the `CommonResponse<T>` pattern
+
+# 미디어 프로세서 API 사용 가이드 (v2.0)
+
+## 📌 서비스 개요
+미디어 프로세서는 코인톡 커뮤니티 플랫폼의 이미지/비디오 파일에 워터마크를 자동으로 추가하고 Supabase 스토리지에 업로드하는 마이크로서비스입니다. 단일
+  파일뿐만 아니라 **다중 파일 업로드**와 **게시글 단위 관리** 기능을 지원합니다.
+
+## 🔗 API 엔드포인트
+- **Base URL**: `https://your-media-processor-api.com`
+- **Health Check**: `GET /api/health`
+- **진단**: `GET /api/media/diagnose`
+
+## 📚 주요 API 엔드포인트
+
+### 1. 단일 파일 처리
+
+#### 동기 처리 (즉시 응답)
+```http
+POST /api/media/process
+Content-Type: multipart/form-data
+
+비동기 처리 (백그라운드)
+
+POST /api/media/process-async
+Content-Type: multipart/form-data
+
+공통 파라미터:
+- file (필수): 업로드할 미디어 파일
+- userId (필수): 사용자 UUID
+- watermarkPosition (선택): 워터마크 위치 (기본값: bottom-right)
+- watermarkOpacity (선택): 투명도 0-1 (기본값: 0.7)
+- needWatermark (선택): 워터마크 적용 여부 (기본값: true)
+- needThumbnailExtract (선택): 썸네일 추출 여부 (기본값: false)
+
+2. 다중 파일 처리 (신규 🆕)
+
+게시글용 다중 파일 업로드
+
+POST /api/media/upload-async
+Content-Type: multipart/form-data
+
+파라미터:
+- files (필수): 업로드할 파일들 (최대 10개)
+- postId (필수): 게시글 ID (정수)
+- userId (필수): 사용자 UUID
+- needWatermark (선택): 워터마크 적용 여부 (기본값: true)
+- watermarkPosition (선택): 워터마크 위치 (기본값: bottom-right)
+- watermarkOpacity (선택): 투명도 (기본값: 0.7)
+
+3. 업로드 상태 관리
+
+게시글 업로드 진행률 조회
+
+GET /api/media/upload-progress/:postId
+
+실패한 파일 재시도
+
+POST /api/media/retry-upload/:postId
+Content-Type: application/json
+
+{
+  "userId": "user-uuid",
+  "failedFileUuids": ["file-uuid-1", "file-uuid-2"]
+}
+
+업로드 취소
+
+DELETE /api/media/cancel-upload/:postId
+Content-Type: application/json
+
+{
+  "userId": "user-uuid"
+}
+
+4. 기존 API (단일 파일용)
+
+작업 상태 확인
+
+GET /api/media/status/:jobId
+
+작업 결과 조회
+
+GET /api/media/result/:jobId
+
+작업 취소
+
+DELETE /api/media/cancel/:jobId
+
+🎯 사용 예시
+
+1. 단일 파일 업로드 (기존 방식)
+
+async function uploadSingleFile(file, userId) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('userId', userId);
+  formData.append('needWatermark', 'true');
+
+  const response = await fetch('/api/media/process', {
+    method: 'POST',
+    body: formData
+  });
+
+  const result = await response.json();
+  return result.data.url;
+}
+
+2. 게시글용 다중 파일 업로드 (신규 🆕)
+
+async function uploadPostFiles(files, postId, userId) {
+  const formData = new FormData();
+
+  // 파일들 추가
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+
+  formData.append('postId', postId.toString());
+  formData.append('userId', userId);
+  formData.append('needWatermark', 'true');
+
+  const response = await fetch('/api/media/upload-async', {
+    method: 'POST',
+    body: formData
+  });
+
+  const result = await response.json();
+  return result.data; // { uploadId, postId, queuedFiles, failedFiles }
+}
+
+3. 업로드 진행률 모니터링
+
+async function monitorUploadProgress(postId) {
+  const checkProgress = async () => {
+    const response = await fetch(`/api/media/upload-progress/${postId}`);
+    const result = await response.json();
+
+    if (result.successOrNot === 'Y') {
+      const progress = result.data;
+      console.log('진행률:', progress);
+
+      // UI 업데이트
+      updateProgressUI(progress);
+
+      // 완료 확인
+      if (progress.status === 'completed') {
+        return progress;
+      }
+
+      // 실패한 파일이 있으면 재시도 옵션 제공
+      if (progress.failedFiles?.length > 0) {
+        handleFailedFiles(postId, progress.failedFiles);
+      }
+    }
+
+    return null;
+  };
+
+  // 폴링 시작
+  let completed = false;
+  while (!completed) {
+    const result = await checkProgress();
+    if (result) {
+      completed = true;
+      return result;
+    }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+}
+
+4. 실패한 파일 재시도
+
+async function retryFailedFiles(postId, userId, failedFileUuids) {
+  const response = await fetch(`/api/media/retry-upload/${postId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      userId: userId,
+      failedFileUuids: failedFileUuids
+    })
+  });
+
+  const result = await response.json();
+
+  if (result.successOrNot === 'Y') {
+    console.log('재시도 시작됨:', result.data.retriedFiles);
+
+    // 다시 진행률 모니터링 시작
+    return monitorUploadProgress(postId);
+  } else {
+    throw new Error(result.message);
+  }
+}
+
+5. 완전한 게시글 생성 워크플로우
+
+async function createPostWithFiles(postData, files) {
+  try {
+    // 1. 게시글 먼저 생성 (미디어 없이)
+    const post = await createPost({
+      title: postData.title,
+      content: postData.content,
+      userId: postData.userId,
+      status: 'uploading' // 업로드 중 상태
+    });
+
+    if (files && files.length > 0) {
+      // 2. 파일 업로드 시작
+      const uploadResult = await uploadPostFiles(files, post.id, postData.userId);
+
+      // 3. 업로드 진행률 모니터링
+      const finalResult = await monitorUploadProgress(post.id);
+
+      // 4. 게시글 상태 업데이트 (완료)
+      await updatePost(post.id, {
+        status: 'published',
+        mediaCount: finalResult.completedFiles?.length || 0
+      });
+
+      return {
+        post: post,
+        mediaUrls: finalResult.completedFiles?.map(f => f.url) || []
+      };
+    } else {
+      // 파일이 없으면 바로 게시
+      await updatePost(post.id, { status: 'published' });
+      return { post: post, mediaUrls: [] };
+    }
+
+  } catch (error) {
+    console.error('게시글 생성 실패:', error);
+    throw error;
+  }
+}
+
+6. 업로드 취소
+
+async function cancelUpload(postId, userId) {
+  const response = await fetch(`/api/media/cancel-upload/${postId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId })
+  });
+
+  const result = await response.json();
+  return result.successOrNot === 'Y';
+}
+
+📋 응답 형식
+
+다중 파일 업로드 응답
+
+{
+  "data": {
+    "uploadId": "uuid-string",
+    "postId": 123,
+    "totalFiles": 5,
+    "queuedFiles": [
+      {
+        "uuid": "file-uuid-1",
+        "fileName": "image1.jpg",
+        "fileSize": 1024000,
+        "fileType": "image/jpeg",
+        "status": "pending",
+        "jobId": "job-uuid-1"
+      }
+    ],
+    "failedFiles": [
+      {
+        "uuid": "file-uuid-2",
+        "fileName": "invalid.txt",
+        "status": "failed",
+        "error": "지원하지 않는 파일 형식입니다"
+      }
+    ]
+  },
+  "successOrNot": "Y",
+  "statusCode": 200,
+  "message": "다중 파일 비동기 업로드가 시작되었습니다."
+}
+
+업로드 진행률 응답
+
+{
+  "data": {
+    "postId": 123,
+    "uploadId": "uuid-string",
+    "status": "processing", // pending, processing, completed, failed
+    "progress": {
+      "completed": 3,
+      "failed": 1,
+      "pending": 1,
+      "total": 5
+    },
+    "files": [
+      {
+        "uuid": "file-uuid-1",
+        "fileName": "image1.jpg",
+        "status": "completed",
+        "url": "https://...image1.jpg",
+        "jobId": "job-uuid-1"
+      },
+      {
+        "uuid": "file-uuid-2",
+        "fileName": "video1.mp4",
+        "status": "failed",
+        "error": "처리 중 오류 발생",
+        "jobId": "job-uuid-2"
+      }
+    ],
+    "completedFiles": [
+      {
+        "uuid": "file-uuid-1",
+        "fileName": "image1.jpg",
+        "url": "https://...image1.jpg",
+        "thumbnailUrl": null
+      }
+    ],
+    "failedFiles": [
+      {
+        "uuid": "file-uuid-2",
+        "fileName": "video1.mp4",
+        "error": "처리 중 오류 발생"
+      }
+    ]
+  },
+  "successOrNot": "Y",
+  "statusCode": 200,
+  "message": "업로드 진행률 조회가 완료되었습니다."
+}
+
+⚡ 성능 최적화 팁
+
+다중 파일 업로드 권장사항
+
+- 파일 수 제한: 한 번에 최대 10개 파일
+- 총 용량 제한: 게시글당 총 2GB 권장
+- 동시 처리: 자동으로 최적화된 동시 처리 적용
+- 재시도 로직: 실패한 파일만 선별적으로 재시도
+
+게시글 생성 워크플로우
+
+1. 게시글 먼저 생성: 미디어 업로드와 독립적으로 게시글 생성
+2. 백그라운드 업로드: 사용자는 업로드 진행률 확인 가능
+3. 점진적 완성: 파일이 처리되는 대로 게시글에 반영
+4. 에러 복구: 일부 파일 실패 시에도 성공한 파일은 유지
+
+처리 시간 예상 (다중 파일)
+
+- 이미지 5개 (각 2MB): 5-15초
+- 이미지 + 비디오 (총 50MB): 30초-2분
+- 대용량 비디오 여러 개: 2-10분
+
+🔧 환경 변수 설정
+
+# 미디어 프로세서 API URL
+MEDIA_PROCESSOR_API_URL=https://your-media-processor-api.com
+
+# Supabase 설정
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# 워터마크 텍스트
+DEFAULT_WATERMARK_TEXT=CoinTalk Community
+
+📦 지원 파일 형식
+
+이미지
+
+- JPEG/JPG (image/jpeg)
+- PNG (image/png)
+- GIF (image/gif) - 애니메이션 유지
+- WebP (image/webp)
+
+비디오
+
+- MP4 (video/mp4)
+- AVI (video/avi)
+- MOV (video/mov, video/quicktime)
+
+🚨 주의사항
+
+1. 게시글 소유권: 모든 다중 파일 API는 게시글 소유권 검증 필수
+2. 파일 제한: 단일 파일 최대 200MB, 게시글당 최대 10개 파일
+3. 동시 업로드: 한 사용자당 동시에 하나의 다중 파일 업로드만 권장
+4. 에러 처리: 부분 실패 시 성공한 파일은 유지, 실패한 파일만 재시도 가능
+5. 리소스 정리: 업로드 취소 시 Supabase에서 자동으로 첨부파일 정리
+
+🔍 디버깅 및 모니터링
+
+Supabase 연결 진단
+
+GET /api/media/diagnose
+
+성능 통계
+
+GET /api/media/stats
+
+병목점 분석
+
+GET /api/media/bottleneck
+
+💡 통합 예제 - 코인톡 게시글 에디터
+
+class PostMediaUploader {
+  constructor(postId, userId) {
+    this.postId = postId;
+    this.userId = userId;
+    this.uploadId = null;
+    this.isUploading = false;
+  }
+
+  async uploadFiles(files) {
+    if (this.isUploading) {
+      throw new Error('이미 업로드가 진행 중입니다.');
+    }
+
+    this.isUploading = true;
+
+    try {
+      // 1. 업로드 시작
+      const uploadResult = await uploadPostFiles(files, this.postId, this.userId);
+      this.uploadId = uploadResult.uploadId;
+
+      // 2. 진행률 모니터링
+      const finalResult = await this.monitorProgress();
+
+      return finalResult;
+    } finally {
+      this.isUploading = false;
+    }
+  }
+
+  async monitorProgress() {
+    return new Promise((resolve, reject) => {
+      const checkProgress = async () => {
+        try {
+          const response = await fetch(`/api/media/upload-progress/${this.postId}`);
+          const result = await response.json();
+
+          if (result.successOrNot === 'Y') {
+            const progress = result.data;
+
+            // 진행률 UI 업데이트
+            this.onProgressUpdate?.(progress);
+
+            // 완료 확인
+            if (progress.status === 'completed') {
+              resolve(progress);
+              return;
+            }
+
+            // 실패한 파일 처리
+            if (progress.failedFiles?.length > 0) {
+              this.onFailure?.(progress.failedFiles);
+            }
+
+            // 다음 체크 스케줄
+            setTimeout(checkProgress, 2000);
+          } else {
+            reject(new Error(result.message));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      checkProgress();
+    });
+  }
+
+  async retryFailedFiles(failedFileUuids) {
+    if (!this.isUploading) {
+      this.isUploading = true;
+
+      try {
+        await retryFailedFiles(this.postId, this.userId, failedFileUuids);
+        return await this.monitorProgress();
+      } finally {
+        this.isUploading = false;
+      }
+    }
+  }
+
+  async cancel() {
+    if (this.isUploading) {
+      await cancelUpload(this.postId, this.userId);
+      this.isUploading = false;
+    }
+  }
+}
+
+// 사용 예시
+const uploader = new PostMediaUploader(postId, userId);
+
+uploader.onProgressUpdate = (progress) => {
+  console.log(`진행률: ${progress.progress.completed}/${progress.progress.total}`);
+  updateProgressBar(progress.progress.completed / progress.progress.total * 100);
+};
+
+uploader.onFailure = (failedFiles) => {
+  console.log('실패한 파일:', failedFiles);
+  showRetryOption(failedFiles);
+};
+
+// 파일 업로드 시작
+uploader.uploadFiles(selectedFiles)
+  .then(result => {
+    console.log('업로드 완료:', result);
+    displayCompletedFiles(result.completedFiles);
+  })
+  .catch(error => {
+    console.error('업로드 실패:', error);
+  });
+
+📞 문의 및 지원
+
+- Supabase 연결 문제: /api/media/diagnose 엔드포인트로 진단
+- 성능 이슈: /api/media/stats 및 /api/media/bottleneck 활용
+- API 상태 확인: /api/health 엔드포인트 모니터링
+- 사용자 정보를 저장할때는, @src/model/User/index.ts 의 User타입에 맞게 저장되도록 할 것..
+- 프로젝트 전역적으로 페이지네이션 구현은 @src/component/molecules/Board/Pagination/index.tsx 컴포넌트를 사용 할 것.
+- 로그인한 사용자 정보를 얻을 땐 다음 방법 사용; - 서버사이드 컴포넌트: @src/services/userServiceByServerSide.ts:getUserInfoDirect() - 클라이언트 사이드 컴포넌트 : @src/redux/Features/User/userSlice.ts:selectUserInfo()

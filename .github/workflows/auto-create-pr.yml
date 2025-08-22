@@ -1,0 +1,56 @@
+name: Auto Create PR on In Progress
+
+on:
+  project_card:
+    types: [moved]
+
+jobs:
+  create-pr-if-needed:
+    if: github.event.project_card.column_name == 'In Progress'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Issue Info
+        id: issue
+        run: |
+          ISSUE_URL="${{ github.event.project_card.content_url }}"
+          ISSUE_JSON=$(curl -s -H "Authorization: token ${{ secrets.PAT_GITHUB_TOKEN }}" $ISSUE_URL)
+
+          echo "number=$(echo "$ISSUE_JSON" | jq -r .number)" >> $GITHUB_OUTPUT
+          echo "title=$(echo "$ISSUE_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
+
+      - name: Check for existing PR
+        id: check-pr
+        run: |
+          PRS=$(curl -s -H "Authorization: token ${{ secrets.PAT_GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open")
+
+          HAS_PR=$(echo "$PRS" | jq --arg ISSUE "#${{ steps.issue.outputs.number }}" '[.[] | select(.body | test($ISSUE))] | length')
+          echo "has_pr=$HAS_PR" >> $GITHUB_OUTPUT
+
+      - name: Exit if PR exists
+        if: steps.check-pr.outputs.has_pr != '0'
+        run: echo "PR already exists for issue #${{ steps.issue.outputs.number }}. Skipping."
+
+      - name: Create branch and PR
+        if: steps.check-pr.outputs.has_pr == '0'
+        run: |
+          BRANCH_NAME="feature/issue-${{ steps.issue.outputs.number }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git fetch origin develop
+          git checkout -b $BRANCH_NAME origin/develop
+          git push origin $BRANCH_NAME
+
+          curl -s -X POST -H "Authorization: token ${{ secrets.PAT_GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pulls \
+            -d "$(jq -n \
+              --arg title "${{ steps.issue.outputs.title }} (#${{ steps.issue.outputs.number }})" \
+              --arg head "$BRANCH_NAME" \
+              --arg base "develop" \
+              --arg body "Closes #${{ steps.issue.outputs.number }}" \
+              '{title: $title, head: $head, base: $base, body: $body}')"

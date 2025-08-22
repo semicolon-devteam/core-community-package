@@ -1,0 +1,29 @@
+name: Reject PR to main
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  reject-main-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ❌ Reject PRs to main unless from release/*
+        run: |
+          echo "🔍 Base branch: ${{ github.event.pull_request.base.ref }}"
+          echo "🔍 Head branch: ${{ github.event.pull_request.head.ref }}"
+
+          BASE="${{ github.event.pull_request.base.ref }}"
+          HEAD="${{ github.event.pull_request.head.ref }}"
+
+          if [[ "$BASE" == "main" ]]; then
+            if [[ "$HEAD" =~ ^release\/.*$ ]]; then
+              echo "✅ release/* 브랜치에서 main으로의 PR은 허용됩니다."
+            else
+              echo "❌ 오류: release/* 브랜치가 아닌 경우 main 브랜치로 PR이 허용되지 않습니다."
+              exit 1
+            fi
+          else
+            echo "ℹ️ main 이외의 브랜치 대상 PR이므로 제한하지 않습니다."
+          fi
