@@ -24,11 +24,19 @@ export { Avatar, type AvatarProps } from './Avatar';
 // They will be gradually refactored to match the new design system
 
 // =============================================================================
-// FUTURE ATOMS - Planned for Phase 2
+// PHASE 2.1 FORM ATOMS - New form components
 // =============================================================================
 
-// export { Input, type InputProps } from './Input';
-// export { Checkbox, type CheckboxProps } from './Checkbox';
-// export { RadioButton, type RadioButtonProps } from './RadioButton';
+export { Input, type InputProps } from './Input';
+export { Select, type SelectProps, type SelectOption } from './Select';
+export { Checkbox, type CheckboxProps } from './Checkbox';
+export { Radio, type RadioProps } from './Radio';
+export { Switch, type SwitchProps } from './Switch';
+export { TextArea, type TextAreaProps } from './TextArea';
+
+// =============================================================================
+// FUTURE ATOMS - Planned for Phase 2.2+
+// =============================================================================
+
 // export { Icon, type IconProps } from './Icon';
 // export { Spinner, type SpinnerProps } from './Spinner';

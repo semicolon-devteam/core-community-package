@@ -56,7 +56,7 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(({
   // 크기별 클래스 정의
   const sizeClasses = {
     sm: 'w-3 h-3',
-    md: 'w-4 h-4', 
+    md: 'w-4 h-4',
     lg: 'w-5 h-5'
   };
 
@@ -92,22 +92,22 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(({
           flex-shrink-0 rounded-full flex items-center justify-center
           border-2 transition-all duration-200
           ${sizeClasses[size]}
-          ${checked 
-            ? error 
-              ? 'border-red-500 bg-red-500' 
-              : 'border-primary bg-primary'
+          ${checked
+            ? error
+              ? 'border-red-500 bg-red-500'
+              : 'border-blue-600 bg-blue-600'
             : error
               ? 'border-red-500'
-              : 'border-border-default hover:border-primary'
+              : 'border-gray-300 hover:border-blue-600'
           }
-          ${disabled 
-            ? 'opacity-50 cursor-not-allowed' 
+          ${disabled
+            ? 'opacity-50 cursor-not-allowed'
             : 'cursor-pointer'
           }
           ${className}
         `.trim().replace(/\s+/g, ' ')}
       >
-        <span 
+        <span
           className={`
             rounded-full transition-all duration-200 bg-white
             ${dotSizeClasses[size]}
@@ -122,10 +122,10 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(({
     <label
       htmlFor={radioId}
       className={`
-        text-text-primary
+        text-gray-700
         text-xs sm:text-sm
         font-normal
-        font-nexon
+        font-sans
         whitespace-nowrap
         select-none
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -150,7 +150,7 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(({
           mt-2
           text-sm
           text-red-500
-          font-nexon
+          font-sans
           ${errorClassName}
         `.trim().replace(/\s+/g, ' ')}>
           {error}
@@ -163,7 +163,7 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(({
           mt-2
           text-sm
           text-gray-500
-          font-nexon
+          font-sans
           ${helperClassName}
         `.trim().replace(/\s+/g, ' ')}>
           {helper}
@@ -175,4 +175,4 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(({
 
 Radio.displayName = 'Radio';
 
-export default Radio;
+export { Radio };

@@ -45,6 +45,25 @@ export { getPackageConfig } from './config/init';
 export { Button, Badge, Avatar } from './components/atoms';
 export type { ButtonProps, BadgeProps, AvatarProps } from './components/atoms';
 
+// Phase 2.1 Form Components
+export { 
+  Input, 
+  Select, 
+  Checkbox, 
+  Radio, 
+  Switch, 
+  TextArea 
+} from './components/atoms';
+export type { 
+  InputProps, 
+  SelectProps, 
+  SelectOption,
+  CheckboxProps, 
+  RadioProps, 
+  SwitchProps, 
+  TextAreaProps 
+} from './components/atoms';
+
 // =============================================================================
 // DEVELOPMENT EXPORTS - Available but not prominently featured
 // =============================================================================
@@ -57,5 +76,5 @@ export type { ButtonProps, BadgeProps, AvatarProps } from './components/atoms';
 // =============================================================================
 // VERSION INFO
 // =============================================================================
-export const VERSION = '1.0.0';
-export const PACKAGE_NAME = '@semicolon/community-core';
+export const VERSION = '1.0.2';
+export const PACKAGE_NAME = '@team-semicolon/community-core';
