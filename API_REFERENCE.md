@@ -463,9 +463,9 @@ module.exports = {
 
 ## 📞 Support
 
-- **GitHub Issues**: [Report bugs and feature requests](https://github.com/semicolon-community/community-core/issues)
-- **Documentation**: [Full documentation](https://semicolon-community.github.io/community-core)
-- **Email**: support@semicolon-community.com
+- **GitHub Issues**: [Report bugs and feature requests](https://github.com/semicolon-devteam/community-core/issues)
+- **Documentation**: [Full documentation] (준비중)
+- **Email**: support@semicolon-devteam.com
 
 ---
 

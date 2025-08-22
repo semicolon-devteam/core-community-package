@@ -213,7 +213,7 @@ npm run dev  # Rollup watch 모드
 
 ## 🐛 이슈 리포트
 
-버그를 발견했거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/semicolon-community/community-core/issues)를 통해 알려주세요.
+버그를 발견했거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/semicolon-devteam/community-core/issues)를 통해 알려주세요.
 
 ## 📄 라이센스
 
