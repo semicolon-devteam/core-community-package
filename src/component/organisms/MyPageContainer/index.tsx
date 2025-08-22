@@ -50,9 +50,9 @@ function MyPageContent() {
               <Image
                 src={`/icons/level/${userInfo?.level}.png`}
                 alt="유저 프로필"
-                width={36}
-                height={36}
-                className="mr-1 w-9 h-9"
+                width={24}
+                height={24}
+                className="mr-1 w-6 h-6"
               />
               <div className="text-text-primary text-base font-medium font-nexon">
                 {userInfo?.nickname || '사용자'}

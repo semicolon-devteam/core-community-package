@@ -11,6 +11,7 @@ import {
 } from '@hooks/common';
 import UserSearchModal from '@organisms/UserSearchModal/UserSearchModal';
 import { showToast } from '@redux/Features/Toast/toastSlice';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -200,20 +201,24 @@ export default function PointManage({ userId, userInfo }: PointManageProps) {
         {selectedUser && (
           <div className="flex items-center justify-between gap-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-4">
-              <img
+              <Image
                 src={
                   selectedUser.profileImage || '/images/main/user-profile.png'
                 }
                 alt="프로필"
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover border border-gray-300 bg-white"
               />
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   {selectedUser.level && (
-                    <img
+                    <Image
                       src={`/icons/level/${selectedUser.level}.png`}
                       alt={`레벨 ${selectedUser.level}`}
-                      className="w-9 h-9 object-contain"
+                      width={24}
+                      height={24}
+                      className="w-6 h-6 object-contain"
                     />
                   )}
                   <span className="font-bold text-base text-neutral-900 font-nexon">

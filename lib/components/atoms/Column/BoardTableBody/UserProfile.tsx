@@ -53,11 +53,11 @@ export default function UserProfile({
       className={`${gridClasses} h-8 sm:h-11 cursor-pointer py-2 sm:py-2.5 justify-${column.justify} items-${column.align} gap-1 flex`}
     >
       <Image
-        className="w-9 h-9"
+        className="w-6 h-6"
         src={`/icons/level/${row.users.activity_level || 1}.png`}
         alt="user"
-        width={36}
-        height={36}
+        width={24}
+        height={24}
       />
       <div className="text-center text-text-tertiary text-xs sm:text-sm font-normal font-nexon leading-normal overflow-hidden text-ellipsis text-nowrap">
         {row.users.nickname}

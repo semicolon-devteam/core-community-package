@@ -1,3 +1,4 @@
+import { Skeleton } from '@atoms/Skeleton';
 import { useAppDispatch, useAppSelector } from '@hooks/common';
 import { usePermission } from '@hooks/common/usePermission';
 import { useCommentSection } from '@hooks/PostDetail/useCommentSection';
@@ -9,7 +10,6 @@ import { showToast } from '@redux/Features/Toast/toastSlice';
 import { selectUserInfo } from '@redux/Features/User/userSlice';
 import { useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
-import { Skeleton } from '@atoms/Skeleton';
 
 // 메모이제이션된 CommentForm 컴포넌트
 const CommentForm = React.memo(
@@ -166,8 +166,8 @@ export default function CommentSection({
                 <div key={`comment-skel-${i}`} className="w-full pb-5 border-b border-zinc-200 flex flex-col gap-4">
                   <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                     <div className="flex items-center gap-2">
-                      <Skeleton className="w-9 h-9 rounded-full" />
-                      <Skeleton className="w-9 h-9" />
+                      <Skeleton className="w-6 h-6 rounded-full" />
+                      <Skeleton className="w-6 h-6" />
                       <Skeleton className="h-4 w-24" />
                       <Skeleton className="h-3 w-8" />
                     </div>

@@ -38,9 +38,9 @@ const CommentItem = forwardRef<HTMLDivElement, CommentItemProps>(
             <Image
               src={`/icons/level/${comment.writer_level || 1}.png`}
               alt="level"
-              width={36}
-              height={36}
-              className="w-9 h-9"
+              width={24}
+              height={24}
+              className="w-6 h-6"
             />
             <span className="text-neutral-900 text-sm sm:text-base font-medium font-nexon">
               {comment.writer_name}

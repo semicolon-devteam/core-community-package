@@ -92,9 +92,9 @@ export default function UserProfile({
               <Image
                 src={`/icons/level/${userInfo.level || 1}.png`}
                 alt="level"
-                width={36}
-                height={36}
-                className="w-9 h-9 mr-1"
+                width={24}
+                height={24}
+                className="w-6 h-6 mr-1"
               />
               <div className="text-text-primary text-base font-medium font-nexon">
                 {userInfo.nickname || '사용자'}
@@ -181,9 +181,9 @@ export default function UserProfile({
             <Image
               src={`/icons/level/${userInfo.level || 1}.png`}
               alt="level"
-              width={36}
-              height={36}
-              className="w-9 h-9"
+              width={24}
+              height={24}
+              className="w-6 h-6"
             />
             <span className="text-text-secondary text-xs font-normal font-nexon">
               Lv.{userInfo.level}
@@ -194,9 +194,9 @@ export default function UserProfile({
               <Image
                 src={`/icons/level/${nextLevel}.png`}
                 alt="level"
-                width={36}
-                height={36}
-                className="w-9 h-9"
+                width={24}
+                height={24}
+                className="w-6 h-6"
               />
               <span className="text-text-secondary text-xs font-normal font-nexon">
                 Lv.{nextLevel}
