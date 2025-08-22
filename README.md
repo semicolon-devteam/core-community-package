@@ -202,9 +202,9 @@ npm run dev  # Rollup watch 모드
 
 ## 📖 문서
 
-- **[API Reference](./API_REFERENCE.md)** - 완전한 API 문서 및 사용 가이드
-- **[Usage Examples](./USAGE_EXAMPLES.md)** - 실제 사용 예제 및 통합 시나리오
-- **[Changelog](./CHANGELOG.md)** - 버전별 변경사항 및 릴리스 노트
+- **[API Reference](./docs/API_REFERENCE.md)** - 완전한 API 문서 및 사용 가이드
+- **[Usage Examples](./docs/USAGE_EXAMPLES.md)** - 실제 사용 예제 및 통합 시나리오
+- **[Changelog](./docs/CHANGELOG.md)** - 버전별 변경사항 및 릴리스 노트
 - **[개발 가이드](./CLAUDE.md)** - 개발자를 위한 상세 가이드라인
 
 ### 추가 문서
