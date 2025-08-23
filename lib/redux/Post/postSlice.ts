@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { PostDetail } from '@model/post';
+import type { PostDetail } from '../../types/post';
 
 interface PostState {
     editPost: PostDetail | null;

@@ -1,4 +1,4 @@
-import type { GalleryListItem, ListPost } from '@model/post';
+import type { GalleryListItem, ListPost } from '../../../types/post';
 
 export type BoardType = 'list' | 'gallery' | 'money' | 'content' | 'search';
 

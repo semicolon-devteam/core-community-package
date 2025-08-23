@@ -3,7 +3,7 @@
 import { setApiLoaderText } from "@config/axios";
 import { useAppDispatch } from "@hooks/common";
 import { useUserPointQuery } from "@hooks/queries/useUserQuery";
-import type { Purchase } from "@model/purchase";
+import type { Purchase } from '../../../types/purchase';
 import { showToast } from "@redux/Features/Toast/toastSlice";
 import { useEffect, useRef } from "react";
 

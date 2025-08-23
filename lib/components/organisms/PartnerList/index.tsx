@@ -1,6 +1,6 @@
 "use client";
 
-import type { PartnerListResponse } from "@model/partner";
+import type { PartnerListResponse } from '../../../types/partner';
 import PartnerItem from "@organisms/PartnerItem";
 
 

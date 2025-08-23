@@ -2,7 +2,7 @@
 
 import LinkWithLoader from "@common/LinkWithLoader";
 import { useAppDispatch } from "@hooks/common";
-import type { PartnerItem as PartnerItemType } from "@model/partner";
+import type { PartnerItem as PartnerItemType } from '../../../types/partner';
 import { showToast } from "@redux/Features/Toast/toastSlice";
 import { useState } from "react";
 

@@ -2,7 +2,7 @@ import { Skeleton } from '@atoms/Skeleton';
 import { useAppDispatch, useAppSelector } from '@hooks/common';
 import { usePermission } from '@hooks/common/usePermission';
 import { useCommentSection } from '@hooks/PostDetail/useCommentSection';
-import type { Comment, CommentFormProps } from '@model/comment';
+import type { Comment, CommentFormProps } from '../../../types/comment';
 import Board from '@molecules/Board';
 import CommentItem from '@organisms/CommentItem';
 import ReportModal from '@organisms/ReportModal';

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { FileAttachment } from '@model/post';
+import type { FileAttachment } from '../../types/post';
 
 interface UploadProgressState {
   files: FileAttachment[];

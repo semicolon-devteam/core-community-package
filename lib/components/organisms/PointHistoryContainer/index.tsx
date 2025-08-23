@@ -4,7 +4,7 @@ import { Skeleton } from "@atoms/Skeleton";
 import { useAuth } from "@hooks/User/useAuth";
 import { useAuthGuard } from "@hooks/common/useAuthGuard";
 import { usePointHistoryQuery } from "@hooks/queries/usePointQuery";
-import type { PointTransaction } from "@model/point";
+import type { PointTransaction } from '../../../types/point';
 import Pagination from "@molecules/Board/Pagination";
 import AuthErrorHandler from "@organisms/AuthErrorHandler";
 import { useState } from "react";

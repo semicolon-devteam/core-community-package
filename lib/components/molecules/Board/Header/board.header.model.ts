@@ -1,4 +1,4 @@
-import type { BoardCategory } from '@model/board';
+import type { BoardCategory } from '../../../../types/board';
 
 export interface BoardHeaderProps {
   boardName?: string;

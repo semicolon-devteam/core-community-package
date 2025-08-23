@@ -98,7 +98,7 @@ axiosInstance.interceptors.request.use(async (config: CustomAxiosRequestConfig) 
 
         if (accessToken) {
           // 토큰 만료 검증 (동적 import로 순환 참조 방지)
-          const { decodeJWTPayload, isTokenExpired, removeExpiredTokenFromCookie } = await import('@util/jwtUtil');
+          const { decodeJWTPayload, isTokenExpired, removeExpiredTokenFromCookie } = await import('../utils/jwtUtil');
           const payload = decodeJWTPayload(accessToken);
           
           if (payload && !isTokenExpired(payload)) {
@@ -116,7 +116,7 @@ axiosInstance.interceptors.request.use(async (config: CustomAxiosRequestConfig) 
     } catch (error) {
       // 에러 발생 시 만료된 토큰 정리 (안전장치)
       try {
-        const { removeExpiredTokenFromCookie } = await import('@util/jwtUtil');
+        const { removeExpiredTokenFromCookie } = await import('../utils/jwtUtil');
         removeExpiredTokenFromCookie();
       } catch (importError) {
         console.error('JWT 유틸리티 import 실패:', importError);
@@ -164,7 +164,7 @@ axiosInstance.interceptors.response.use(
           errorMessage.includes('로그인이 필요한 게시판'))
       ) {
         // 실제 세션 상태를 확인 후 이벤트 발생
-        const { clientSupabase } = await import('@config/Supabase/client');
+        const { clientSupabase } = await import('./Supabase/client');
         const {
           data: { session },
         } = await clientSupabase.auth.getSession();
@@ -214,7 +214,7 @@ axiosInstance.interceptors.response.use(
         console.log('🔄 axios: 401/403 에러 감지, 토큰 갱신 시도');
 
         // 클라이언트 수파베이스 세션 확인 및 갱신
-        const { clientSupabase } = await import('@config/Supabase/client');
+        const { clientSupabase } = await import('./Supabase/client');
         const {
           data: { session },
           error: sessionError,
@@ -247,7 +247,7 @@ axiosInstance.interceptors.response.use(
         console.error('❌ axios: 토큰 갱신 과정에서 오류:', refreshError);
 
         // 갱신 실패 시 로그아웃 처리
-        const { clientSupabase } = await import('@config/Supabase/client');
+        const { clientSupabase } = await import('./Supabase/client');
         await clientSupabase.auth.signOut();
 
         const event = new CustomEvent('auth-error', {

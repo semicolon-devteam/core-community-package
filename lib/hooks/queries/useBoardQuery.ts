@@ -1,5 +1,5 @@
-import type { CommonResponse } from "@model/common";
-import type { Board } from "@model/board";
+import type { CommonResponse } from "../../types/common";
+import type { Board } from "../../types/board";
 import boardService from "@services/boardService";
 import { useQuery } from "@tanstack/react-query";
 

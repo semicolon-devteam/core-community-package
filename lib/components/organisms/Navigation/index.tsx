@@ -1,7 +1,7 @@
 "use client";
 import { useAppSelector } from "@hooks/common";
 import { useMenuQuery } from "@hooks/queries/useMenuQuery";
-import { Menu } from "@model/menu";
+import { Menu } from '../../../types/menu';
 import { selectUIState } from "@redux/Features/UI/uiSlice";
 import { useEffect } from "react";
 import MobileNavigation from "./MobileNavigation";

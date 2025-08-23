@@ -1,4 +1,4 @@
-import { Banner } from '@model/banner';
+import { Banner } from '../../types/banner';
 import bannerService from '@services/bannerService';
 import fileService from '@services/fileService';
 

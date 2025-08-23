@@ -1,5 +1,5 @@
-import type { WithoutBoardNamePost } from "@model/board";
-import { BoardType } from "@model/board/enum";
+import type { WithoutBoardNamePost } from '../../../types/board';
+import { BoardType } from '../../../types/board/enum';
 import PostCard from "@molecules/PostCard";
 
 export default function NewsBoard({

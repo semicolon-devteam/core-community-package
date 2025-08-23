@@ -1,4 +1,4 @@
-import { CommonResponse } from "@model/common";
+import { CommonResponse } from "../../types/common";
 import pointService from "@services/pointService";
 import { useQuery } from "@tanstack/react-query";
 

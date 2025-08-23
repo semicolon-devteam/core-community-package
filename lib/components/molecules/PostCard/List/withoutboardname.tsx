@@ -5,7 +5,7 @@ import LikeIcon from "@atoms/Icon/LikeIcon";
 import { Skeleton } from "@atoms/Skeleton";
 import LinkWithLoader from "@common/LinkWithLoader";
 import { useSafeGlobalLoader } from "@hooks/common";
-import type { WithoutBoardNamePost } from "@model/board";
+import type { WithoutBoardNamePost } from '../../../../types/board';
 
 export default function WithoutBoardName({
   postItem,

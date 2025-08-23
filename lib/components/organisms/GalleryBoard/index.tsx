@@ -1,4 +1,4 @@
-import type { GalleryItem } from '@model/board';
+import type { GalleryItem } from '../../../types/board';
 import PostCard from '@molecules/PostCard';
 import { Skeleton } from '@atoms/Skeleton';
 

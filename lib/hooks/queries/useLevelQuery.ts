@@ -1,4 +1,4 @@
-import type { CommonResponse, LevelInfo } from "@model/common";
+import type { CommonResponse, LevelInfo } from "../../types/common";
 import levelService from "@services/levelService";
 import { useQuery } from "@tanstack/react-query";
 

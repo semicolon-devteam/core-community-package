@@ -23,7 +23,7 @@ import {
     type LoginFormData,
 } from '@redux/Features/User/userSlice';
 
-import type { Banner } from '@model/banner';
+import type { Banner } from '../../../types/banner';
 import { Skeleton } from '@atoms/Skeleton';
 
 export default function SideBar({ banners }: { banners: Banner[] }) {

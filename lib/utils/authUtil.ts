@@ -2,10 +2,7 @@
  * 통합 인증 및 권한 관리 유틸리티
  */
 
-import type { User } from '../types/User';
-
-// 임시 타입 정의 (Phase 2에서 적절한 위치로 이동 예정)
-export type permissionType = 'super_admin' | 'admin' | 'user' | 'anonymous';
+import type { User, permissionType } from '../types/User';
 
 interface JWTUserPayload {
   sub: string;

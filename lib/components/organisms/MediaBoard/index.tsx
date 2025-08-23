@@ -1,8 +1,8 @@
 'use client';
 
 import LinkWithLoader from '@common/LinkWithLoader';
-import type { MediaItem } from '@model/board';
-import { BoardType } from '@model/board/enum';
+import type { MediaItem } from '../../../types/board';
+import { BoardType } from '../../../types/board/enum';
 import PostCard from '@molecules/PostCard';
 import { optimizeImageSrc, getImageProps } from '@util/imageUtil';
 import Image from 'next/image';

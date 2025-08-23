@@ -2,7 +2,7 @@
 
 import TimeIcon from '@atoms/Icon/TimeIcon';
 import UserProfileIcon from '@atoms/Icon/UserProfileIcon';
-import { Comment } from '@model/comment';
+import { Comment } from '../../../types/comment';
 import ReportModal from '@organisms/ReportModal';
 import { timeAgo } from '@util/dateUtil';
 import Image from "next/image";

@@ -1,6 +1,6 @@
 
-import type { CommonResponse } from "@model/common";
-import type { PurchaseListResponse } from "@model/purchase";
+import type { CommonResponse } from "../../types/common";
+import type { PurchaseListResponse } from "../../types/purchase";
 import purchaseService from "@services/purchaseService";
 import { useQuery } from "@tanstack/react-query";
 

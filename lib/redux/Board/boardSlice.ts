@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { Board } from '@model/board';
+import type { Board } from '../../types/board';
 import type { BoardType } from '@organisms/BoardTypes/boardtype.model';
 
 interface BoardState {

@@ -6,7 +6,7 @@ import { useAuth } from '@hooks/User/useAuth';
 import { usePostCommand } from '@hooks/commands/usePostCommand';
 import { useAppDispatch } from '@hooks/common';
 import { useGlobalPopup } from '@hooks/common/useGlobalPopup';
-import type { GalleryItem } from '@model/board';
+import type { GalleryItem } from '../../../../types/board';
 import BoardMovePopup from '@molecules/BoardMovePopup';
 import PopOver from '@molecules/PopOver';
 import { showToast } from '@redux/Features/Toast/toastSlice';

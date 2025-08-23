@@ -1,5 +1,5 @@
 import type { Column } from '@atoms/Column/column.model';
-import type { ListPost } from '@model/post';
+import type { ListPost } from '../../../../types/post';
 import Board from '@molecules/Board';
 import { timeAgo } from '@util/dateUtil';
 

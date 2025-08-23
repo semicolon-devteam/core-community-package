@@ -143,10 +143,10 @@ import Button from '@semicolon/community-core/dist/components/atoms/Button';
 - [x] 패키지 구조 및 빌드 시스템
 - [x] 기본 유틸리티 함수
 
-**Phase 2: 핵심 서비스** (🔄 진행중)
-- [ ] BaseService 클래스
-- [ ] UserService, PostService 등
-- [ ] 인증/권한 시스템
+**Phase 2: 핵심 서비스** (✅ 완료)
+- [x] BaseService 클래스 - 표준화된 HTTP 통신 및 에러 핸들링
+- [x] UserService, PostService, BoardService - Domain Services 완성
+- [x] AuthService, PermissionService - 인증/권한 시스템 구현
 
 **Phase 3: 훅 시스템**
 - [ ] useAuth, useGlobalLoader
@@ -680,21 +680,79 @@ import { Utils, Constants } from '@semicolon/community-core';
 const formatted = Utils.formatNumberWithComma(12345);
 ```
 
-### 🚧 Phase 2: 계획된 기능 (구현 예정)
+### ✅ Phase 2: 구현 완료 기능
 
-**Form Components**:
-- Input, Select, Checkbox, RadioButton 컴포넌트
-- Form validation 및 상태 관리
+**🔧 Service Layer** (완전한 API 서비스 레이어)
+```typescript
+// 모던 클래스 기반 API (권장)
+import { BaseService, UserService, PostService, BoardService, AuthService, PermissionService } from '@semicolon/community-core';
+
+// 기본 서비스 사용
+const userService = new UserService();
+const user = await userService.getMyInfo();
+
+// 커스텀 설정으로 서비스 생성
+const customPostService = new PostService({
+  baseUrl: '/api/custom/posts',
+  defaultHeaders: { 'X-Custom': 'header' }
+});
+
+// 레거시 함수형 API (하위 호환)
+import { userService, postService, authService } from '@semicolon/community-core';
+const user = await userService.getMyInfo();
+```
+
+**🛡️ Authentication & Authorization** (완전한 인증/권한 시스템)
+```typescript
+// 인증 서비스 사용
+import { AuthService, PermissionService } from '@semicolon/community-core';
+
+const authService = new AuthService();
+const permissionService = new PermissionService();
+
+// 로그인/회원가입
+await authService.login({ userId: 'user123', password: 'password' });
+await authService.register({ userId: 'newuser', password: 'password', nickname: 'NewUser', agreeToTerms: true, agreeToPrivacy: true });
+
+// 권한 체크
+const canWrite = await permissionService.checkBoardAccess(boardId, 'write');
+const isAdmin = await permissionService.checkAdminAccess('users');
+```
+
+**📊 Advanced API Features** (고급 API 기능)
+```typescript
+// 비동기 파일 업로드
+const postService = new PostService();
+const draftPost = await postService.createDraftPost({ title, content, boardId });
+await postService.startAsyncFileUpload(draftPost.id, files);
+const progress = await postService.getUploadProgress(draftPost.id);
+
+// 게시판 관리
+const boardService = new BoardService();
+const boards = await boardService.getBoards({ page: 1, searchText: '자유' });
+await boardService.addToFavorites(boardId);
+
+// 사용자 관리
+const userService = new UserService();
+const users = await userService.searchUsers('김철수', 1, 10);
+await userService.updateUserProfile({ nickname: 'NewNickname' });
+```
+
+### 🚧 Phase 3: 계획된 기능 (구현 예정)
 
 **React Query Hooks**:
 - useAuth, useUserData, usePostData 등
 - 서버 상태 관리 및 캐싱
 
-**API Service Layer**:
-- BaseService, UserService, PostService
-- 표준화된 HTTP 통신 및 에러 핸들링
+**Advanced Hooks**:
+- useGlobalLoader, usePermission, useAuthGuard 등
+- 비즈니스 로직 캡슐화
 
-### 🔮 Phase 3: 향후 기능 (로드맵)
+**Form Components**:
+- Input, Select, Checkbox, RadioButton 컴포넌트
+- Form validation 및 상태 관리
+
+### 🔮 Phase 4: 향후 기능 (로드맵)
 
 **Advanced Components**:
 - DataTable, Calendar, Chart 컴포넌트

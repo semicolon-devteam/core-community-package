@@ -1,8 +1,8 @@
 'use client';
 
 import { useAppSelector } from '@hooks/common';
-import type { Board } from '@model/board';
-import type { ListPost } from '@model/post';
+import type { Board } from '../../../types/board';
+import type { ListPost } from '../../../types/post';
 import { timeAgo } from '@util/dateUtil';
 
 interface DraftPostItemProps {

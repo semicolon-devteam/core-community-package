@@ -3,7 +3,7 @@ import { useReportCommand } from '@hooks/commands/useReportCommand';
 import { useAppDispatch } from '@hooks/common';
 import { useGlobalPopup } from '@hooks/common/useGlobalPopup';
 import { useCommentQuery } from '@hooks/queries/useCommentQuery';
-import type { Comment, CommentActions, CommentSectionState } from '@model/comment';
+import type { Comment, CommentActions, CommentSectionState } from '../../types/comment';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { refreshMyInfo } from '@redux/Features/User/userSlice';
 import boardService from '@services/boardService';

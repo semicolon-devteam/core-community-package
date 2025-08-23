@@ -9,7 +9,7 @@ import { usePurchaseCommand } from '@hooks/commands/usePurchaseCommand';
 import { useAppDispatch, useGlobalPopup, useRouterWithLoader } from '@hooks/common';
 import { useDeviceType } from '@hooks/common/useDeviceType';
 import { useCoinQuery } from '@hooks/queries/useCoinQuery';
-import { PurchaseRequest } from '@model/purchase';
+import { PurchaseRequest } from '../../../types/purchase';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { normalizeImageSrc } from '@util/imageUtil';
 import { useEffect, useState } from 'react';

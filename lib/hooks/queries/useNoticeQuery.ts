@@ -1,4 +1,4 @@
-import { Notice } from '@model/post';
+import { Notice } from '../../types/post';
 import noticeService from '@services/noticeService';
 import { useQuery } from '@tanstack/react-query';
 

@@ -2,7 +2,7 @@
 
 import LinkWithLoader from '@common/LinkWithLoader';
 import { useViewportType } from '@hooks/common/useViewportType';
-import type { Banner } from '@model/banner';
+import type { Banner } from '../../../types/banner';
 import { normalizeImageSrc } from '@util/imageUtil';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';

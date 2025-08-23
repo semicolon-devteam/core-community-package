@@ -10,5 +10,8 @@ export { Button, Badge, Avatar } from './components/atoms';
 export type { ButtonProps, BadgeProps, AvatarProps } from './components/atoms';
 export { Input, Select, Checkbox, Radio, Switch, TextArea } from './components/atoms';
 export type { InputProps, SelectProps, SelectOption, CheckboxProps, RadioProps, SwitchProps, TextAreaProps } from './components/atoms';
+export { BaseService, UserService, PostService, BoardService, AuthService, PermissionService } from './services';
+export { baseService, userService, postService, boardService, authService, permissionService } from './services';
+export type { RequestOptions, HttpMethod, UserServiceOptions, UserPermission, UserUpdateData, UserSearchOptions, PostServiceOptions, PostListOptions, PostCreateData, PostUpdateData, PostDownloadHistory, DraftPostRequest, DraftPostResponse, AsyncUploadConfig, UploadStartResponse, UploadProgressResponse, BoardServiceOptions, BoardListOptions, BoardCreateData, BoardUpdateData, BoardCategoryCreateData, BoardStats, AuthServiceOptions, LoginCredentials, RegisterData, AuthTokens, AuthResponse, PasswordResetData, PasswordChangeData, SessionInfo, PermissionServiceOptions, PermissionCheck, PermissionResult, UserPermissions, LevelInfo, RoleInfo, PermissionGrant } from './services';
 export declare const VERSION = "1.0.2";
 export declare const PACKAGE_NAME = "@team-semicolon/community-core";

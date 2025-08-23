@@ -1,5 +1,5 @@
 import { useAppDispatch } from '@hooks/common';
-import { User } from '@model/User';
+import { User } from '../../types/User';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { setUserInfo } from '@redux/Features/User/userSlice';
 import userService from '@services/userService';

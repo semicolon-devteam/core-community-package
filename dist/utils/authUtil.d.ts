@@ -1,8 +1,7 @@
 /**
  * 통합 인증 및 권한 관리 유틸리티
  */
-import type { User } from '../types/User';
-export type permissionType = 'super_admin' | 'admin' | 'user' | 'anonymous';
+import type { User, permissionType } from '../types/User';
 interface JWTUserPayload {
     sub: string;
     user_metadata: any;

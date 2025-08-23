@@ -1,5 +1,5 @@
 import ClipboardButton from "@atoms/ClipboardButton";
-import type { Purchase } from "@model/purchase";
+import type { Purchase } from '../../../types/purchase';
 import { timeAgo } from "@util/dateUtil";
 import { normalizeImageSrc } from "@util/imageUtil";
 import Image from "next/image";

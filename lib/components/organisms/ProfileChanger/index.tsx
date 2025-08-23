@@ -1,5 +1,5 @@
 import { useUserCommands } from '@hooks/commands/useUserCommands';
-import { FileAttachment } from '@model/post';
+import { FileAttachment } from '../../../types/post';
 import fileService from '@services/fileService';
 import { normalizeImageSrc } from '@util/imageUtil';
 import Image from "next/image";

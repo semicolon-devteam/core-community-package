@@ -10,7 +10,7 @@ import { useAppDispatch, useRouterWithLoader } from '@hooks/common';
 import { useGlobalPopup } from '@hooks/common/useGlobalPopup';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { useQueryClient } from '@tanstack/react-query';
-import type { ListPost } from '@model/post';
+import type { ListPost } from '../../../../types/post';
 import { useRef, useState } from 'react';
 
 interface SearchPostItemProps {

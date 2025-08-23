@@ -1,6 +1,6 @@
-import type { GalleryItem, LatestItem, Post, TrendingItem, WithoutBoardNamePost } from '@model/board';
-import { OpenLoungeType, SportsType } from '@model/board/enum';
-import type { CommonResponse } from '@model/common';
+import type { GalleryItem, LatestItem, Post, TrendingItem, WithoutBoardNamePost } from '../../types/board';
+import { OpenLoungeType, SportsType } from '../../types/board/enum';
+import type { CommonResponse } from '../../types/common';
 import homeService from '@services/homeService';
 import { useQuery } from '@tanstack/react-query';
 import { timeAgo } from '@util/dateUtil';

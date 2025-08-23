@@ -64,14 +64,79 @@ export type {
   TextAreaProps 
 } from './components/atoms';
 
+// =============================================================================  
+// SERVICE LAYER EXPORTS - Phase 2 Complete
+// =============================================================================
+
+// Service Classes (Modern API)
+export { 
+  BaseService, 
+  UserService, 
+  PostService, 
+  BoardService,
+  AuthService,
+  PermissionService
+} from './services';
+
+// Legacy Service Objects (backward compatibility)
+export {
+  baseService,
+  userService, 
+  postService,
+  boardService,
+  authService,
+  permissionService
+} from './services';
+
+// Service Types
+export type {
+  RequestOptions,
+  HttpMethod,
+  UserServiceOptions,
+  UserPermission,
+  UserUpdateData,
+  UserSearchOptions,
+  PostServiceOptions,
+  PostListOptions,
+  PostCreateData,
+  PostUpdateData,
+  PostDownloadHistory,
+  DraftPostRequest,
+  DraftPostResponse,
+  AsyncUploadConfig,
+  UploadStartResponse,
+  UploadProgressResponse,
+  BoardServiceOptions,
+  BoardListOptions,
+  BoardCreateData,
+  BoardUpdateData,
+  BoardCategoryCreateData,
+  BoardStats,
+  AuthServiceOptions,
+  LoginCredentials,
+  RegisterData,
+  AuthTokens,
+  AuthResponse,
+  PasswordResetData,
+  PasswordChangeData,
+  SessionInfo,
+  PermissionServiceOptions,
+  PermissionCheck,
+  PermissionResult,
+  UserPermissions,
+  LevelInfo,
+  RoleInfo,
+  PermissionGrant
+} from './services';
+
 // =============================================================================
 // DEVELOPMENT EXPORTS - Available but not prominently featured
 // =============================================================================
 
 // Full category exports (for advanced usage) - commented out to reduce build warnings
 // export * as Components from './components';  // All components (legacy + new)
-// export * as Hooks from './hooks';         // Phase 2
-// export * as Services from './services';   // Phase 2
+// export * as Hooks from './hooks';         // Phase 3
+// export * as Services from './services';   // Completed in Phase 2
 
 // =============================================================================
 // VERSION INFO

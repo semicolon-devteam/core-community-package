@@ -87,7 +87,7 @@ export function decodeJWTPayload(token: string): JWTUserPayload | null {
  */
 export async function getCurrentUserFromToken(): Promise<JWTUserPayload | null> {
   try {
-    const { clientSupabase } = await import("@config/Supabase/client");
+    const { clientSupabase } = await import("../config/Supabase/client");
     const { data: { session } } = await clientSupabase.auth.getSession();
     
     if (!session?.access_token) {
@@ -171,7 +171,7 @@ export function removeExpiredTokenFromCookie(cookieName: string = 'sb-access-tok
  */
 export async function validateAndCleanToken(): Promise<JWTUserPayload | null> {
   try {
-    const { clientSupabase } = await import("@config/Supabase/client");
+    const { clientSupabase } = await import("../config/Supabase/client");
     const { data: { session } } = await clientSupabase.auth.getSession();
     
     if (!session?.access_token) {

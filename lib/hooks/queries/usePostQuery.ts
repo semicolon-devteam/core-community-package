@@ -1,6 +1,6 @@
-import { SearchType, SortBy } from "@model/board";
-import type { CommonResponse } from "@model/common";
-import type { GalleryListItem, Post } from "@model/post";
+import { SearchType, SortBy } from "../../types/board";
+import type { CommonResponse } from "../../types/common";
+import type { GalleryListItem, Post } from "../../types/post";
 import postService from "@services/postService";
 import { useQuery } from "@tanstack/react-query";
 import { timeAgo } from "@util/dateUtil";

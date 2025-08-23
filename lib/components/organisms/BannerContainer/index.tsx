@@ -1,5 +1,5 @@
 
-import type { Banner } from "@model/banner";
+import type { Banner } from "../../../types/banner";
 
 export default function BannerContainer({ banners }: { banners: Banner[] }) {
     return (

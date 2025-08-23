@@ -3,7 +3,7 @@
 import CommentIcon from '@atoms/Icon/CommentIcon';
 import { Skeleton } from '@atoms/Skeleton';
 import LinkWithLoader from '@common/LinkWithLoader';
-import type { WithBoardNamePost } from '@model/board';
+import type { WithBoardNamePost } from '../../../../types/board';
 import { normalizeImageSrc } from '@util/imageUtil';
 import Image from 'next/image';
 

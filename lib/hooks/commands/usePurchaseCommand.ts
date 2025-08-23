@@ -1,5 +1,5 @@
-import { CommonResponse, CommonStatus } from "@model/common";
-import type { ProcessPurchaseRequest, PurchaseRequest } from "@model/purchase";
+import { CommonResponse, CommonStatus } from "../../types/common";
+import type { ProcessPurchaseRequest, PurchaseRequest } from "../../types/purchase";
 import purchaseService from "@services/purchaseService";
 
 export const usePurchaseCommand = () => {

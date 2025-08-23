@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 // import React, { ReactElement, useEffect } from 'react';
 // import * as Feather from 'react-feather';
-// import { AppUseIconType } from '@model/icon';
+// import { AppUseIconType } from '../../../types/icon';
 
 // Base toast properties
 interface BaseToastProps {

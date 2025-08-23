@@ -1,4 +1,4 @@
-import type { CommonResponse } from "@model/common";
+import type { CommonResponse } from "../../types/common";
 import commentService from "@services/commentService";
 import { useQuery } from "@tanstack/react-query";
 import { timeAgo } from "@util/dateUtil";

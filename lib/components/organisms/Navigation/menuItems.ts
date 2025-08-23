@@ -1,4 +1,4 @@
-import type { Menu } from "@model/menu";
+import type { Menu } from '../../../types/menu';
 
 export const partnerSites: Menu[] = [
   {

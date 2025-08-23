@@ -4,7 +4,7 @@ import { usePermission } from '@hooks/common/usePermission';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import type { Menu } from '@model/menu';
+import type { Menu } from '../../../types/menu';
 // import MobileNavigation from "./MobileNavigation";
 import { useGlobalLoader, useThrottle } from '@hooks/common';
 import { useRouterWithLoader } from '@hooks/common/useRouterWithLoader';

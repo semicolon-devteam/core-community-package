@@ -1,6 +1,6 @@
 'use client';
 
-import type { Purchase } from "@model/purchase";
+import type { Purchase } from '../../../types/purchase';
 import { useRef } from "react";
 
 interface PurchaseRejectionPopupProps {

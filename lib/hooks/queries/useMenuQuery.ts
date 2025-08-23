@@ -1,5 +1,5 @@
-import type { CommonResponse } from "@model/common";
-import type { Menu } from "@model/menu";
+import type { CommonResponse } from "../../types/common";
+import type { Menu } from "../../types/menu";
 import menuService from "@services/menuService";
 import { useQuery } from "@tanstack/react-query";
 

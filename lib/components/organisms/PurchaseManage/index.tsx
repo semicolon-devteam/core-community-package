@@ -5,7 +5,7 @@ import { usePurchaseCommand } from "@hooks/commands/usePurchaseCommand";
 import { useGlobalLoader } from "@hooks/common/useGlobalLoader";
 import { useGlobalPopup } from "@hooks/common/useGlobalPopup";
 import { usePurchaseQuery } from "@hooks/queries/usePurchaseQuery";
-import { Purchase } from "@model/purchase";
+import { Purchase } from '../../../types/purchase';
 import { normalizeImageSrc } from "@util/imageUtil";
 import Image from "next/image";
 import { useEffect, useState } from "react";

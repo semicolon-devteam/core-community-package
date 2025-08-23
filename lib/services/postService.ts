@@ -1,16 +1,17 @@
-import { SearchType, SortBy } from '@model/board';
-import type { CommonResponse } from '@model/common';
-import type {
-  FileAttachment,
-  GalleryListItem,
-  Post,
-  PostBookmark,
-  PostDetail,
-} from '@model/post';
-import baseService from '@services/baseService';
+import BaseService, { baseService } from './baseService';
+import type { CommonResponse, Pagination } from '../types/common';
+import type { SearchType, SortBy } from '../types/board';
+import type { FileAttachment, GalleryListItem, Post, PostBookmark, PostDetail } from '../types/post';
 
-// 파일 첨부 정보 인터페이스
-interface PostService {
+/**
+ * Post service interfaces and types
+ */
+export interface PostServiceOptions {
+  baseUrl?: string;
+  defaultHeaders?: Record<string, string>;
+}
+
+export interface PostListOptions {
   boardId: number;
   page: number;
   pageSize?: number;
@@ -18,22 +19,39 @@ interface PostService {
   searchType?: SearchType;
   searchText?: string;
   categoryId?: string | number | null;
+  needNotice?: boolean;
+  status?: 'published' | 'draft' | 'deleted';
+  writerId?: number;
 }
 
-interface PostDetailService {
+export interface PostCreateData {
   title: string;
   content: string;
-  files: File[];
+  files?: File[];
   boardId: number;
   attachments?: FileAttachment[];
   downloadPoint?: number;
   metadata?: {
-    thumbnail: string | null;
+    thumbnail?: string | null;
     [key: string]: string | null;
   };
   categoryId?: number | null;
   isNotice?: boolean;
   hasFiles?: boolean;
+}
+
+export interface PostUpdateData {
+  title?: string;
+  content?: string;
+  files?: File[];
+  attachments?: FileAttachment[];
+  downloadPoint?: number;
+  metadata?: {
+    thumbnail?: string | null;
+    [key: string]: string | null;
+  };
+  categoryId?: number | null;
+  isNotice?: boolean;
 }
 
 export interface PostDownloadHistory {
@@ -44,148 +62,14 @@ export interface PostDownloadHistory {
   success: boolean;
 }
 
-const postService = {
-  getPost({
-    boardId,
-    page,
-    pageSize = 10,
-    sortBy,
-    searchType,
-    searchText,
-    categoryId,
-  }: PostService): Promise<CommonResponse<Post>> {
-    let url = `/api/post?boardId=${boardId}&page=${page}&pageSize=${pageSize}&sortBy=${sortBy}&searchType=${searchType}&searchText=${searchText}&needNotice=true`;
-    if (categoryId !== undefined && categoryId !== null && categoryId !== '') {
-      url += `&categoryId=${categoryId}`;
-    }
-    return baseService.getMini<Post>(url, '게시글 목록 로딩중...');
-  },
-  createPost({
-    boardId,
-    title,
-    content,
-    files,
-    attachments,
-    metadata,
-    categoryId,
-    downloadPoint,
-    isNotice,
-    hasFiles,
-  }: PostDetailService): Promise<CommonResponse<PostDetail>> {
-    // FormData를 사용하여 파일과 함께 데이터 전송
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
-    formData.append('boardId', boardId.toString());
-    formData.append('isNotice', isNotice?.toString() || 'false');
-    if (categoryId !== null && categoryId !== undefined) {
-      formData.append('categoryId', categoryId.toString());
-    }
-    if (downloadPoint !== undefined && downloadPoint !== null) {
-      formData.append('downloadPoint', downloadPoint.toString());
-    }
-    // 첨부 파일 정보
-    if (attachments && attachments.length > 0) {
-      formData.append('attachments', JSON.stringify(attachments));
-    }
-
-    // 메타데이터 추가
-    if (metadata) {
-      formData.append('metadata', JSON.stringify(metadata));
-    }
-
-    // 원본 파일도 넣을 수 있음 (서버가 직접 처리하는 경우)
-    if (files && files.length > 0) {
-      files.map(file => {
-        formData.append('files', file);
-      });
-    }
-
-    // 파일 첨부 여부 추가
-    formData.append('hasFiles', hasFiles?.toString() || 'false');
-
-    // axios 인스턴스를 직접 사용하여 formData 전송
-    return baseService.postMini<PostDetail, FormData>(
-      `/api/post/${boardId}`,
-      formData,
-      '게시글 등록중...'
-    );
-  },
-  reactionPost(
-    postId: number,
-    reactionType: 'like' | 'dislike'
-  ): Promise<CommonResponse<PostDetail>> {
-    const reactionText =
-      reactionType === 'like' ? '추천 처리중...' : '비추천 처리중...';
-    return baseService.postMini<PostDetail, object>(
-      `/api/post/${postId}/reaction`,
-      { reactionType },
-      reactionText
-    );
-  },
-  deletePost(postId: number): Promise<CommonResponse<PostDetail>> {
-    return baseService.deleteMini<PostDetail>(
-      `/api/post/${postId}`,
-      '게시글 삭제중...'
-    );
-  },
-  updatePost(
-    postId: number,
-    postData: PostDetailService
-  ): Promise<CommonResponse<PostDetail>> {
-    return baseService.putMini<PostDetail, PostDetailService>(
-      `/api/post/${postId}`,
-      postData,
-      '게시글 수정중...'
-    );
-  },
-  purchaseFiles(postId: number): Promise<CommonResponse<PostDownloadHistory>> {
-    return baseService.postMini<PostDownloadHistory, object>(
-      `/api/post/${postId}/purchase`,
-      {},
-      '파일 구매 처리중...'
-    );
-  },
-  bookmarkPost(postId: number): Promise<CommonResponse<PostBookmark>> {
-    return baseService.postMini<PostBookmark, object>(
-      `/api/post/${postId}/bookmark`,
-      {},
-      '북마크 처리중...'
-    );
-  },
-  deleteBookmarkPost(postId: number): Promise<CommonResponse<boolean>> {
-    return baseService.deleteMini<boolean>(
-      `/api/post/${postId}/bookmark`,
-      '북마크 삭제중...'
-    );
-  },
-  getBookmarkPosts(): Promise<CommonResponse<GalleryListItem[]>> {
-    return baseService.getMini<GalleryListItem[]>(
-      `/api/post/bookmarks`,
-      '북마크된 게시글 불러오는 중...'
-    );
-  },
-  movePost(
-    postId: number,
-    boardId: number
-  ): Promise<CommonResponse<PostDetail>> {
-    return baseService.patchMini<PostDetail, object>(
-      `/api/post/${postId}`,
-      { board_id: boardId },
-      '게시글 이동중...'
-    );
-  },
-};
-
-// 새로운 비동기 업로드 관련 인터페이스
-interface DraftPostRequest {
+export interface DraftPostRequest {
   title: string;
   content: string;
   boardId: number;
   categoryId?: number;
 }
 
-interface DraftPostResponse {
+export interface DraftPostResponse {
   id: number;
   title: string;
   content: string;
@@ -193,13 +77,13 @@ interface DraftPostResponse {
   createdAt: string;
 }
 
-interface AsyncUploadConfig {
+export interface AsyncUploadConfig {
   needWatermark?: boolean;
   watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   watermarkOpacity?: number;
 }
 
-interface UploadStartResponse {
+export interface UploadStartResponse {
   success: boolean;
   data: {
     uploadId: string;
@@ -210,7 +94,7 @@ interface UploadStartResponse {
   message: string;
 }
 
-interface UploadProgressResponse {
+export interface UploadProgressResponse {
   success: boolean;
   data: {
     postId: number;
@@ -223,154 +107,448 @@ interface UploadProgressResponse {
   message: string;
 }
 
-// 새로운 비동기 업로드 메서드들 추가
-const asyncUploadMethods = {
-  async createDraftPost(
-    postData: DraftPostRequest
-  ): Promise<DraftPostResponse> {
-    const response = await baseService.postMini<
-      DraftPostResponse,
-      DraftPostRequest
-    >('/api/posts/draft', postData, '게시글 초안 생성중...');
-    return response.data as DraftPostResponse;
-  },
+/**
+ * Post Service Class
+ * Handles all post-related API operations including CRUD operations,
+ * file uploads, async media processing, and bookmark management
+ */
+export class PostService extends BaseService<Post> {
+  constructor(options?: PostServiceOptions) {
+    super(options?.baseUrl || '/api/post', options?.defaultHeaders);
+  }
 
-  async publishPost(postId: number): Promise<void> {
-    await baseService.putMini<void, object>(
-      `/api/posts/${postId}/publish`,
-      {},
-      '게시글 발행중...'
+  /**
+   * Get post list with pagination and search options
+   */
+  async getPostList(options: PostListOptions): Promise<CommonResponse<Post>> {
+    const params: Record<string, string> = {
+      boardId: options.boardId.toString(),
+      page: options.page.toString(),
+      pageSize: (options.pageSize || 10).toString(),
+      sortBy: options.sortBy || 'latest',
+      searchType: options.searchType || 'title',
+      searchText: options.searchText || '',
+      needNotice: (options.needNotice !== false).toString(),
+    };
+
+    if (options.categoryId !== undefined && options.categoryId !== null && options.categoryId !== '') {
+      params.categoryId = options.categoryId.toString();
+    }
+
+    if (options.status) {
+      params.status = options.status;
+    }
+
+    if (options.writerId) {
+      params.writerId = options.writerId.toString();
+    }
+
+    return this.getMini<Post>('/', '게시글 목록 로딩중...', { params });
+  }
+
+  /**
+   * Get post by ID
+   */
+  async getPostById(postId: number): Promise<CommonResponse<PostDetail>> {
+    return this.get<PostDetail>(`/${postId}`);
+  }
+
+  /**
+   * Create new post (synchronous)
+   */
+  async createPost(data: PostCreateData): Promise<CommonResponse<PostDetail>> {
+    const formData = new FormData();
+    
+    // Basic post data
+    formData.append('title', data.title);
+    formData.append('content', data.content);
+    formData.append('boardId', data.boardId.toString());
+    formData.append('isNotice', (data.isNotice || false).toString());
+    formData.append('hasFiles', (data.hasFiles || false).toString());
+
+    // Optional fields
+    if (data.categoryId !== null && data.categoryId !== undefined) {
+      formData.append('categoryId', data.categoryId.toString());
+    }
+    
+    if (data.downloadPoint !== undefined && data.downloadPoint !== null) {
+      formData.append('downloadPoint', data.downloadPoint.toString());
+    }
+
+    // Attachments and metadata
+    if (data.attachments && data.attachments.length > 0) {
+      formData.append('attachments', JSON.stringify(data.attachments));
+    }
+
+    if (data.metadata) {
+      formData.append('metadata', JSON.stringify(data.metadata));
+    }
+
+    // Files
+    if (data.files && data.files.length > 0) {
+      data.files.forEach(file => {
+        formData.append('files', file);
+      });
+    }
+
+    return this.postMini<PostDetail, FormData>(
+      `/${data.boardId}`,
+      formData,
+      '게시글 등록중...'
     );
-  },
+  }
 
+  /**
+   * Update existing post
+   */
+  async updatePost(postId: number, data: PostUpdateData): Promise<CommonResponse<PostDetail>> {
+    return this.putMini<PostDetail, PostUpdateData>(
+      `/${postId}`,
+      data,
+      '게시글 수정중...'
+    );
+  }
+
+  /**
+   * Delete post
+   */
+  async deletePost(postId: number): Promise<CommonResponse<PostDetail>> {
+    return this.deleteMini<PostDetail>(`/${postId}`, '게시글 삭제중...');
+  }
+
+  /**
+   * React to post (like/dislike)
+   */
+  async reactToPost(
+    postId: number,
+    reactionType: 'like' | 'dislike'
+  ): Promise<CommonResponse<PostDetail>> {
+    const reactionText = reactionType === 'like' ? '추천 처리중...' : '비추천 처리중...';
+    
+    return this.postMini<PostDetail, { reactionType: string }>(
+      `/${postId}/reaction`,
+      { reactionType },
+      reactionText
+    );
+  }
+
+  /**
+   * Purchase post files
+   */
+  async purchaseFiles(postId: number): Promise<CommonResponse<PostDownloadHistory>> {
+    return this.postMini<PostDownloadHistory, object>(
+      `/${postId}/purchase`,
+      {},
+      '파일 구매 처리중...'
+    );
+  }
+
+  /**
+   * Add post to bookmarks
+   */
+  async bookmarkPost(postId: number): Promise<CommonResponse<PostBookmark>> {
+    return this.postMini<PostBookmark, object>(
+      `/${postId}/bookmark`,
+      {},
+      '북마크 처리중...'
+    );
+  }
+
+  /**
+   * Remove post from bookmarks
+   */
+  async removeBookmark(postId: number): Promise<CommonResponse<boolean>> {
+    return this.deleteMini<boolean>(`/${postId}/bookmark`, '북마크 삭제중...');
+  }
+
+  /**
+   * Get user's bookmarked posts
+   */
+  async getBookmarkedPosts(): Promise<CommonResponse<GalleryListItem[]>> {
+    return this.getMini<GalleryListItem[]>('/bookmarks', '북마크된 게시글 불러오는 중...');
+  }
+
+  /**
+   * Move post to different board
+   */
+  async movePost(postId: number, boardId: number): Promise<CommonResponse<PostDetail>> {
+    return this.patchMini<PostDetail, { board_id: number }>(
+      `/${postId}`,
+      { board_id: boardId },
+      '게시글 이동중...'
+    );
+  }
+
+  // Draft and Async Upload Methods
+
+  /**
+   * Create draft post
+   */
+  async createDraftPost(data: DraftPostRequest): Promise<CommonResponse<DraftPostResponse>> {
+    return this.postMini<DraftPostResponse, DraftPostRequest>(
+      '/draft',
+      data,
+      '게시글 초안 생성중...'
+    );
+  }
+
+  /**
+   * Publish draft post
+   */
+  async publishPost(postId: number): Promise<CommonResponse<void>> {
+    return this.putMini<void, object>(`/${postId}/publish`, {}, '게시글 발행중...');
+  }
+
+  /**
+   * Start async file upload for post
+   */
   async startAsyncFileUpload(
     postId: number,
     files: File[],
     config?: AsyncUploadConfig
-  ): Promise<UploadStartResponse['data']> {
+  ): Promise<CommonResponse<UploadStartResponse['data']>> {
     const formData = new FormData();
 
-    // 메타데이터 추가
+    // Upload configuration
     formData.append('postId', postId.toString());
-    formData.append(
-      'needWatermark',
-      config?.needWatermark !== false ? 'true' : 'false'
-    );
-    formData.append(
-      'watermarkPosition',
-      config?.watermarkPosition || 'bottom-right'
-    );
-    formData.append(
-      'watermarkOpacity',
-      (config?.watermarkOpacity || 0.7).toString()
-    );
+    formData.append('needWatermark', (config?.needWatermark !== false).toString());
+    formData.append('watermarkPosition', config?.watermarkPosition || 'bottom-right');
+    formData.append('watermarkOpacity', (config?.watermarkOpacity || 0.7).toString());
 
-    // 파일들 추가
+    // Add files
     files.forEach(file => {
       formData.append('files', file);
     });
 
-    const response = await baseService.postMini<UploadStartResponse, FormData>(
-      '/api/media/upload-async',
+    const response = await this.postMini<UploadStartResponse, FormData>(
+      '/upload-async',
       formData,
       '파일 업로드 시작중...'
     );
 
-    if (!response.data) {
-      throw new Error('파일 업로드 시작에 실패했습니다');
-    }
-
-    if (!response.data.success) {
+    if (response.data && !response.data.success) {
       throw new Error(response.data.message);
     }
 
-    return response.data.data;
-  },
+    return {
+      ...response,
+      data: response.data?.data || null,
+    };
+  }
 
-  async getUploadProgress(
-    postId: number
-  ): Promise<UploadProgressResponse['data']> {
-    const response = await baseService.getSilent<UploadProgressResponse>(
-      `/api/media/upload-progress/${postId}`
-    );
+  /**
+   * Get async upload progress
+   */
+  async getUploadProgress(postId: number): Promise<CommonResponse<UploadProgressResponse['data']>> {
+    const response = await this.getSilent<UploadProgressResponse>(`/upload-progress/${postId}`);
 
-    if (!response.data) {
-      throw new Error('진행도 조회에 실패했습니다');
+    if (response.data && !response.data.success) {
+      throw new Error(response.data.message || '진행도 조회에 실패했습니다');
     }
 
-    if (!response.data.success) {
-      throw new Error(response.data?.message || '진행도 조회에 실패했습니다');
-    }
+    return {
+      ...response,
+      data: response.data?.data || null,
+    };
+  }
 
-    return response.data.data;
-  },
-
-  async retryFailedFiles(
-    postId: number,
-    failedFileUuids: string[]
-  ): Promise<void> {
-    await baseService.postMini<void, object>(
-      `/api/media/retry-upload/${postId}`,
+  /**
+   * Retry failed file uploads
+   */
+  async retryFailedFiles(postId: number, failedFileUuids: string[]): Promise<CommonResponse<void>> {
+    return this.postMini<void, { failedFileUuids: string[] }>(
+      `/retry-upload/${postId}`,
       { failedFileUuids },
       '실패한 파일 재업로드 중...'
     );
-  },
+  }
 
-  async cancelUpload(postId: number): Promise<void> {
-    await baseService.deleteMini<void>(
-      `/api/media/cancel-upload/${postId}`,
-      '업로드 취소중...'
-    );
-  },
+  /**
+   * Cancel async upload
+   */
+  async cancelUpload(postId: number): Promise<CommonResponse<void>> {
+    return this.deleteMini<void>(`/cancel-upload/${postId}`, '업로드 취소중...');
+  }
 
-  // 전체 게시글 작성 프로세스 (기존 createPost와 구분)
-  async createPostAsync(
-    postData: PostDetailService
-  ): Promise<DraftPostResponse> {
-    // 1. 게시글을 DRAFT 상태로 먼저 생성
-    const draftPost = await this.createDraftPost({
-      title: postData.title,
-      content: postData.content,
-      boardId: postData.boardId,
-      categoryId: postData.categoryId || undefined,
+  /**
+   * Create post with async file upload workflow
+   */
+  async createPostAsync(data: PostCreateData): Promise<CommonResponse<DraftPostResponse>> {
+    // 1. Create draft post first
+    const draftResponse = await this.createDraftPost({
+      title: data.title,
+      content: data.content,
+      boardId: data.boardId,
+      categoryId: data.categoryId || undefined,
     });
 
-    // 2. 파일이 있는 경우 비동기 업로드 시작
-    if (postData.files && postData.files.length > 0) {
-      await this.startAsyncFileUpload(draftPost.id, postData.files);
-    } else {
-      // 파일이 없는 경우 즉시 발행
-      await this.publishPost(draftPost.id);
+    if (draftResponse.successOrNot !== 'Y' || !draftResponse.data) {
+      return draftResponse;
     }
 
-    return draftPost;
+    // 2. Start async upload if files exist
+    if (data.files && data.files.length > 0) {
+      await this.startAsyncFileUpload(draftResponse.data.id, data.files);
+    } else {
+      // Publish immediately if no files
+      await this.publishPost(draftResponse.data.id);
+    }
+
+    return draftResponse;
+  }
+
+  /**
+   * Get draft posts
+   */
+  async getDraftPosts(options: Partial<PostListOptions> = {}): Promise<CommonResponse<Post>> {
+    const params: Record<string, string> = {
+      status: 'draft',
+      page: (options.page || 1).toString(),
+      pageSize: (options.pageSize || 10).toString(),
+      sortBy: options.sortBy || 'latest',
+    };
+
+    if (options.writerId) {
+      params.writerId = options.writerId.toString();
+    }
+
+    return this.getSilent<Post>('/', { params });
+  }
+
+  /**
+   * Search posts across multiple boards
+   */
+  async searchPosts(
+    keyword: string,
+    page: number = 1,
+    pageSize: number = 10,
+    boardIds?: number[]
+  ): Promise<CommonResponse<{ posts: Post[]; totalCount: number }>> {
+    const params: Record<string, string> = {
+      keyword,
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    };
+
+    if (boardIds && boardIds.length > 0) {
+      params.boardIds = boardIds.join(',');
+    }
+
+    return this.get<{ posts: Post[]; totalCount: number }>('/search', { params });
+  }
+
+  /**
+   * Get post statistics (admin only)
+   */
+  async getPostStats(boardId?: number): Promise<CommonResponse<{
+    totalPosts: number;
+    totalViews: number;
+    totalComments: number;
+    totalLikes: number;
+  }>> {
+    const params = boardId ? { boardId: boardId.toString() } : {};
+    return this.get<any>('/stats', { params });
+  }
+}
+
+// Legacy support - functional interface (deprecated, use PostService class instead)
+const postService = {
+  getPost(options: PostListOptions): Promise<CommonResponse<Post>> {
+    const service = new PostService();
+    return service.getPostList(options);
+  },
+
+  createPost(data: PostCreateData): Promise<CommonResponse<PostDetail>> {
+    const service = new PostService();
+    return service.createPost(data);
+  },
+
+  reactionPost(postId: number, reactionType: 'like' | 'dislike'): Promise<CommonResponse<PostDetail>> {
+    const service = new PostService();
+    return service.reactToPost(postId, reactionType);
+  },
+
+  deletePost(postId: number): Promise<CommonResponse<PostDetail>> {
+    const service = new PostService();
+    return service.deletePost(postId);
+  },
+
+  updatePost(postId: number, data: PostUpdateData): Promise<CommonResponse<PostDetail>> {
+    const service = new PostService();
+    return service.updatePost(postId, data);
+  },
+
+  purchaseFiles(postId: number): Promise<CommonResponse<PostDownloadHistory>> {
+    const service = new PostService();
+    return service.purchaseFiles(postId);
+  },
+
+  bookmarkPost(postId: number): Promise<CommonResponse<PostBookmark>> {
+    const service = new PostService();
+    return service.bookmarkPost(postId);
+  },
+
+  deleteBookmarkPost(postId: number): Promise<CommonResponse<boolean>> {
+    const service = new PostService();
+    return service.removeBookmark(postId);
+  },
+
+  getBookmarkPosts(): Promise<CommonResponse<GalleryListItem[]>> {
+    const service = new PostService();
+    return service.getBookmarkedPosts();
+  },
+
+  movePost(postId: number, boardId: number): Promise<CommonResponse<PostDetail>> {
+    const service = new PostService();
+    return service.movePost(postId, boardId);
+  },
+
+  // Draft methods
+  createDraftPost(data: DraftPostRequest): Promise<CommonResponse<DraftPostResponse>> {
+    const service = new PostService();
+    return service.createDraftPost(data);
+  },
+
+  publishPost(postId: number): Promise<CommonResponse<void>> {
+    const service = new PostService();
+    return service.publishPost(postId);
+  },
+
+  getDraftPosts(options: Partial<PostListOptions> = {}): Promise<CommonResponse<Post>> {
+    const service = new PostService();
+    return service.getDraftPosts(options);
+  },
+
+  // Async upload methods
+  startAsyncFileUpload(
+    postId: number,
+    files: File[],
+    config?: AsyncUploadConfig
+  ): Promise<CommonResponse<UploadStartResponse['data']>> {
+    const service = new PostService();
+    return service.startAsyncFileUpload(postId, files, config);
+  },
+
+  getUploadProgress(postId: number): Promise<CommonResponse<UploadProgressResponse['data']>> {
+    const service = new PostService();
+    return service.getUploadProgress(postId);
+  },
+
+  retryFailedFiles(postId: number, failedFileUuids: string[]): Promise<CommonResponse<void>> {
+    const service = new PostService();
+    return service.retryFailedFiles(postId, failedFileUuids);
+  },
+
+  cancelUpload(postId: number): Promise<CommonResponse<void>> {
+    const service = new PostService();
+    return service.cancelUpload(postId);
+  },
+
+  createPostAsync(data: PostCreateData): Promise<CommonResponse<DraftPostResponse>> {
+    const service = new PostService();
+    return service.createPostAsync(data);
   },
 };
 
-// draft 게시글 관리 메서드들
-const draftMethods = {
-  // 로그인한 사용자의 draft 게시글 목록 가져오기
-  getDraftPosts({
-    page = 1,
-    pageSize = 10,
-    sortBy = 'latest',
-    writerId,
-  }: {
-    page?: number;
-    pageSize?: number;
-    sortBy?: SortBy;
-    writerId?: number;
-  } = {}): Promise<CommonResponse<Post>> {
-    const url = `/api/post?status=draft&page=${page}&pageSize=${pageSize}&sortBy=${sortBy}&writerId=${writerId}`;
-    return baseService.getSilent<Post>(url);
-  },
-};
-
-// 기존 postService에 새로운 메서드들 추가
-const extendedPostService = {
-  ...postService,
-  ...asyncUploadMethods,
-  ...draftMethods,
-};
-
-export default extendedPostService;
+export { postService };
+export default PostService;

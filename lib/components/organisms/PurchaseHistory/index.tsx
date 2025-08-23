@@ -3,7 +3,7 @@
 import LinkWithLoader from "@common/LinkWithLoader";
 import { usePurchaseQuery } from "@hooks/queries/usePurchaseQuery";
 
-import type { Purchase, PurchaseListResponse } from "@model/purchase";
+import type { Purchase, PurchaseListResponse } from '../../../types/purchase';
 import Board from "@molecules/Board";
 import PurchaseHistoryItem from "@molecules/PurchaseHistoryItem";
 import { useSearchParams } from "next/navigation";

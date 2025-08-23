@@ -1,5 +1,5 @@
 import LinkWithLoader from "@common/LinkWithLoader";
-import type { Notice } from "@model/post";
+import type { Notice } from '../../../types/post';
 import { timeAgo } from "@util/dateUtil";
 import { normalizeImageSrc } from "@util/imageUtil";
 import Image from "next/image";

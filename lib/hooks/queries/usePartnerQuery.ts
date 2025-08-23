@@ -1,4 +1,4 @@
-import type { PartnerListResponse } from "@model/partner";
+import type { PartnerListResponse } from "../../types/partner";
 import partnerService from "@services/partnerService";
 import { useQuery } from "@tanstack/react-query";
 

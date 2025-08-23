@@ -1,5 +1,5 @@
-import type { Coin } from "@model/coin";
-import type { CommonResponse } from "@model/common";
+import type { Coin } from "../../types/coin";
+import type { CommonResponse } from "../../types/common";
 import purchaseService from "@services/purchaseService";
 import { useQuery } from "@tanstack/react-query";
 

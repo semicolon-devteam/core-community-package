@@ -1,4 +1,4 @@
-import type { GalleryListItem, ListPost } from '@model/post';
+import type { GalleryListItem, ListPost } from '../../../../types/post';
 import GalleryCard from '@molecules/GalleryCard';
 import { Skeleton } from '@atoms/Skeleton';
 import NoticeSection from '@organisms/BoardTypes/ListBoard/NoticeSection';

@@ -2,7 +2,7 @@ import { useFileDownload } from '@hooks/PostDetail/useFileDownload';
 import { usePostCommand } from '@hooks/commands/usePostCommand';
 import { useAppDispatch } from '@hooks/common';
 import { useGlobalLoader } from '@hooks/common/useGlobalLoader';
-import type { FileAttachment } from '@model/post';
+import type { FileAttachment } from '../../../types/post';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import fileService from '@services/fileService';
 import { useState } from 'react';

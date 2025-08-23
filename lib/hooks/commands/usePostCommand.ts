@@ -4,9 +4,9 @@ import postService, { PostDownloadHistory } from '@services/postService';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '@hooks/common';
-import type { CommonResponse } from '@model/common';
-import { CommonStatus } from '@model/common';
-import type { FileAttachment } from '@model/post';
+import type { CommonResponse } from '../../types/common';
+import { CommonStatus } from '../../types/common';
+import type { FileAttachment } from '../../types/post';
 import { showPopup } from '@redux/Features/Popup/popupSlice';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { refreshMyInfo, selectUserInfo } from '@redux/Features/User/userSlice';

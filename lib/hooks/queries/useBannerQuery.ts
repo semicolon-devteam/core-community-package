@@ -1,5 +1,5 @@
-import type { Banner } from "@model/banner";
-import type { CommonResponse } from "@model/common";
+import type { Banner } from "../../types/banner";
+import type { CommonResponse } from "../../types/common";
 import bannerService from "@services/bannerService";
 import { useQuery } from "@tanstack/react-query";
 

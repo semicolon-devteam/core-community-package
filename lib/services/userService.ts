@@ -1,68 +1,246 @@
-import type { CommonResponse } from '@model/common';
-import type { User, UserPermission } from '@model/User';
-import baseService from '@services/baseService';
+import BaseService, { baseService } from './baseService';
+import type { CommonResponse } from '../types/common';
+import type { User } from '../types/User';
 
+/**
+ * User service interfaces and types
+ */
+export interface UserServiceOptions {
+  baseUrl?: string;
+  defaultHeaders?: Record<string, string>;
+}
+
+export interface UserPermission {
+  level: number;
+  isAdmin: boolean;
+  permissions: string[];
+}
+
+export interface UserUpdateData {
+  profileImage?: string;
+  nickname?: string;
+  email?: string;
+  bio?: string;
+}
+
+export interface UserSearchOptions {
+  nickname?: string;
+  needPoint?: boolean;
+  includePermissions?: boolean;
+}
+
+/**
+ * User Service Class
+ * Handles all user-related API operations with consistent error handling
+ * and global loading integration
+ */
+export class UserService extends BaseService<User> {
+  constructor(options?: UserServiceOptions) {
+    super(options?.baseUrl || '/api/user', options?.defaultHeaders);
+  }
+
+  /**
+   * Get current user's information
+   */
+  async getMyInfo(): Promise<CommonResponse<User>> {
+    return this.getMini<User>('/me', '사용자 정보 확인중...');
+  }
+
+  /**
+   * Get current user's permissions
+   * @deprecated Use getMyInfo() instead as it includes permission information
+   */
+  async getMyPermission(): Promise<CommonResponse<UserPermission>> {
+    return this.get<UserPermission>('/me/permission');
+  }
+
+  /**
+   * Get current user's point balance
+   */
+  async getMyPoint(): Promise<CommonResponse<number>> {
+    return this.getMini<number>('/me/point', '포인트 조회중...');
+  }
+
+  /**
+   * Get realtime user information (for live updates)
+   */
+  async getRealtimeUser(): Promise<CommonResponse<string>> {
+    return this.getSilent<string>('/realtime');
+  }
+
+  /**
+   * Get current user's ID
+   */
+  async getUserId(): Promise<CommonResponse<string>> {
+    return this.get<string>('/id');
+  }
+
+  /**
+   * Get current user's UUID
+   */
+  async getUserUuid(): Promise<CommonResponse<string>> {
+    return this.get<string>('/uuid');
+  }
+
+  /**
+   * Update user profile information
+   */
+  async updateUserProfile(data: UserUpdateData): Promise<CommonResponse<User>> {
+    return this.patch<User, UserUpdateData>('/profile', data);
+  }
+
+  /**
+   * Refresh current user information (bypasses cache)
+   */
+  async refreshMyInfo(): Promise<CommonResponse<User>> {
+    return this.get<User>('/me', { headers: { 'Cache-Control': 'no-cache' } });
+  }
+
+  /**
+   * Get user information by search criteria
+   */
+  async getUserInfo(options: UserSearchOptions = {}): Promise<CommonResponse<User>> {
+    const params: Record<string, string> = {};
+    
+    if (options.nickname) {
+      params.nickname = options.nickname;
+    }
+    if (options.needPoint) {
+      params.needPoint = 'true';
+    }
+    if (options.includePermissions) {
+      params.includePermissions = 'true';
+    }
+
+    return this.getMini<User>('/', '사용자 정보 조회중...', { params });
+  }
+
+  /**
+   * Check if user ID already exists
+   */
+  async checkUserIdExist(userId: string): Promise<CommonResponse<boolean>> {
+    return this.post<boolean, { userId: string }>('/check/id', { userId });
+  }
+
+  /**
+   * Check if nickname already exists
+   */
+  async checkNicknameExist(nickname: string): Promise<CommonResponse<boolean>> {
+    return this.post<boolean, { nickname: string }>('/check/nickname', { nickname });
+  }
+
+  /**
+   * Get user by ID
+   */
+  async getUserById(userId: string): Promise<CommonResponse<User>> {
+    return this.get<User>(`/${userId}`);
+  }
+
+  /**
+   * Get users by IDs (batch operation)
+   */
+  async getUsersByIds(userIds: string[]): Promise<CommonResponse<User[]>> {
+    return this.post<User[], { userIds: string[] }>('/batch', { userIds });
+  }
+
+  /**
+   * Search users by keyword
+   */
+  async searchUsers(
+    keyword: string, 
+    page: number = 1, 
+    pageSize: number = 10
+  ): Promise<CommonResponse<{ users: User[]; totalCount: number }>> {
+    return this.get<{ users: User[]; totalCount: number }>('/search', {
+      params: { keyword, page, pageSize }
+    });
+  }
+
+  /**
+   * Update user level (admin only)
+   */
+  async updateUserLevel(userId: string, level: number): Promise<CommonResponse<User>> {
+    return this.patch<User, { level: number }>(`/${userId}/level`, { level });
+  }
+
+  /**
+   * Ban/Unban user (admin only)
+   */
+  async updateUserBanStatus(
+    userId: string, 
+    isBanned: boolean, 
+    reason?: string
+  ): Promise<CommonResponse<User>> {
+    return this.patch<User, { isBanned: boolean; reason?: string }>(
+      `/${userId}/ban-status`, 
+      { isBanned, reason }
+    );
+  }
+}
+
+// Legacy support - functional interface (deprecated, use UserService class instead)
 const userService = {
   getMyInfo(): Promise<CommonResponse<User>> {
-    return baseService.getMini<User>('/api/user/me', '사용자 정보 확인중...');
+    const service = new UserService();
+    return service.getMyInfo();
   },
+  
   /**
-   * @deprecated /api/user/me에서 이미 권한 정보를 포함하여 반환하므로 이 메서드는 더 이상 필요하지 않습니다.
-   * 대신 getMyInfo() 메서드를 사용하세요.
+   * @deprecated Use getMyInfo() instead as it includes permission information
    */
   getMyPermission(): Promise<CommonResponse<UserPermission>> {
-    return baseService.get<UserPermission>('/api/user/me/permission');
+    const service = new UserService();
+    return service.getMyPermission();
   },
+  
   getMyPoint(): Promise<CommonResponse<number>> {
-    return baseService.getMini<number>('/api/user/me/point', '포인트 조회중...');
+    const service = new UserService();
+    return service.getMyPoint();
   },
+  
   getRealtimeUser(): Promise<CommonResponse<string>> {
-    return baseService.get<string>('/api/user/realtime');
+    const service = new UserService();
+    return service.getRealtimeUser();
   },
+  
   getUserId(): Promise<CommonResponse<string>> {
-    return baseService.get<string>('/api/user/id');
+    const service = new UserService();
+    return service.getUserId();
   },
+  
   getUserUuid(): Promise<CommonResponse<string>> {
-    return baseService.get<string>('/api/user/uuid');
+    const service = new UserService();
+    return service.getUserUuid();
   },
+  
   updateUserProfile(profileImage: string): Promise<CommonResponse<User>> {
-    return baseService.patch<User, object>('/api/user/profile', {
-      profileImage,
-    });
+    const service = new UserService();
+    return service.updateUserProfile({ profileImage });
   },
+  
   refreshMyInfo(): Promise<CommonResponse<User>> {
-    return baseService.get<User>('/api/user/me');
+    const service = new UserService();
+    return service.refreshMyInfo();
   },
+  
   getUserInfo(
     nickname?: string,
     needPoint: boolean = false
   ): Promise<CommonResponse<User>> {
-    const params = new URLSearchParams();
-    if (nickname) {
-      params.append('nickname', nickname);
-    }
-    if (needPoint) {
-      params.append('needPoint', 'true');
-    }
-    return baseService.getMini<User>(
-      `/api/user${params.toString() ? `?${params.toString()}` : ''}`,
-      '사용자 정보 조회중...'
-    );
+    const service = new UserService();
+    return service.getUserInfo({ nickname, needPoint });
   },
+  
   checkUserIdExist(userId: string): Promise<CommonResponse<boolean>> {
-    return baseService.post<boolean, object>('/api/user/check/id', {
-      userId,
-    });
+    const service = new UserService();
+    return service.checkUserIdExist(userId);
   },
+  
   checkNicknameExist(nickname: string): Promise<CommonResponse<boolean>> {
-    return baseService.post<boolean, object>('/api/user/check/nickname', {
-      nickname,
-    });
+    const service = new UserService();
+    return service.checkNicknameExist(nickname);
   },
 };
 
-export default userService;
-
-interface UserService {
-  userId: string;
-}
+export { userService };
+export default UserService;

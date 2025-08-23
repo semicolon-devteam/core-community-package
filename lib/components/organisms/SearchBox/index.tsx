@@ -3,8 +3,8 @@
 import BoardSearchIcon from "@atoms/Icon/BoardSearchIcon";
 import CustomSelect, { SelectOption } from '@atoms/CustomSelect';
 import { useDebounce } from "@hooks/common";
-import type { BoardCategory, Board as BoardModel } from "@model/board";
-import { SearchType, SortBy } from "@model/board";
+import type { BoardCategory, Board as BoardModel } from '../../../types/board';
+import { SearchType, SortBy } from '../../../types/board';
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";

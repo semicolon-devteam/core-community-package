@@ -7,7 +7,7 @@ import { selectUIState } from '@redux/Features/UI/uiSlice';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import type { Menu } from '@model/menu';
+import type { Menu } from '../../../types/menu';
 import { partnerSites } from './menuItems';
 
 export default function MobileNavigation({

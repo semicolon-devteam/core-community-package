@@ -1,4 +1,4 @@
-import type { WithoutBoardNamePost } from "@model/board";
+import type { WithoutBoardNamePost } from '../../../types/board';
 import PostCard from "@molecules/PostCard";
 
 export default function HumorBoard({

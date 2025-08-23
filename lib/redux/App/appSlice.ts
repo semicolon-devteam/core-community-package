@@ -1,5 +1,5 @@
 import { BREAKPOINTS } from "@constants/breakpoints";
-import type { LevelInfo } from "@model/common";
+import type { LevelInfo } from "../../types/common";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // 디바이스 타입 정의

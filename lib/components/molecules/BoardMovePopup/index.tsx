@@ -8,7 +8,7 @@ import { useGlobalPopup } from '@hooks/common/useGlobalPopup';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { useQueryClient } from '@tanstack/react-query';
 import boardService from '@services/boardService';
-import type { Board } from '@model/board';
+import type { Board } from '../../../types/board';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface BoardMovePopupProps {

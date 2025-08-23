@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouterWithLoader } from '@hooks/common';
-import type { BoardCategory } from '@model/board';
+import type { BoardCategory } from '../../../../types/board';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Fragment, useState, useEffect } from 'react';
 import type { BoardHeaderProps } from './board.header.model';

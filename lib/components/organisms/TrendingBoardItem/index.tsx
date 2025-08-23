@@ -1,7 +1,7 @@
 "use client";
 
 import { useTrendingQuery } from "@hooks/queries/useHomeQuery";
-import type { Board } from "@model/board";
+import type { Board } from "../../../types/board";
 import PostCard from "@molecules/PostCard";
 
 export default function TrendingBoardItem({

@@ -21,8 +21,8 @@ import type {
   MediaItem,
   TrendingItem,
   WithoutBoardNamePost
-} from '@model/board';
-import { CommonStatus } from '@model/common';
+} from '../../types/board';
+import { CommonStatus } from '../../types/common';
 import BoardPostFeed from '@organisms/BoardPostFeed';
 import FreeBoard from '@organisms/FreeBoard';
 import GalleryBoard from '@organisms/GalleryBoard';

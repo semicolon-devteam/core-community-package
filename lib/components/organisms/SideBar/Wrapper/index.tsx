@@ -1,11 +1,11 @@
 "use client";
 import { useAppDispatch, useAppSelector } from "@hooks/common";
-import type { User } from "@model/User";
+import type { User } from '../../../../types/User';
 import { selectUIState } from "@redux/Features/UI/uiSlice";
 import { setUserInfo } from "@redux/Features/User/userSlice";
 import { useEffect } from "react";
 
-import type { Banner } from "@model/banner";
+import type { Banner } from '../../../../types/banner';
 import SideBar from "@organisms/SideBar";
 export default function SideBarWrapper({
   userInfo,

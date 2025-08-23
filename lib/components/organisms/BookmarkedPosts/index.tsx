@@ -1,7 +1,7 @@
 'use client';
 
 import { usePostBookmarkQuery } from "@hooks/queries/usePostQuery";
-import { GalleryListItem } from "@model/post";
+import { GalleryListItem } from '../../../types/post';
 import Gallery from "@organisms/BoardTypes/Gallery";
 
 export default function BookmarkedPosts() {

@@ -1,4 +1,4 @@
-import type { FileAttachment } from '@model/post';
+import type { FileAttachment } from '../../../types/post';
 
 interface ProgressBarProps {
   progress: number;

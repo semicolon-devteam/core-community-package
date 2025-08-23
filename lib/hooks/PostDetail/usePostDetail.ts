@@ -6,7 +6,7 @@ import {
   useRouterWithLoader,
 } from '@hooks/common';
 import { usePermission } from '@hooks/common/usePermission';
-import type { PostDetail } from '@model/post';
+import type { PostDetail } from '../../types/post';
 import { setEditMode } from '@redux/Features/Post/postSlice';
 import { showToast } from '@redux/Features/Toast/toastSlice';
 import { selectUserInfo } from '@redux/Features/User/userSlice';

@@ -1,4 +1,4 @@
-import type { Pagination } from "@model/common";
+import type { Pagination } from "../common";
 
 export interface PurchaseRequest {
   coin_id: string;

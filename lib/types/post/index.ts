@@ -3,8 +3,8 @@ import type {
   FeatureSettings,
   PermissionSettings,
   PointSettings,
-} from '@model/board';
-import { BoardType } from '@organisms/BoardTypes/boardtype.model';
+} from '../board';
+import { BoardType } from '../../components/organisms/BoardTypes/boardtype.model';
 
 export interface Notice {
   id: number;

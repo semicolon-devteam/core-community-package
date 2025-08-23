@@ -3,7 +3,7 @@
 import AnimatedPoint from '@atoms/AnimatedPoint';
 import LinkWithLoader from '@common/LinkWithLoader';
 import { useAppDispatch, useAppSelector } from '@hooks/common';
-import { User } from '@model/User';
+import { User } from '../../../types/User';
 import UserAvatar from '@molecules/UserAvatar';
 import ErrorHandler from '@organisms/ErrorHandler';
 import { showToast } from '@redux/Features/Toast/toastSlice';

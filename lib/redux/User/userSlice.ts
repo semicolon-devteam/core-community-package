@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import axiosInstance from '@config/axios';
-import type { User } from '@model/User';
+import type { User } from '../../types/User';
 import { hideLoading, hideMiniLoading, showLoading, showMiniLoading } from '@redux/Features/UI/uiSlice';
 import type { RootState } from '@redux/stores';
 import { isAdmin } from '@util/authUtil';

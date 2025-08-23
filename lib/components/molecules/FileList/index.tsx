@@ -1,4 +1,4 @@
-import type { FileAttachment } from "@model/post";
+import type { FileAttachment } from '../../../types/post';
 import { normalizeImageSrc } from '@util/imageUtil';
 import Image from "next/image";
 

@@ -1,7 +1,7 @@
 'use client';
 
 import pointService from '@services/pointService';
-import type { PointTransaction } from '@model/point';
+import type { PointTransaction } from '../../types/point';
 import { useQuery } from '@tanstack/react-query';
 
 interface PointHistoryQueryParams {

@@ -31,7 +31,7 @@ function createClientSupabase() {
                 const sessionData = JSON.parse(decodedValue);
                 if (sessionData?.access_token) {
                   // 동적 import로 순환 참조 방지
-                  import('@util/jwtUtil').then(({ decodeJWTPayload, isTokenExpired, removeExpiredTokenFromCookie }) => {
+                  import('../../utils/jwtUtil').then(({ decodeJWTPayload, isTokenExpired, removeExpiredTokenFromCookie }) => {
                     const payload = decodeJWTPayload(sessionData.access_token);
                     if (payload && isTokenExpired(payload)) {
                       console.log('🗑️ 클라이언트 Storage: 만료된 토큰 감지, 정리 중...');

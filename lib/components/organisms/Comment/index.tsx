@@ -1,7 +1,7 @@
 "use client";
 
 import { useCommentCommand } from "@hooks/commands/useCommentCommand";
-import { Comment } from "@model/comment";
+import { Comment } from '../../../types/comment';
 import Board from "@molecules/Board";
 import CommentItem from "@organisms/CommentItem";
 import { useState } from "react";
