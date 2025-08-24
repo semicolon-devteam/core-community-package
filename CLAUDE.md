@@ -140,7 +140,8 @@ import Button from '@semicolon/community-core/dist/components/atoms/Button';
 ### 🎯 개발 우선순위 및 단계
 
 **Phase 1: 기반 구조** (✅ 완료)
-- [x] 패키지 구조 및 빌드 시스템
+- [x] 패키지 구조 및 빌드 시스템 최적화
+- [x] Tree Shaking 및 "use client" 지원
 - [x] 기본 유틸리티 함수
 
 **Phase 2: 핵심 서비스** (✅ 완료)
@@ -148,15 +149,21 @@ import Button from '@semicolon/community-core/dist/components/atoms/Button';
 - [x] UserService, PostService, BoardService - Domain Services 완성
 - [x] AuthService, PermissionService - 인증/권한 시스템 구현
 
-**Phase 3: 훅 시스템**
-- [ ] useAuth, useGlobalLoader
-- [ ] React Query 기반 훅들
-- [ ] 권한 체크 훅들
+**Phase 3: 훅 시스템** (✅ 완료)
+- [x] useAuth, useGlobalLoader - 인증 및 로딩 관리
+- [x] React Query 기반 훅들 - 43개 훅 완성
+- [x] 권한 체크 훅들 - usePermission, useAuthGuard
+- [x] 네비게이션 훅들 - useRouterWithLoader, useNavigation
 
-**Phase 4: 컴포넌트 시스템**
-- [ ] Atoms: Button, Icon, Input
-- [ ] Molecules: Pagination, SearchBar
-- [ ] Organisms: GlobalLoader, AuthGuard
+**Phase 4: 컴포넌트 시스템** (✅ 완료)
+- [x] Atoms: Button, Badge, Avatar, Input, Skeleton
+- [x] Molecules: 향후 확장 예정
+- [x] Organisms: 향후 확장 예정
+
+**Phase 5: Storybook & Documentation** (✅ 완료)
+- [x] Storybook 7.6+ 구현
+- [x] 한국어 문서화 및 인터랙티브 가이드
+- [x] Vercel 배포 준비 완료
 
 ### 📝 코딩 컨벤션
 
@@ -597,37 +604,69 @@ Always create PRs from task branches to dev, then from dev to main.
 
 ## 📋 @semicolon/community-core 사용가능한 기능 명세
 
-### ✅ Phase 1: 현재 구현된 기능
+### ✅ Phase 1-5: 현재 구현된 기능 (v1.3.0)
 
-**🔧 Core Utilities** (필수 유틸리티)
+**🔧 Core Utilities** (완전 구현 ✅)
 ```typescript
 // 숫자 포맷팅
-import { formatNumberWithComma } from '@semicolon/community-core';
+import { formatNumberWithComma } from '@team-semicolon/community-core';
 formatNumberWithComma(1234567); // "1,234,567"
 
-// 날짜 포맷팅
-import { formatDate, timeAgo } from '@semicolon/community-core';
+// 날짜 포맷팅  
+import { formatDate, timeAgo } from '@team-semicolon/community-core';
 formatDate("2024-01-15T10:30:00"); // "2024.01.15. 10:30:00"
 timeAgo("2024-01-15T10:30:00"); // "2시간 전"
 
 // 권한 체크
-import { isAdmin } from '@semicolon/community-core';
+import { isAdmin, checkPermission } from '@team-semicolon/community-core';
 isAdmin(user); // boolean
+checkPermission(user, 'write', 5); // level-based permission
 ```
 
-**🧩 Essential Components** (핵심 컴포넌트)
+**🧩 Essential Components** (완전 구현 ✅)
 ```typescript
-// Button 컴포넌트 (5가지 variant, 로딩 상태, 아이콘 지원)
-import { Button, type ButtonProps } from '@semicolon/community-core';
+// Button 컴포넌트 (5가지 variant, 4가지 size, 로딩 상태)
+import { Button, type ButtonProps } from '@team-semicolon/community-core';
 <Button variant="primary" size="lg" loading={isSubmitting}>저장</Button>
 
-// Badge 컴포넌트 (상태 표시, 레벨, 태그)
-import { Badge, type BadgeProps } from '@semicolon/community-core';
+// Badge 컴포넌트 (5가지 variant, 3가지 size, dot 표시)
+import { Badge, type BadgeProps } from '@team-semicolon/community-core';
 <Badge variant="success" dot>온라인</Badge>
 
-// Avatar 컴포넌트 (프로필 이미지, 상태 표시, 폴백)
-import { Avatar, type AvatarProps } from '@semicolon/community-core';
+// Avatar 컴포넌트 (5가지 size, 3가지 shape, 온라인 상태)
+import { Avatar, type AvatarProps } from '@team-semicolon/community-core';
 <Avatar src="/profile.jpg" name="김철수" size="lg" status="online" />
+
+// Input 컴포넌트 (4가지 variant, 3가지 size, 아이콘 지원)
+import { Input, type InputProps } from '@team-semicolon/community-core';
+<Input label="이메일" error="오류 메시지" leftIcon={<SearchIcon />} />
+
+// Skeleton 컴포넌트 (4가지 variant, 미리 정의된 컴포넌트들)
+import { Skeleton, SkeletonCard, SkeletonText } from '@team-semicolon/community-core';
+<SkeletonCard /> // 완전한 카드 스켈레톤
+```
+
+**🪝 Advanced Hooks** (완전 구현 ✅)
+```typescript
+// 인증 및 권한 관리
+import { useAuth, usePermission, useAuthGuard } from '@team-semicolon/community-core';
+const { user, isLoggedIn, login, logout } = useAuth();
+const { hasPermission, loading } = usePermission({ requiredLevel: 5 });
+
+// 로딩 상태 관리  
+import { useGlobalLoader } from '@team-semicolon/community-core';
+const { withLoader, showLoader, hideLoader } = useGlobalLoader();
+
+// React Query 통합 (43개 훅)
+import { 
+  usePostQuery, useUserQuery, useBoardQuery,
+  usePostCommand, useUserCommand 
+} from '@team-semicolon/community-core';
+
+// 네비게이션 및 라우팅
+import { useRouterWithLoader, useNavigation } from '@team-semicolon/community-core';
+const router = useRouterWithLoader();
+router.push('/path'); // 로딩과 함께 페이지 이동
 ```
 
 **📐 Core Types** (필수 타입 정의)
