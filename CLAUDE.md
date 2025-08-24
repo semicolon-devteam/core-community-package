@@ -668,11 +668,21 @@ initializeCommunityCore({
 
 **📦 Import Strategies** (최적화된 import 방식)
 ```typescript
-// ✅ 메인 패키지에서 직접 import (권장)
-import { Button, formatNumberWithComma, isAdmin } from '@semicolon/community-core';
+// ✅ 메인 패키지에서 직접 import (권장) - v1.3.0
+import { 
+  // Components
+  Button, Skeleton, SkeletonText,
+  // Hooks  
+  useAuth, useGlobalLoader, usePostQuery,
+  // Services
+  UserService, PostService,
+  // Utils
+  formatNumberWithComma, isAdmin 
+} from '@semicolon/community-core';
 
-// ✅ 카테고리별 import (Tree Shaking 최적화)
-import { Button } from '@semicolon/community-core/components';
+// ✅ 카테고리별 import (Tree Shaking 최적화)  
+import { Button, Skeleton } from '@semicolon/community-core/components';
+import { useAuth, useGlobalLoader } from '@semicolon/community-core/hooks';
 import { formatNumberWithComma } from '@semicolon/community-core/utils';
 
 // ✅ 네임스페이스 import (고급 사용)
@@ -738,19 +748,51 @@ const users = await userService.searchUsers('김철수', 1, 10);
 await userService.updateUserProfile({ nickname: 'NewNickname' });
 ```
 
-### 🚧 Phase 3: 계획된 기능 (구현 예정)
+### ✅ Phase 3: 완료된 기능 (v1.3.0 신규 추가)
 
-**React Query Hooks**:
-- useAuth, useUserData, usePostData 등
-- 서버 상태 관리 및 캐싱
+**🪝 Hooks System** (완전한 React Hooks 생태계)
+```typescript
+// Authentication & State Management
+import { useAuth, useGlobalLoader, usePermission, useAuthGuard } from '@semicolon/community-core';
 
-**Advanced Hooks**:
-- useGlobalLoader, usePermission, useAuthGuard 등
-- 비즈니스 로직 캡슐화
+const { loginWithLoader, logoutWithLoader, isAdmin, isUser } = useAuth();
+const { withLoader, showLoader, hideLoader } = useGlobalLoader();
+const { hasPermission } = usePermission({ requiredLevel: 1 });
+const { isAuthorized, errorType } = useAuthGuard({ adminOnly: true });
 
-**Form Components**:
-- Input, Select, Checkbox, RadioButton 컴포넌트
-- Form validation 및 상태 관리
+// React Query Data Fetching
+import { 
+  useUserPointQuery, 
+  usePostQuery, 
+  useBoardQuery, 
+  useCommentQuery 
+} from '@semicolon/community-core';
+
+const { data: userPoints } = useUserPointQuery(userId);
+const { data: posts } = usePostQuery({ boardId, page, pageSize });
+
+// Utility Hooks
+import { useDeviceType, useRouterWithLoader } from '@semicolon/community-core';
+const deviceType = useDeviceType(); // 'mobile' | 'tablet' | 'desktop'
+const router = useRouterWithLoader(); // 로딩과 함께 페이지 이동
+```
+
+**🎨 Enhanced Components** (고도화된 UI 컴포넌트)
+```typescript
+// 강력한 Skeleton 시스템
+import { 
+  Skeleton, 
+  SkeletonText, 
+  SkeletonAvatar, 
+  SkeletonButton, 
+  SkeletonCard 
+} from '@semicolon/community-core';
+
+// 다양한 variant와 커스터마이징
+<Skeleton variant="circular" width="3rem" height="3rem" />
+<SkeletonText lines={3} />
+<SkeletonCard /> // 완성형 카드 스켈레톤
+```
 
 ### 🔮 Phase 4: 향후 기능 (로드맵)
 

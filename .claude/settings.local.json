@@ -20,7 +20,8 @@
       "Bash(npm whoami:*)",
       "Bash(npm login)",
       "Bash(npm publish:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(npm run storybook:*)"
     ],
     "deny": [],
     "additionalDirectories": [

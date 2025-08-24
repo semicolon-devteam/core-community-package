@@ -35,6 +35,19 @@ export { Switch, type SwitchProps } from './Switch';
 export { TextArea, type TextAreaProps } from './TextArea';
 
 // =============================================================================
+// PHASE 2.2 LOADING & FEEDBACK ATOMS - Loading states and user feedback
+// =============================================================================
+
+export { 
+  Skeleton, 
+  SkeletonText, 
+  SkeletonAvatar, 
+  SkeletonButton, 
+  SkeletonCard,
+  type SkeletonProps 
+} from './Skeleton';
+
+// =============================================================================
 // FUTURE ATOMS - Planned for Phase 2.2+
 // =============================================================================
 

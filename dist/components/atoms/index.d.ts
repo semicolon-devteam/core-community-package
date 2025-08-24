@@ -16,3 +16,4 @@ export { Checkbox, type CheckboxProps } from './Checkbox';
 export { Radio, type RadioProps } from './Radio';
 export { Switch, type SwitchProps } from './Switch';
 export { TextArea, type TextAreaProps } from './TextArea';
+export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonButton, SkeletonCard, type SkeletonProps } from './Skeleton';

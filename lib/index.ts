@@ -64,6 +64,16 @@ export type {
   TextAreaProps 
 } from './components/atoms';
 
+// Phase 2.2 Loading & Feedback Components
+export {
+  Skeleton,
+  SkeletonText,
+  SkeletonAvatar,
+  SkeletonButton,
+  SkeletonCard
+} from './components/atoms';
+export type { SkeletonProps } from './components/atoms';
+
 // =============================================================================  
 // SERVICE LAYER EXPORTS - Phase 2 Complete
 // =============================================================================
@@ -130,6 +140,26 @@ export type {
 } from './services';
 
 // =============================================================================
+// HOOKS LAYER EXPORTS - Phase 3 Complete ✅
+// =============================================================================
+
+// Authentication & State Management Hooks
+export { useAuth } from './hooks/User/useAuth';
+export { useGlobalLoader } from './hooks/common/useGlobalLoader';
+export { usePermission } from './hooks/common/usePermission';
+export { useAuthGuard } from './hooks/common/useAuthGuard';
+
+// React Query Data Fetching Hooks
+export { useUserPointQuery, useUserPointHistoryQuery } from './hooks/queries/useUserQuery';
+export { usePostQuery, usePostBookmarkQuery, useDraftPostQuery } from './hooks/queries/usePostQuery';
+export { useBoardQuery } from './hooks/queries/useBoardQuery';
+export { useCommentQuery } from './hooks/queries/useCommentQuery';
+
+// Common Utility Hooks
+export { useDeviceType } from './hooks/common/useDeviceType';
+export { useRouterWithLoader } from './hooks/common/useRouterWithLoader';
+
+// =============================================================================
 // DEVELOPMENT EXPORTS - Available but not prominently featured
 // =============================================================================
 
@@ -141,5 +171,5 @@ export type {
 // =============================================================================
 // VERSION INFO
 // =============================================================================
-export const VERSION = '1.0.2';
+export const VERSION = '1.3.0';
 export const PACKAGE_NAME = '@team-semicolon/community-core';
