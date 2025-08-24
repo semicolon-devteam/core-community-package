@@ -202,6 +202,7 @@ npm run dev  # Rollup watch 모드
 
 ## 📖 문서
 
+- **[Storybook](https://storybook.semi-colon.space/)** - 인터랙티브 컴포넌트 문서 및 예제
 - **[API Reference](./docs/API_REFERENCE.md)** - 완전한 API 문서 및 사용 가이드
 - **[Usage Examples](./docs/USAGE_EXAMPLES.md)** - 실제 사용 예제 및 통합 시나리오
 - **[Changelog](./docs/CHANGELOG.md)** - 버전별 변경사항 및 릴리스 노트
