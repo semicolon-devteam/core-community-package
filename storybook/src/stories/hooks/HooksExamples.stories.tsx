@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState, useEffect } from 'react';
-import { Button, Badge, Skeleton, SkeletonCard } from '@team-semicolon/community-core';
+import { Button } from '../../components/Button';
+import { Badge } from '../../components/Badge';
+import { Skeleton, SkeletonCard } from '../../components/Skeleton';
 
 // Mock 훅들 (실제로는 @team-semicolon/community-core에서 import하지만 여기서는 시연용으로 mock)
 const useGlobalLoaderMock = () => {

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { Input, type InputProps } from '@team-semicolon/community-core';
+import { Input, type InputProps } from '../../components/Input';
 
 const meta: Meta<typeof Input> = {
   title: 'Forms/Input',
@@ -161,14 +161,14 @@ export const States: Story = {
   },
 };
 
-// Adornment가 있는 Input
-export const WithAdornments: Story = {
+// 아이콘이 있는 Input
+export const WithIcons: Story = {
   render: () => (
     <div className="space-y-4 w-80">
       <Input 
         label="검색" 
         placeholder="검색어 입력" 
-        startAdornment={
+        leftIcon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -179,7 +179,7 @@ export const WithAdornments: Story = {
         label="비밀번호" 
         type="password"
         placeholder="비밀번호 입력" 
-        endAdornment={
+        rightIcon={
           <button type="button" className="text-gray-400 hover:text-gray-600">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -190,11 +190,14 @@ export const WithAdornments: Story = {
       />
       
       <Input 
-        label="가격" 
-        type="number"
-        placeholder="0" 
-        startAdornment={<span className="text-gray-500">₩</span>}
-        endAdornment={<span className="text-gray-500">원</span>}
+        label="이메일" 
+        type="email"
+        placeholder="your@email.com" 
+        leftIcon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+          </svg>
+        }
       />
     </div>
   ),
@@ -202,7 +205,7 @@ export const WithAdornments: Story = {
     layout: 'padded',
     docs: {
       description: {
-        story: '아이콘이나 텍스트가 포함된 Input들을 보여줍니다.',
+        story: '아이콘이 포함된 Input들을 보여줍니다.',
       },
     },
   },
