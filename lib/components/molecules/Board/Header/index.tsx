@@ -1,6 +1,5 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
 import { Fragment, useState, useEffect } from 'react';
 import type { BoardHeaderProps, BoardCategory } from './board.header.model';
 
@@ -11,41 +10,20 @@ export default function BoardHeader({
   isGlobalSearch,
   searchText,
   totalPages,
+  selectedCategoryId = null,
+  onCategoryChange,
 }: BoardHeaderProps) {
-  // Note: router should be passed as prop or imported from hooks if available
-  // const router = useRouterWithLoader();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsState = Object.fromEntries(searchParams.entries());
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(selectedCategoryId);
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    searchParamsState.categoryId || null
-  );
-
-  // URL 파라미터 변경 시 selectedCategory 동기화
+  // Props로 전달된 selectedCategoryId가 변경될 때 상태 동기화
   useEffect(() => {
-    setSelectedCategory(searchParamsState.categoryId || null);
-  }, [searchParamsState.categoryId]);
+    setSelectedCategory(selectedCategoryId);
+  }, [selectedCategoryId]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
-    const newParams = { ...searchParamsState };
-    
-    // 카테고리 변경 시 페이지를 1로 리셋
-    newParams.page = '1';
-    
-    if (categoryId) {
-      newParams.categoryId = categoryId;
-      // router.push(
-      //   `${pathname}?${new URLSearchParams(newParams).toString()}`
-      // );
-      window.location.href = `${pathname}?${new URLSearchParams(newParams).toString()}`;
-    } else {
-      delete newParams.categoryId;
-      // router.push(
-      //   `${pathname}?${new URLSearchParams(newParams).toString()}`
-      // );
-      window.location.href = `${pathname}?${new URLSearchParams(newParams).toString()}`;
+    if (onCategoryChange) {
+      onCategoryChange(categoryId);
     }
   };
 

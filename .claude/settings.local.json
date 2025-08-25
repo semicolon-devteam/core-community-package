@@ -22,7 +22,9 @@
       "Bash(npm publish:*)",
       "Bash(bash:*)",
       "Bash(npm run storybook:*)",
-      "Bash(timeout 60s npm run build-storybook)"
+      "Bash(timeout 60s npm run build-storybook)",
+      "Bash(git commit:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "additionalDirectories": [

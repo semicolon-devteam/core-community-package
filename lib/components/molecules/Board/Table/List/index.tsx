@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import type { BoardTableRowProps, BoardPostItem } from '../../types';
+import type { BoardPostItem, BoardTableRowProps } from '../../types';
 
 /**
  * Simple Table Cell component for rendering table data
@@ -10,12 +10,14 @@ function TableCell({
   value, 
   align = 'left', 
   className = '',
-  width 
+  width,
+  hideOnMobile = false
 }: { 
   value: ReactNode; 
   align?: 'left' | 'center' | 'right';
   className?: string;
   width?: string;
+  hideOnMobile?: boolean;
 }) {
   return (
     <div
@@ -23,10 +25,12 @@ function TableCell({
         px-4 py-3 text-sm text-gray-900 truncate
         ${align === 'center' ? 'text-center' : ''}
         ${align === 'right' ? 'text-right' : ''}
+        ${hideOnMobile ? 'hidden md:flex' : 'flex'}
         ${className}
       `.trim()}
       style={{ 
-        gridColumn: width || 'span 1',
+        width: width || 'auto',
+        flex: width ? `0 0 ${width}` : '1',
       }}
     >
       {value}
@@ -44,6 +48,11 @@ function BoardTableRow({ data, columns, onClick, className = '' }: BoardTableRow
       onClick();
     }
   };
+
+  // columns가 정의되지 않았을 경우 기본 방어 코드
+  if (!columns || columns.length === 0) {
+    return null;
+  }
 
   const formatCellValue = (key: string, value: any) => {
     switch (key) {
@@ -102,7 +111,7 @@ function BoardTableRow({ data, columns, onClick, className = '' }: BoardTableRow
       `.trim()}
       onClick={handleClick}
     >
-      <div className="grid grid-cols-12 gap-2">
+      <div className="flex w-full">
         {columns.map((column) => (
           <TableCell
             key={`${data.id}-${column.key}`}
@@ -110,6 +119,7 @@ function BoardTableRow({ data, columns, onClick, className = '' }: BoardTableRow
             align={column.align}
             className={column.className}
             width={column.width}
+            hideOnMobile={column.hideOnMobile}
           />
         ))}
       </div>
@@ -123,15 +133,25 @@ function BoardTableRow({ data, columns, onClick, className = '' }: BoardTableRow
  */
 export default function BoardTableList({
   data,
-  columns,
+  columns = [],
   onRowClick,
   className = '',
 }: {
   data: BoardPostItem[];
-  columns: any[];
+  columns?: any[];
   onRowClick?: (item: BoardPostItem) => void;
   className?: string;
 }) {
+  // columns나 data가 정의되지 않았을 경우 방어 코드
+  if (!columns || columns.length === 0) {
+    return (
+      <div className="w-full py-16 text-center text-gray-500">
+        <div className="text-lg font-medium">테이블 설정이 필요합니다</div>
+        <div className="text-sm mt-2">columns prop을 전달해주세요.</div>
+      </div>
+    );
+  }
+
   if (!data || data.length === 0) {
     return (
       <div className="w-full py-16 text-center text-gray-500">
@@ -142,7 +162,7 @@ export default function BoardTableList({
   }
 
   return (
-    <div className={className}>
+    <div className={`w-full ${className}`.trim()}>
       {data.map((item) => (
         <BoardTableRow
           key={item.id}

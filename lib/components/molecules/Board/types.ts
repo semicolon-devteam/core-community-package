@@ -29,6 +29,8 @@ export interface BoardHeaderProps {
   boardCount?: number;
   totalPages?: number;
   currentPage?: number;
+  selectedCategoryId?: string | null;
+  onCategoryChange?: (categoryId: string | null) => void;
 }
 
 // Pagination 컴포넌트 Props
@@ -52,6 +54,8 @@ export interface BoardTableColumn {
   width?: string;
   align?: 'left' | 'center' | 'right';
   className?: string;
+  hideOnMobile?: boolean; // 모바일에서 숨김 여부
+  mobileWidth?: string;   // 모바일 전용 너비 (hideOnMobile이 false일 때 사용)
 }
 
 // Table Row Props

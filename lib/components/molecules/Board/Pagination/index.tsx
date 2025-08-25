@@ -18,7 +18,7 @@ function PaginationItem({ number, isActive, onClick }: PaginationItemProps) {
       onClick={onClick}
       className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex justify-center items-center text-sm font-medium transition-colors
         ${isActive 
-          ? 'bg-primary text-white' 
+          ? 'bg-orange-500 text-white shadow-sm' 
           : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
         }`}
     >

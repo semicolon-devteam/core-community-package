@@ -50,7 +50,18 @@ const config: StorybookConfig = {
       },
       define: {
         global: 'globalThis',
-      }
+      },
+      build: {
+        rollupOptions: {
+          external: [
+            'next/navigation',
+            'next/router',
+            'next/link',
+            'next/image',
+            'next/head',
+          ],
+        },
+      },
     });
   },
 };

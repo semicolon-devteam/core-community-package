@@ -17,18 +17,20 @@ export default function BoardTableHeader({
 
   return (
     <div className={`w-full bg-gray-50 border-b border-gray-200 ${className}`.trim()}>
-      <div className="grid grid-cols-12 gap-2 px-4 py-3">
+      <div className="flex w-full">
         {columns.map((column, index) => (
           <div
             key={`header-${column.key}-${index}`}
             className={`
-              text-sm font-medium text-gray-700 truncate
+              px-4 py-3 text-sm font-medium text-gray-700 truncate
               ${column.align === 'center' ? 'text-center' : ''}
               ${column.align === 'right' ? 'text-right' : ''}
+              ${column.hideOnMobile ? 'hidden md:flex' : 'flex'}
               ${column.className || ''}
             `.trim()}
             style={{ 
-              gridColumn: column.width || 'span 1',
+              width: column.width || 'auto',
+              flex: column.width ? `0 0 ${column.width}` : '1',
             }}
           >
             {column.label}
