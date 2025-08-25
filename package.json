@@ -42,13 +42,16 @@
   "scripts": {
     "build": "npm run clean && npm run build:lib",
     "build:lib": "rollup -c",
+    "build:storybook": "cd storybook && npm install && npm run build-storybook",
+    "build:all": "npm run build && npm run build:storybook",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build",
     "test": "vitest",
     "type-check": "tsc --noEmit",
     "dev": "rollup -c -w",
     "deploy": "npm publish --access public",
-    "storybook": "cd storybook && npm run storybook"
+    "storybook": "cd storybook && npm run storybook",
+    "storybook:install": "cd storybook && npm install"
   },
   "peerDependencies": {
     "next": "^13.0.0 || ^14.0.0 || ^15.0.0",
