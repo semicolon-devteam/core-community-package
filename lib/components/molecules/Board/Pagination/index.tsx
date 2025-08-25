@@ -1,7 +1,5 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
 import type { BoardPaginationProps } from '../types';
 
 // Simple PaginationItem component for package independence
@@ -33,17 +31,6 @@ export default function BoardPagination({
   onPageChange,
   className = '',
 }: BoardPaginationProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const createPageUrl = useCallback(
-    (page: number) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', page.toString());
-      return `${pathname}?${params.toString()}`;
-    },
-    [pathname, searchParams]
-  );
 
   // 페이지 범위 계산 - 개선된 로직
   const getPageRange = () => {
