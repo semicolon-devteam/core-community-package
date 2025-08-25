@@ -74,6 +74,30 @@ export {
 } from './components/atoms';
 export type { SkeletonProps } from './components/atoms';
 
+// Phase 2.3 Molecule Components
+export { default as Board } from './components/molecules/Board';
+export { 
+  BoardContainer,
+  BoardHeader,
+  BoardPagination,
+  BoardTable,
+  BoardWrapper
+} from './components/molecules/Board';
+export type { 
+  BoardCategory,
+  BoardContainerProps,
+  BoardHeaderProps,
+  BoardPaginationProps,
+  BoardTableHeaderProps,
+  BoardTableColumn,
+  BoardTableRowProps,
+  BoardWrapperProps,
+  BoardSearchBoxProps,
+  BoardPostItem,
+  BoardListResponse,
+  BoardFilters
+} from './components/molecules/Board';
+
 // =============================================================================  
 // SERVICE LAYER EXPORTS - Phase 2 Complete
 // =============================================================================

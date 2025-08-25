@@ -1,10 +1,8 @@
 'use client';
 
-import { useRouterWithLoader } from '@hooks/common';
-import type { BoardCategory } from '../../../../types/board';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Fragment, useState, useEffect } from 'react';
-import type { BoardHeaderProps } from './board.header.model';
+import type { BoardHeaderProps, BoardCategory } from './board.header.model';
 
 export default function BoardHeader({
   boardName,
@@ -14,7 +12,8 @@ export default function BoardHeader({
   searchText,
   totalPages,
 }: BoardHeaderProps) {
-  const router = useRouterWithLoader();
+  // Note: router should be passed as prop or imported from hooks if available
+  // const router = useRouterWithLoader();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsState = Object.fromEntries(searchParams.entries());
@@ -37,14 +36,16 @@ export default function BoardHeader({
     
     if (categoryId) {
       newParams.categoryId = categoryId;
-      router.push(
-        `${pathname}?${new URLSearchParams(newParams).toString()}`
-      );
+      // router.push(
+      //   `${pathname}?${new URLSearchParams(newParams).toString()}`
+      // );
+      window.location.href = `${pathname}?${new URLSearchParams(newParams).toString()}`;
     } else {
       delete newParams.categoryId;
-      router.push(
-        `${pathname}?${new URLSearchParams(newParams).toString()}`
-      );
+      // router.push(
+      //   `${pathname}?${new URLSearchParams(newParams).toString()}`
+      // );
+      window.location.href = `${pathname}?${new URLSearchParams(newParams).toString()}`;
     }
   };
 

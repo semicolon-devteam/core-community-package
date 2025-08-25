@@ -910,6 +910,7 @@ import {
 - [ ] API_REFERENCE.md 상세 문서 추가
 - [ ] USAGE_EXAMPLES.md 사용 예제 추가
 - [ ] 실제 import 문과 사용법 검증
+- [ ] **Storybook 스토리 추가 및 동기화** (필수 🚨)
 
 ### 🚀 배포 준비 확인
 - [ ] package.json 버전 업데이트
@@ -950,6 +951,320 @@ import {
 - 기여자 가이드라인 및 코딩 컨벤션 문서화
 - 코드 리뷰 기준 및 승인 프로세스 명시
 
+## 📚 Storybook 동기화 규칙 (필수)
+
+### 🚨 핵심 원칙: 코어 패키지와 Storybook 완전 동기화
+
+**모든 새로운 컴포넌트나 기능 추가 시 Storybook 동기화는 필수사항입니다.**
+
+### 📋 Storybook 동기화 체크리스트
+
+#### 새 컴포넌트 추가 시 (100% 필수)
+- [ ] **Storybook 스토리 파일 생성**: `storybook/src/stories/{category}/{ComponentName}.stories.tsx`
+- [ ] **기본 스토리 구성**: Default, 변형 버전들, 상호작용 예시
+- [ ] **컴포넌트 문서화**: JSDoc 스타일 설명과 사용법 가이드
+- [ ] **Props 인터랙티브 제어**: argTypes를 통한 모든 props 제어 가능
+- [ ] **사용 예시 다양화**: 최소 3-5개의 실제 사용 시나리오
+- [ ] **접근성 검증**: Storybook a11y addon으로 검증 완료
+
+#### 기존 컴포넌트 수정 시 (100% 필수)
+- [ ] **기존 스토리 업데이트**: 변경된 Props나 기능에 맞춰 스토리 수정
+- [ ] **새로운 변형 추가**: 추가된 기능이나 옵션에 대한 스토리 추가
+- [ ] **문서 동기화**: 변경사항에 맞춰 컴포넌트 설명 업데이트
+- [ ] **타입 정보 확인**: TypeScript 타입 변경사항 반영
+- [ ] **예제 코드 검증**: 모든 예제가 실제로 작동하는지 확인
+
+#### 품질 기준
+- [ ] **Visual 회귀 테스트**: 스토리북에서 모든 스토리 정상 렌더링
+- [ ] **반응형 테스트**: 다양한 뷰포트에서 컴포넌트 동작 확인
+- [ ] **상호작용 테스트**: 클릭, 호버, 포커스 등 상호작용 동작 확인
+- [ ] **Dark Mode 지원**: 테마별 렌더링 상태 확인
+- [ ] **Loading State**: 로딩 상태 및 에러 상태 스토리 제공
+
+### 🗂️ Storybook 파일 구조 규칙
+
+```
+storybook/src/stories/
+├── atoms/           # 기본 UI 요소
+├── molecules/       # 조합된 컴포넌트
+├── organisms/       # 비즈니스 로직 포함 복합 컴포넌트
+├── forms/           # 폼 관련 컴포넌트
+├── hooks/           # 커스텀 훅 예시
+└── theme/           # 테마 시스템 관련
+```
+
+### 🔄 동기화 검증 명령어
+
+```bash
+# Storybook 실행 및 검증
+npm run storybook
+
+# 모든 스토리가 정상 렌더링되는지 확인
+npm run storybook:test  # (향후 추가 예정)
+
+# 패키지 빌드 후 Storybook에서 import 테스트
+npm run build && npm run storybook
+```
+
+### 🚨 Storybook Import 에러 방지 가이드
+
+**가장 흔한 에러**: `Failed to fetch dynamically imported module`
+
+#### ✅ 올바른 Import 방식
+
+**스토리에서 컴포넌트 import 시 직접 소스 참조 사용:**
+
+```typescript
+// ✅ 올바른 방식 - 직접 소스 경로 사용
+import Board from '../../../../lib/components/molecules/Board';
+import BoardContainer from '../../../../lib/components/molecules/Board/Container';
+import type { BoardCategory } from '../../../../lib/components/molecules/Board/types';
+
+// ❌ 피해야 할 방식 - 패키지 이름 사용 (개발 환경에서 에러 발생)
+import { Board, BoardContainer } from '@team-semicolon/community-core';
+```
+
+#### 📝 Import 경로 규칙
+
+1. **Storybook 스토리에서만**: 직접 소스 경로 사용 (`../../../../lib/...`)
+2. **실제 프로젝트에서**: 패키지 이름 사용 (`@team-semicolon/community-core`)
+3. **타입 import**: 항상 소스에서 직접 import
+
+#### 🔧 Storybook 설정 최적화
+
+**`.storybook/main.ts` 설정:**
+
+```typescript
+viteFinal: async (config) => {
+  return mergeConfig(config, {
+    resolve: {
+      alias: {
+        '@team-semicolon/community-core': '../lib',
+        '@': '../lib',
+      },
+    },
+    // ... 기타 설정
+  });
+},
+```
+
+#### ⚠️ 에러 발생 시 체크리스트
+
+**`Failed to fetch dynamically imported module` 에러 발생 시:**
+
+1. **Import 경로 확인**
+   ```bash
+   # 파일 존재 여부 확인
+   ls -la lib/components/molecules/Board/
+   ```
+
+2. **상대 경로 검증**
+   ```typescript
+   // storybook/src/stories/molecules/Board.stories.tsx에서
+   // ../../../../lib/components/molecules/Board 경로가 정확한지 확인
+   ```
+
+3. **Storybook 서버 재시작**
+   ```bash
+   # Storybook 서버 재시작
+   npm run storybook
+   ```
+
+4. **캐시 클리어**
+   ```bash
+   # 캐시 클리어 후 재시작
+   rm -rf node_modules/.vite storybook/node_modules/.vite
+   npm run storybook
+   ```
+
+5. **패키지 빌드 상태 확인**
+   ```bash
+   # 패키지가 제대로 빌드되었는지 확인
+   npm run build
+   ls -la dist/
+   ```
+
+#### 🎯 예방 조치
+
+**새 컴포넌트 스토리 작성 시 필수 확인사항:**
+
+1. **Import 경로**: 반드시 상대 경로로 소스 직접 참조
+2. **타입 Import**: 타입도 소스에서 직접 import
+3. **경로 검증**: 실제 파일이 해당 경로에 존재하는지 확인
+4. **Storybook 테스트**: 스토리 작성 후 즉시 브라우저에서 확인
+
+**스토리 템플릿:**
+
+```typescript
+import type { Meta, StoryObj } from '@storybook/react';
+
+// ✅ 컴포넌트 직접 import
+import YourComponent from '../../../../lib/components/{category}/{ComponentName}';
+import type { YourComponentProps } from '../../../../lib/components/{category}/{ComponentName}/types';
+
+const meta = {
+  title: '{Category}/{ComponentName}',
+  component: YourComponent,
+  // ... 설정
+} satisfies Meta<typeof YourComponent>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    // props 설정
+  },
+};
+```
+
+#### 🔄 문제 해결 워크플로우
+
+1. **에러 발생** → Import 경로 재확인
+2. **경로 수정** → 상대 경로로 직접 소스 참조
+3. **Storybook 재시작** → 캐시 문제 해결
+4. **브라우저 테스트** → 정상 렌더링 확인
+5. **문서 업데이트** → README 또는 가이드에 추가
+
+#### 💡 개발 팁
+
+- **IDE 자동완성 활용**: VS Code에서 경로 자동완성으로 오타 방지
+- **파일 구조 일관성**: 모든 컴포넌트가 동일한 구조를 따르도록 유지
+- **정기적인 검증**: 새 스토리 추가 시마다 즉시 브라우저에서 확인
+
+### 📖 스토리 작성 가이드라인
+
+#### 필수 포함 요소
+1. **Meta 정보**: title, component, parameters 올바르게 설정
+2. **기본 스토리**: 가장 일반적인 사용 사례
+3. **Props 제어**: argTypes으로 모든 props 인터랙티브 제어
+4. **문서화**: 컴포넌트와 각 스토리에 대한 상세 설명
+5. **다양한 상태**: 로딩, 에러, 빈 상태, 성공 상태 등
+
+#### 스토리 명명 규칙
+```typescript
+// ✅ 올바른 스토리 명명
+export const Default: Story = { ... };           // 기본 상태
+export const WithIcons: Story = { ... };         // 아이콘이 있는 상태
+export const LoadingState: Story = { ... };      // 로딩 상태
+export const ErrorState: Story = { ... };        // 에러 상태
+export const MobileView: Story = { ... };        // 모바일 뷰
+
+// ❌ 피해야 할 명명
+export const Story1: Story = { ... };            // 의미 없는 이름
+export const test: Story = { ... };              // 소문자 시작
+export const 한글이름: Story = { ... };           // 한글 이름
+```
+
+### 🚀 자동화 및 CI/CD 통합 (향후 계획)
+
+```yaml
+# GitHub Actions 예시 (향후 구현)
+- name: Storybook 빌드 검증
+  run: npm run storybook:build
+  
+- name: Visual 회귀 테스트  
+  run: npm run storybook:test
+  
+- name: 컴포넌트-스토리 동기화 검증
+  run: npm run verify:storybook-sync
+```
+
+### 📝 Storybook 작성 예시
+
+```typescript
+// 올바른 스토리 구조 예시
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from '@team-semicolon/community-core';
+
+const meta = {
+  title: 'Atoms/Button',
+  component: Button,
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: '재사용 가능한 버튼 컴포넌트입니다. 다양한 variant와 size를 지원합니다.',
+      },
+    },
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'ghost', 'outline', 'danger'],
+      description: '버튼의 시각적 스타일 변형',
+    },
+    size: {
+      control: 'select', 
+      options: ['sm', 'md', 'lg', 'xl'],
+      description: '버튼의 크기',
+    },
+    loading: {
+      control: 'boolean',
+      description: '로딩 상태 표시 여부',
+    },
+  },
+} satisfies Meta<typeof Button>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    children: '기본 버튼',
+    variant: 'primary',
+    size: 'md',
+  },
+};
+
+export const AllVariants: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="danger">Danger</Button>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: '모든 variant를 보여주는 예시입니다.',
+      },
+    },
+  },
+};
+```
+
+### 🔍 동기화 검증 방법
+
+1. **패키지 빌드 후 Storybook 실행**
+   ```bash
+   npm run build
+   npm run storybook
+   ```
+
+2. **모든 import가 정상 동작하는지 확인**
+   - Console 에러 없음
+   - 모든 컴포넌트 정상 렌더링
+   - Props 제어 정상 동작
+
+3. **문서화 품질 확인**
+   - 각 스토리에 적절한 설명 있음
+   - 사용 예시가 실제 사용법과 일치
+   - 타입 정보가 정확히 표시됨
+
+### ⚠️ 주의사항
+
+- **Storybook 없이는 PR 승인 불가**: 새로운 컴포넌트나 주요 변경사항은 반드시 Storybook 포함
+- **문서화 품질 기준**: 단순히 스토리 파일만 있는 것이 아니라 사용자가 이해할 수 있는 품질의 문서화 필요
+- **실제 사용법과 일치**: Storybook의 예시는 실제 프로젝트에서 사용하는 방법과 동일해야 함
+- **지속적 업데이트**: 컴포넌트 변경 시 관련 스토리도 반드시 함께 업데이트
+
+**📢 중요**: Storybook은 단순한 문서화 도구가 아니라 **컴포넌트 개발, 테스트, 품질 관리의 핵심 도구**입니다. 모든 팀원이 Storybook을 통해 컴포넌트의 동작을 이해하고 테스트할 수 있어야 합니다.
+
 ## Important Notes
 
 - Never commit sensitive information (API keys, tokens)
@@ -960,531 +1275,16 @@ import {
 - All API responses follow the `CommonResponse<T>` pattern
 - **새로운 기능 추가 시 반드시 위의 업데이트 관리 규칙을 준수할 것**
 - **문서와 코드의 동기화를 위해 체크리스트를 활용할 것**
-
-# 미디어 프로세서 API 사용 가이드 (v2.0)
-
-## 📌 서비스 개요
-미디어 프로세서는 코인톡 커뮤니티 플랫폼의 이미지/비디오 파일에 워터마크를 자동으로 추가하고 Supabase 스토리지에 업로드하는 마이크로서비스입니다. 단일
-  파일뿐만 아니라 **다중 파일 업로드**와 **게시글 단위 관리** 기능을 지원합니다.
-
-## 🔗 API 엔드포인트
-- **Base URL**: `https://your-media-processor-api.com`
-- **Health Check**: `GET /api/health`
-- **진단**: `GET /api/media/diagnose`
-
-## 📚 주요 API 엔드포인트
-
-### 1. 단일 파일 처리
-
-#### 동기 처리 (즉시 응답)
-```http
-POST /api/media/process
-Content-Type: multipart/form-data
-
-비동기 처리 (백그라운드)
-
-POST /api/media/process-async
-Content-Type: multipart/form-data
-
-공통 파라미터:
-- file (필수): 업로드할 미디어 파일
-- userId (필수): 사용자 UUID
-- watermarkPosition (선택): 워터마크 위치 (기본값: bottom-right)
-- watermarkOpacity (선택): 투명도 0-1 (기본값: 0.7)
-- needWatermark (선택): 워터마크 적용 여부 (기본값: true)
-- needThumbnailExtract (선택): 썸네일 추출 여부 (기본값: false)
-
-2. 다중 파일 처리 (신규 🆕)
-
-게시글용 다중 파일 업로드
-
-POST /api/media/upload-async
-Content-Type: multipart/form-data
-
-파라미터:
-- files (필수): 업로드할 파일들 (최대 10개)
-- postId (필수): 게시글 ID (정수)
-- userId (필수): 사용자 UUID
-- needWatermark (선택): 워터마크 적용 여부 (기본값: true)
-- watermarkPosition (선택): 워터마크 위치 (기본값: bottom-right)
-- watermarkOpacity (선택): 투명도 (기본값: 0.7)
-
-3. 업로드 상태 관리
-
-게시글 업로드 진행률 조회
-
-GET /api/media/upload-progress/:postId
-
-실패한 파일 재시도
-
-POST /api/media/retry-upload/:postId
-Content-Type: application/json
-
-{
-  "userId": "user-uuid",
-  "failedFileUuids": ["file-uuid-1", "file-uuid-2"]
-}
-
-업로드 취소
-
-DELETE /api/media/cancel-upload/:postId
-Content-Type: application/json
-
-{
-  "userId": "user-uuid"
-}
-
-4. 기존 API (단일 파일용)
-
-작업 상태 확인
-
-GET /api/media/status/:jobId
-
-작업 결과 조회
-
-GET /api/media/result/:jobId
-
-작업 취소
-
-DELETE /api/media/cancel/:jobId
-
-🎯 사용 예시
-
-1. 단일 파일 업로드 (기존 방식)
-
-async function uploadSingleFile(file, userId) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('userId', userId);
-  formData.append('needWatermark', 'true');
-
-  const response = await fetch('/api/media/process', {
-    method: 'POST',
-    body: formData
-  });
-
-  const result = await response.json();
-  return result.data.url;
-}
-
-2. 게시글용 다중 파일 업로드 (신규 🆕)
-
-async function uploadPostFiles(files, postId, userId) {
-  const formData = new FormData();
-
-  // 파일들 추가
-  files.forEach(file => {
-    formData.append('files', file);
-  });
-
-  formData.append('postId', postId.toString());
-  formData.append('userId', userId);
-  formData.append('needWatermark', 'true');
-
-  const response = await fetch('/api/media/upload-async', {
-    method: 'POST',
-    body: formData
-  });
-
-  const result = await response.json();
-  return result.data; // { uploadId, postId, queuedFiles, failedFiles }
-}
-
-3. 업로드 진행률 모니터링
-
-async function monitorUploadProgress(postId) {
-  const checkProgress = async () => {
-    const response = await fetch(`/api/media/upload-progress/${postId}`);
-    const result = await response.json();
-
-    if (result.successOrNot === 'Y') {
-      const progress = result.data;
-      console.log('진행률:', progress);
-
-      // UI 업데이트
-      updateProgressUI(progress);
-
-      // 완료 확인
-      if (progress.status === 'completed') {
-        return progress;
-      }
-
-      // 실패한 파일이 있으면 재시도 옵션 제공
-      if (progress.failedFiles?.length > 0) {
-        handleFailedFiles(postId, progress.failedFiles);
-      }
-    }
-
-    return null;
-  };
-
-  // 폴링 시작
-  let completed = false;
-  while (!completed) {
-    const result = await checkProgress();
-    if (result) {
-      completed = true;
-      return result;
-    }
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  }
-}
-
-4. 실패한 파일 재시도
-
-async function retryFailedFiles(postId, userId, failedFileUuids) {
-  const response = await fetch(`/api/media/retry-upload/${postId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      userId: userId,
-      failedFileUuids: failedFileUuids
-    })
-  });
-
-  const result = await response.json();
-
-  if (result.successOrNot === 'Y') {
-    console.log('재시도 시작됨:', result.data.retriedFiles);
-
-    // 다시 진행률 모니터링 시작
-    return monitorUploadProgress(postId);
-  } else {
-    throw new Error(result.message);
-  }
-}
-
-5. 완전한 게시글 생성 워크플로우
-
-async function createPostWithFiles(postData, files) {
-  try {
-    // 1. 게시글 먼저 생성 (미디어 없이)
-    const post = await createPost({
-      title: postData.title,
-      content: postData.content,
-      userId: postData.userId,
-      status: 'uploading' // 업로드 중 상태
-    });
-
-    if (files && files.length > 0) {
-      // 2. 파일 업로드 시작
-      const uploadResult = await uploadPostFiles(files, post.id, postData.userId);
-
-      // 3. 업로드 진행률 모니터링
-      const finalResult = await monitorUploadProgress(post.id);
-
-      // 4. 게시글 상태 업데이트 (완료)
-      await updatePost(post.id, {
-        status: 'published',
-        mediaCount: finalResult.completedFiles?.length || 0
-      });
-
-      return {
-        post: post,
-        mediaUrls: finalResult.completedFiles?.map(f => f.url) || []
-      };
-    } else {
-      // 파일이 없으면 바로 게시
-      await updatePost(post.id, { status: 'published' });
-      return { post: post, mediaUrls: [] };
-    }
-
-  } catch (error) {
-    console.error('게시글 생성 실패:', error);
-    throw error;
-  }
-}
-
-6. 업로드 취소
-
-async function cancelUpload(postId, userId) {
-  const response = await fetch(`/api/media/cancel-upload/${postId}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ userId })
-  });
-
-  const result = await response.json();
-  return result.successOrNot === 'Y';
-}
-
-📋 응답 형식
-
-다중 파일 업로드 응답
-
-{
-  "data": {
-    "uploadId": "uuid-string",
-    "postId": 123,
-    "totalFiles": 5,
-    "queuedFiles": [
-      {
-        "uuid": "file-uuid-1",
-        "fileName": "image1.jpg",
-        "fileSize": 1024000,
-        "fileType": "image/jpeg",
-        "status": "pending",
-        "jobId": "job-uuid-1"
-      }
-    ],
-    "failedFiles": [
-      {
-        "uuid": "file-uuid-2",
-        "fileName": "invalid.txt",
-        "status": "failed",
-        "error": "지원하지 않는 파일 형식입니다"
-      }
-    ]
-  },
-  "successOrNot": "Y",
-  "statusCode": 200,
-  "message": "다중 파일 비동기 업로드가 시작되었습니다."
-}
-
-업로드 진행률 응답
-
-{
-  "data": {
-    "postId": 123,
-    "uploadId": "uuid-string",
-    "status": "processing", // pending, processing, completed, failed
-    "progress": {
-      "completed": 3,
-      "failed": 1,
-      "pending": 1,
-      "total": 5
-    },
-    "files": [
-      {
-        "uuid": "file-uuid-1",
-        "fileName": "image1.jpg",
-        "status": "completed",
-        "url": "https://...image1.jpg",
-        "jobId": "job-uuid-1"
-      },
-      {
-        "uuid": "file-uuid-2",
-        "fileName": "video1.mp4",
-        "status": "failed",
-        "error": "처리 중 오류 발생",
-        "jobId": "job-uuid-2"
-      }
-    ],
-    "completedFiles": [
-      {
-        "uuid": "file-uuid-1",
-        "fileName": "image1.jpg",
-        "url": "https://...image1.jpg",
-        "thumbnailUrl": null
-      }
-    ],
-    "failedFiles": [
-      {
-        "uuid": "file-uuid-2",
-        "fileName": "video1.mp4",
-        "error": "처리 중 오류 발생"
-      }
-    ]
-  },
-  "successOrNot": "Y",
-  "statusCode": 200,
-  "message": "업로드 진행률 조회가 완료되었습니다."
-}
-
-⚡ 성능 최적화 팁
-
-다중 파일 업로드 권장사항
-
-- 파일 수 제한: 한 번에 최대 10개 파일
-- 총 용량 제한: 게시글당 총 2GB 권장
-- 동시 처리: 자동으로 최적화된 동시 처리 적용
-- 재시도 로직: 실패한 파일만 선별적으로 재시도
-
-게시글 생성 워크플로우
-
-1. 게시글 먼저 생성: 미디어 업로드와 독립적으로 게시글 생성
-2. 백그라운드 업로드: 사용자는 업로드 진행률 확인 가능
-3. 점진적 완성: 파일이 처리되는 대로 게시글에 반영
-4. 에러 복구: 일부 파일 실패 시에도 성공한 파일은 유지
-
-처리 시간 예상 (다중 파일)
-
-- 이미지 5개 (각 2MB): 5-15초
-- 이미지 + 비디오 (총 50MB): 30초-2분
-- 대용량 비디오 여러 개: 2-10분
-
-🔧 환경 변수 설정
-
-# 미디어 프로세서 API URL
-MEDIA_PROCESSOR_API_URL=https://your-media-processor-api.com
-
-# Supabase 설정
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# 워터마크 텍스트
-DEFAULT_WATERMARK_TEXT=CoinTalk Community
-
-📦 지원 파일 형식
-
-이미지
-
-- JPEG/JPG (image/jpeg)
-- PNG (image/png)
-- GIF (image/gif) - 애니메이션 유지
-- WebP (image/webp)
-
-비디오
-
-- MP4 (video/mp4)
-- AVI (video/avi)
-- MOV (video/mov, video/quicktime)
-
-🚨 주의사항
-
-1. 게시글 소유권: 모든 다중 파일 API는 게시글 소유권 검증 필수
-2. 파일 제한: 단일 파일 최대 200MB, 게시글당 최대 10개 파일
-3. 동시 업로드: 한 사용자당 동시에 하나의 다중 파일 업로드만 권장
-4. 에러 처리: 부분 실패 시 성공한 파일은 유지, 실패한 파일만 재시도 가능
-5. 리소스 정리: 업로드 취소 시 Supabase에서 자동으로 첨부파일 정리
-
-🔍 디버깅 및 모니터링
-
-Supabase 연결 진단
-
-GET /api/media/diagnose
-
-성능 통계
-
-GET /api/media/stats
-
-병목점 분석
-
-GET /api/media/bottleneck
-
-💡 통합 예제 - 코인톡 게시글 에디터
-
-class PostMediaUploader {
-  constructor(postId, userId) {
-    this.postId = postId;
-    this.userId = userId;
-    this.uploadId = null;
-    this.isUploading = false;
-  }
-
-  async uploadFiles(files) {
-    if (this.isUploading) {
-      throw new Error('이미 업로드가 진행 중입니다.');
-    }
-
-    this.isUploading = true;
-
-    try {
-      // 1. 업로드 시작
-      const uploadResult = await uploadPostFiles(files, this.postId, this.userId);
-      this.uploadId = uploadResult.uploadId;
-
-      // 2. 진행률 모니터링
-      const finalResult = await this.monitorProgress();
-
-      return finalResult;
-    } finally {
-      this.isUploading = false;
-    }
-  }
-
-  async monitorProgress() {
-    return new Promise((resolve, reject) => {
-      const checkProgress = async () => {
-        try {
-          const response = await fetch(`/api/media/upload-progress/${this.postId}`);
-          const result = await response.json();
-
-          if (result.successOrNot === 'Y') {
-            const progress = result.data;
-
-            // 진행률 UI 업데이트
-            this.onProgressUpdate?.(progress);
-
-            // 완료 확인
-            if (progress.status === 'completed') {
-              resolve(progress);
-              return;
-            }
-
-            // 실패한 파일 처리
-            if (progress.failedFiles?.length > 0) {
-              this.onFailure?.(progress.failedFiles);
-            }
-
-            // 다음 체크 스케줄
-            setTimeout(checkProgress, 2000);
-          } else {
-            reject(new Error(result.message));
-          }
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      checkProgress();
-    });
-  }
-
-  async retryFailedFiles(failedFileUuids) {
-    if (!this.isUploading) {
-      this.isUploading = true;
-
-      try {
-        await retryFailedFiles(this.postId, this.userId, failedFileUuids);
-        return await this.monitorProgress();
-      } finally {
-        this.isUploading = false;
-      }
-    }
-  }
-
-  async cancel() {
-    if (this.isUploading) {
-      await cancelUpload(this.postId, this.userId);
-      this.isUploading = false;
-    }
-  }
-}
-
-// 사용 예시
-const uploader = new PostMediaUploader(postId, userId);
-
-uploader.onProgressUpdate = (progress) => {
-  console.log(`진행률: ${progress.progress.completed}/${progress.progress.total}`);
-  updateProgressBar(progress.progress.completed / progress.progress.total * 100);
-};
-
-uploader.onFailure = (failedFiles) => {
-  console.log('실패한 파일:', failedFiles);
-  showRetryOption(failedFiles);
-};
-
-// 파일 업로드 시작
-uploader.uploadFiles(selectedFiles)
-  .then(result => {
-    console.log('업로드 완료:', result);
-    displayCompletedFiles(result.completedFiles);
-  })
-  .catch(error => {
-    console.error('업로드 실패:', error);
-  });
-
-📞 문의 및 지원
-
-- Supabase 연결 문제: /api/media/diagnose 엔드포인트로 진단
-- 성능 이슈: /api/media/stats 및 /api/media/bottleneck 활용
-- API 상태 확인: /api/health 엔드포인트 모니터링
-- 사용자 정보를 저장할때는, @src/model/User/index.ts 의 User타입에 맞게 저장되도록 할 것..
-- 프로젝트 전역적으로 페이지네이션 구현은 @src/component/molecules/Board/Pagination/index.tsx 컴포넌트를 사용 할 것.
-- 로그인한 사용자 정보를 얻을 땐 다음 방법 사용; - 서버사이드 컴포넌트: @src/services/userServiceByServerSide.ts:getUserInfoDirect() - 클라이언트 사이드 컴포넌트 : @src/redux/Features/User/userSlice.ts:selectUserInfo()
-- 앞으로 외부 공개용 문서는 `/docs`에, 내부 개발 참고용 문서는 `./docs`에 저장해줘
+- **🚨 Storybook 동기화 없이는 어떤 컴포넌트도 완성된 것으로 간주하지 않음**
+
+## Important Notes
+
+- Never commit sensitive information (API keys, tokens)
+- Use TypeScript strictly - all components and functions should be properly typed
+- Follow the existing code patterns and architectural decisions
+- The global loading system is automatic - don't create duplicate loading states
+- Permission checks are centralized - don't implement custom authorization logic
+- All API responses follow the `CommonResponse<T>` pattern
+- **새로운 기능 추가 시 반드시 위의 업데이트 관리 규칙을 준수할 것**
+- **문서와 코드의 동기화를 위해 체크리스트를 활용할 것**
+- **🚨 Storybook 동기화 없이는 어떤 컴포넌트도 완성된 것으로 간주하지 않음**

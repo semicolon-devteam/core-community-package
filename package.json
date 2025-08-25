@@ -47,7 +47,8 @@
     "test": "vitest",
     "type-check": "tsc --noEmit",
     "dev": "rollup -c -w",
-    "deploy": "npm publish --access public"
+    "deploy": "npm publish --access public",
+    "storybook": "cd storybook && npm run storybook"
   },
   "peerDependencies": {
     "next": "^13.0.0 || ^14.0.0 || ^15.0.0",

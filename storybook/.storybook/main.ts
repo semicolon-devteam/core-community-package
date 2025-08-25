@@ -34,6 +34,12 @@ const config: StorybookConfig = {
   },
   viteFinal: async (config) => {
     return mergeConfig(config, {
+      resolve: {
+        alias: {
+          '@team-semicolon/community-core': '../lib',
+          '@': '../lib',
+        },
+      },
       css: {
         postcss: {
           plugins: [
@@ -41,20 +47,6 @@ const config: StorybookConfig = {
             require('autoprefixer'),
           ],
         },
-      },
-      build: {
-        rollupOptions: {
-          external: [
-            // 완전히 external로 처리하여 번들링에서 제외
-            '@team-semicolon/community-core',
-            /^@redux\/.*/,
-            /^@hooks\/.*/,
-            /^@util\/.*/,
-            /^@services\/.*/,
-            /^@organisms\/.*/,
-            /^@constants\/.*/
-          ]
-        }
       },
       define: {
         global: 'globalThis',

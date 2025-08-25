@@ -1,20 +1,38 @@
 'use client';
 
-import PaginationItem from '@atoms/PaginationItem';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
+import type { BoardPaginationProps } from '../types';
 
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+// Simple PaginationItem component for package independence
+interface PaginationItemProps {
+  number: number;
+  isActive: boolean;
+  onClick: () => void;
+  isVisible: boolean;
 }
 
-export default function Pagination({
+function PaginationItem({ number, isActive, onClick }: PaginationItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex justify-center items-center text-sm font-medium transition-colors
+        ${isActive 
+          ? 'bg-primary text-white' 
+          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+        }`}
+    >
+      {number}
+    </button>
+  );
+}
+
+export default function BoardPagination({
   currentPage,
   totalPages,
   onPageChange,
-}: PaginationProps) {
+  className = '',
+}: BoardPaginationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -112,7 +130,7 @@ export default function Pagination({
   );
 
   return (
-    <div className="flex justify-center items-center gap-1 my-4">
+    <div className={`flex justify-center items-center gap-1 my-4 ${className}`.trim()}>
       {/* 첫 페이지 */}
       <ArrowButton
         direction="left"

@@ -12,6 +12,9 @@ export { Input, Select, Checkbox, Radio, Switch, TextArea } from './components/a
 export type { InputProps, SelectProps, SelectOption, CheckboxProps, RadioProps, SwitchProps, TextAreaProps } from './components/atoms';
 export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonButton, SkeletonCard } from './components/atoms';
 export type { SkeletonProps } from './components/atoms';
+export { default as Board } from './components/molecules/Board';
+export { BoardContainer, BoardHeader, BoardPagination, BoardTable, BoardWrapper } from './components/molecules/Board';
+export type { BoardCategory, BoardContainerProps, BoardHeaderProps, BoardPaginationProps, BoardTableHeaderProps, BoardTableColumn, BoardTableRowProps, BoardWrapperProps, BoardSearchBoxProps, BoardPostItem, BoardListResponse, BoardFilters } from './components/molecules/Board';
 export { BaseService, UserService, PostService, BoardService, AuthService, PermissionService } from './services';
 export { baseService, userService, postService, boardService, authService, permissionService } from './services';
 export type { RequestOptions, HttpMethod, UserServiceOptions, UserPermission, UserUpdateData, UserSearchOptions, PostServiceOptions, PostListOptions, PostCreateData, PostUpdateData, PostDownloadHistory, DraftPostRequest, DraftPostResponse, AsyncUploadConfig, UploadStartResponse, UploadProgressResponse, BoardServiceOptions, BoardListOptions, BoardCreateData, BoardUpdateData, BoardCategoryCreateData, BoardStats, AuthServiceOptions, LoginCredentials, RegisterData, AuthTokens, AuthResponse, PasswordResetData, PasswordChangeData, SessionInfo, PermissionServiceOptions, PermissionCheck, PermissionResult, UserPermissions, LevelInfo, RoleInfo, PermissionGrant } from './services';

@@ -1,21 +1,40 @@
-import BoardTableHeader from "@atoms/Column/BoardTableHeader";
-import type { Column } from "@atoms/Column/column.model";
-import { useAppSelector } from "@hooks/common";
-import { selectUIState } from "@redux/Features/UI/uiSlice";
+'use client';
 
-export default function TableHeader({ columns }: { columns: Column[] }) {
-  const { isMobile } = useAppSelector(selectUIState);
-  
-  // 모바일 여부에 따라 grid 설정 분기 (row는 자동으로 결정)
-  const gridClasses = isMobile 
-    ? "w-full bg-white border-b border-border-default grid grid-cols-12 gap-1"
-    : "w-full bg-white border-b border-border-default grid grid-cols-12 gap-2";
+import { ReactNode } from 'react';
+import type { BoardTableHeaderProps } from '../../types';
+
+/**
+ * Board Table Header 컴포넌트
+ * 게시판 테이블의 헤더를 렌더링합니다.
+ */
+export default function BoardTableHeader({ 
+  columns, 
+  className = '' 
+}: BoardTableHeaderProps) {
+  if (!columns || columns.length === 0) {
+    return null;
+  }
 
   return (
-    <div className={gridClasses}>
-      {columns.map((column, index) => (
-        <BoardTableHeader key={`${column.id}-${index}`} column={column} />
-      ))}
+    <div className={`w-full bg-gray-50 border-b border-gray-200 ${className}`.trim()}>
+      <div className="grid grid-cols-12 gap-2 px-4 py-3">
+        {columns.map((column, index) => (
+          <div
+            key={`header-${column.key}-${index}`}
+            className={`
+              text-sm font-medium text-gray-700 truncate
+              ${column.align === 'center' ? 'text-center' : ''}
+              ${column.align === 'right' ? 'text-right' : ''}
+              ${column.className || ''}
+            `.trim()}
+            style={{ 
+              gridColumn: column.width || 'span 1',
+            }}
+          >
+            {column.label}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
