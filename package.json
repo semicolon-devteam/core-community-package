@@ -42,7 +42,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:lib",
     "build:lib": "rollup -c",
-    "build:storybook": "cd storybook && npm install && npm run build-storybook",
+    "build:storybook": "npm install --prefix storybook && npm run build-storybook --prefix storybook",
     "build:all": "npm run build && npm run build:storybook",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build",

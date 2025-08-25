@@ -24,7 +24,9 @@
       "Bash(npm run storybook:*)",
       "Bash(timeout 60s npm run build-storybook)",
       "Bash(git commit:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "additionalDirectories": [
