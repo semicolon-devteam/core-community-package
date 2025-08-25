@@ -60,7 +60,11 @@ const config: StorybookConfig = {
             'next/image',
             'next/head',
           ],
+          output: {
+            manualChunks: undefined,
+          },
         },
+        chunkSizeWarningLimit: 1000,
       },
     });
   },

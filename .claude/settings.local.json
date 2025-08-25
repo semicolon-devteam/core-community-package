@@ -27,7 +27,8 @@
       "Bash(npm run:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(killall:*)"
+      "Bash(killall:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "additionalDirectories": [
