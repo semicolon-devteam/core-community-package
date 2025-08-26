@@ -109,7 +109,8 @@ export {
   PostService, 
   BoardService,
   AuthService,
-  PermissionService
+  PermissionService,
+  NotificationService
 } from './services';
 
 // Legacy Service Objects (backward compatibility)
@@ -119,7 +120,8 @@ export {
   postService,
   boardService,
   authService,
-  permissionService
+  permissionService,
+  notificationService
 } from './services';
 
 // Service Types
@@ -160,7 +162,15 @@ export type {
   UserPermissions,
   LevelInfo,
   RoleInfo,
-  PermissionGrant
+  PermissionGrant,
+  NotificationServiceOptions,
+  UserNotification,
+  NotificationListResponse,
+  NotificationTemplate,
+  NotificationSettings,
+  BulkNotificationRequest,
+  NotificationSendResult,
+  NotificationStats
 } from './services';
 
 // =============================================================================
@@ -178,6 +188,22 @@ export { useUserPointQuery, useUserPointHistoryQuery } from './hooks/queries/use
 export { usePostQuery, usePostBookmarkQuery, useDraftPostQuery } from './hooks/queries/usePostQuery';
 export { useBoardQuery } from './hooks/queries/useBoardQuery';
 export { useCommentQuery } from './hooks/queries/useCommentQuery';
+export { 
+  useNotificationsQuery, 
+  useUnreadNotificationCountQuery, 
+  useNotificationStatsQuery,
+  useNotificationSettingsQuery,
+  useNotificationTemplatesQuery
+} from './hooks/queries/useNotificationQuery';
+export {
+  useMarkNotificationAsReadCommand,
+  useMarkAllNotificationsAsReadCommand,
+  useDeleteNotificationCommand,
+  useUpdateNotificationSettingsCommand,
+  useBulkNotificationCommand,
+  useScheduleNotificationCommand,
+  useCancelScheduledNotificationCommand
+} from './hooks/commands/useNotificationCommand';
 
 // Common Utility Hooks
 export { useDeviceType } from './hooks/common/useDeviceType';
@@ -255,5 +281,5 @@ export type {
 // =============================================================================
 // VERSION INFO
 // =============================================================================
-export const VERSION = '1.3.2';
+export const VERSION = '1.7.0';
 export const PACKAGE_NAME = '@team-semicolon/community-core';

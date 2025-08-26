@@ -866,6 +866,70 @@ import {
    npm version major  # 호환성 변경
    ```
 
+### 📊 버전 관리 규칙 (Semantic Versioning)
+
+**@team-semicolon/community-core 패키지의 버전 관리 전략:**
+
+#### 🎯 버전 번호 체계: `MAJOR.MINOR.PATCH`
+
+**Major 버전 (X.0.0)**
+- **기준**: 호환성을 깨는 변경사항 또는 완전한 아키텍처 재설계
+- **예시**: 
+  - v2.0.0: 오늘 분석한 내용의 모든 기능 완료 (메시징, 실시간, React Native 지원 등)
+  - API 인터페이스 변경으로 기존 코드 수정 필요
+  - 주요 의존성 업그레이드로 인한 Breaking Changes
+
+**Minor 버전 (1.X.0)**
+- **기준**: 새로운 기능 추가 (하위 호환성 유지)
+- **예시**:
+  - v1.7.0: 알림 시스템 (NotificationService + 훅 + Storybook) 추가
+  - v1.8.0: 메시징 시스템 추가 예정
+  - v1.9.0: Supabase Realtime 통합 예정
+- **포함 작업**:
+  - 새로운 서비스, 훅, 컴포넌트 추가
+  - 새로운 export 추가
+  - Storybook 새 스토리 추가
+
+**Patch 버전 (1.7.X)**
+- **기준**: 버그 수정, 문서 개선, 기존 기능 보완
+- **예시**:
+  - v1.7.1: CLAUDE.md 버전 관리 규칙 문서화
+  - v1.7.2: NotificationService의 에러 핸들링 개선
+  - v1.7.3: Storybook 스토리 설명 보완
+- **포함 작업**:
+  - 문서 추가/수정
+  - 버그 수정
+  - 기존 기능의 성능 개선
+  - 타입 정의 보완
+  - 테스트 추가
+
+#### 🏷️ 현재 로드맵
+
+```
+v1.7.0 ✅ 알림 시스템 완료 (NotificationService + 훅 + Storybook)
+v1.8.0 🔄 메시징 시스템 (MessageService + 채팅 UI + Storybook)
+v1.9.0 📋 Supabase Realtime 통합 (RealtimeService + 실시간 훅)
+v1.10.0 📋 React Native 지원 (모바일 컴포넌트 + 푸시 알림)
+v2.0.0 🎯 모든 공통 기능 완료 (완전한 커뮤니티 코어 패키지)
+```
+
+#### 📝 버전 업데이트 체크리스트
+
+**Minor 버전 업데이트 시:**
+1. 새 기능의 완전한 구현 확인
+2. Storybook 동기화 완료
+3. package.json 버전 업데이트
+4. lib/index.ts VERSION 상수 업데이트
+5. CLAUDE.md 기능 명세 업데이트
+6. Git 태그와 함께 커밋
+7. NPM 배포 (선택사항)
+
+**Patch 버전 업데이트 시:**
+1. 문서 또는 버그 수정 완료
+2. 기존 기능 영향도 검증
+3. 필요시 타입 체크 및 빌드 검증
+4. 버전 업데이트 및 커밋
+
 3. **Documentation 동기화**
    - `API_REFERENCE.md`: 상세한 API 문서 업데이트
    - `USAGE_EXAMPLES.md`: 실제 사용 예제 추가

@@ -5,6 +5,7 @@ export { default as PostService, postService } from './postService';
 export { default as BoardService, boardService } from './boardService';
 export { default as AuthService, authService } from './authService';
 export { default as PermissionService, permissionService } from './permissionService';
+export { NotificationService, notificationService } from './notificationService';
 
 // Type Exports
 export type { RequestOptions, HttpMethod } from './baseService';
@@ -53,3 +54,13 @@ export type {
   RoleInfo,
   PermissionGrant
 } from './permissionService';
+export type {
+  NotificationServiceOptions,
+  UserNotification,
+  NotificationListResponse,
+  NotificationTemplate,
+  NotificationSettings,
+  BulkNotificationRequest,
+  NotificationSendResult,
+  NotificationStats
+} from './notificationService';
