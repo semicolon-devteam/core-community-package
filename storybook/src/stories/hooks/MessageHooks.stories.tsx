@@ -1,172 +1,271 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Button } from '../../components/Button';
+import { Badge } from '../../components/Badge';
+import { Skeleton } from '../../components/Skeleton';
 
-// 메시징 훅들 import (직접 소스 경로 사용)
-import { 
-  useChatRoomsQuery,
-  useChatRoomQuery,
-  useMessagesQuery,
-  useChatParticipantsQuery,
-  useChatRoomStatsQuery,
-  useMessageSearchQuery,
-  useDirectChatExistsQuery,
-  useMessageFileUrlQuery
-} from '../../../../lib/hooks/queries/useMessageQuery';
-
-import {
-  useCreateChatRoomCommand,
-  useGetOrCreateDirectChatCommand,
-  useSendMessageCommand,
-  useUpdateMessageCommand,
-  useDeleteMessageCommand,
-  useMarkMessagesAsReadCommand,
-  useLeaveChatRoomCommand,
-  useInviteParticipantsCommand,
-  useUpdateChatRoomSettingsCommand,
-  useUploadMessageFileCommand
-} from '../../../../lib/hooks/commands/useMessageCommand';
-
-import type {
-  ChatRoom,
-  Message,
-  ChatParticipant,
-  CreateChatRoomRequest,
-  SendMessageRequest
-} from '../../../../lib/types/messaging';
-
-// QueryClient 설정
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
+// Mock 메시징 데이터
+const mockChatRooms = [
+  {
+    id: 'room-1',
+    status: 'active',
+    last_message_at: '2024-01-15T10:30:00Z',
+    created_at: '2024-01-10T09:00:00Z',
+    participants: [
+      {
+        id: 'participant-1',
+        room_id: 'room-1',
+        user_id: 'user-1',
+        joined_at: '2024-01-10T09:00:00Z',
+        is_active: true,
+        notification_settings: { mute: false, push_enabled: true },
+        user: { id: 'user-1', nickname: '김철수', avatar_path: '/avatar1.jpg', permission_type: 'user' }
+      },
+      {
+        id: 'participant-2',
+        room_id: 'room-1',
+        user_id: 'user-2',
+        joined_at: '2024-01-10T09:30:00Z',
+        is_active: true,
+        notification_settings: { mute: false, push_enabled: true },
+        user: { id: 'user-2', nickname: '이영희', avatar_path: '/avatar2.jpg', permission_type: 'user' }
+      }
+    ],
+    last_message: {
+      id: 'msg-1',
+      room_id: 'room-1',
+      sender_id: 'user-1',
+      content: '안녕하세요! 오늘 프로젝트 회의 어떠셨나요?',
+      status: 'read',
+      created_at: '2024-01-15T10:30:00Z',
+      sender: { id: 'user-1', nickname: '김철수', avatar_path: '/avatar1.jpg' }
     },
+    unread_count: 3
   },
-});
+  {
+    id: 'room-2',
+    status: 'active',
+    last_message_at: '2024-01-15T09:15:00Z',
+    created_at: '2024-01-12T14:20:00Z',
+    participants: [
+      {
+        id: 'participant-3',
+        room_id: 'room-2',
+        user_id: 'user-3',
+        joined_at: '2024-01-12T14:20:00Z',
+        is_active: true,
+        notification_settings: { mute: true, push_enabled: false },
+        user: { id: 'user-3', nickname: '박민수', avatar_path: '/avatar3.jpg', permission_type: 'user' }
+      }
+    ],
+    last_message: {
+      id: 'msg-5',
+      room_id: 'room-2',
+      sender_id: 'user-3',
+      content: '네, 알겠습니다!',
+      status: 'delivered',
+      created_at: '2024-01-15T09:15:00Z',
+      sender: { id: 'user-3', nickname: '박민수', avatar_path: '/avatar3.jpg' }
+    },
+    unread_count: 0
+  }
+];
 
-// Mock API 응답 함수들
-const mockApi = {
-  getChatRooms: () => ({
-    successOrNot: 'Y' as const,
-    statusCode: 200,
-    data: {
-      rooms: [
-        {
-          id: 'room-1',
-          status: 'active' as const,
-          last_message_at: '2024-01-15T10:30:00Z',
-          created_at: '2024-01-10T09:00:00Z',
-          participants: [
-            {
-              id: 'participant-1',
-              room_id: 'room-1',
-              user_id: 'user-1',
-              joined_at: '2024-01-10T09:00:00Z',
-              is_active: true,
-              notification_settings: { mute: false, push_enabled: true },
-              user: { id: 'user-1', nickname: '김철수', avatar_path: '/avatar1.jpg', permission_type: 'user' }
-            }
-          ],
-          last_message: {
-            id: 'msg-1',
-            room_id: 'room-1',
-            sender_id: 'user-1',
-            content: '안녕하세요!',
-            status: 'read' as const,
-            created_at: '2024-01-15T10:30:00Z',
-            sender: { id: 'user-1', nickname: '김철수', avatar_path: '/avatar1.jpg' }
-          },
-          unread_count: 0
-        }
-      ],
-      total_count: 1,
-      has_more: false,
-      current_page: 1,
-      total_pages: 1
-    }
-  }),
+const mockMessages = [
+  {
+    id: 'msg-1',
+    room_id: 'room-1',
+    sender_id: 'user-1',
+    content: '안녕하세요! 오늘 프로젝트 회의 어떠셨나요?',
+    status: 'read',
+    created_at: '2024-01-15T10:30:00Z',
+    sender: { id: 'user-1', nickname: '김철수', avatar_path: '/avatar1.jpg' }
+  },
+  {
+    id: 'msg-2',
+    room_id: 'room-1',
+    sender_id: 'user-2',
+    content: '회의 잘 마무리됐습니다. 다음 주 일정도 논의해봐야겠어요.',
+    status: 'read',
+    reply_to_id: 'msg-1',
+    created_at: '2024-01-15T10:35:00Z',
+    sender: { id: 'user-2', nickname: '이영희', avatar_path: '/avatar2.jpg' }
+  },
+  {
+    id: 'msg-3',
+    room_id: 'room-1',
+    sender_id: 'current-user',
+    content: '좋은 아이디어네요! 내일 오전에 시간 있으실까요?',
+    status: 'sent',
+    created_at: '2024-01-15T10:40:00Z',
+    sender: { id: 'current-user', nickname: '현재사용자', avatar_path: '/my-avatar.jpg' }
+  }
+];
 
-  getChatRoomStats: () => ({
-    successOrNot: 'Y' as const,
-    statusCode: 200,
-    data: {
-      total_rooms: 5,
-      active_rooms: 3,
-      total_messages: 124,
-      unread_messages: 8,
-      participants_count: 15
-    }
-  }),
-
-  getMessages: () => ({
-    successOrNot: 'Y' as const,
-    statusCode: 200,
-    data: {
-      messages: [
-        {
-          id: 'msg-1',
-          room_id: 'room-1',
-          sender_id: 'user-1',
-          content: '안녕하세요! 오늘 날씨가 좋네요.',
-          status: 'read' as const,
-          created_at: '2024-01-15T10:30:00Z',
-          sender: { id: 'user-1', nickname: '김철수', avatar_path: '/avatar1.jpg' }
-        },
-        {
-          id: 'msg-2',
-          room_id: 'room-1',
-          sender_id: 'user-2',
-          content: '네, 정말 맑고 따뜻해요!',
-          status: 'read' as const,
-          reply_to_id: 'msg-1',
-          created_at: '2024-01-15T10:35:00Z',
-          sender: { id: 'user-2', nickname: '이영희', avatar_path: '/avatar2.jpg' }
-        }
-      ],
-      total_count: 2,
-      has_more: false,
-      current_page: 1,
-      total_pages: 1,
-      participants: []
-    }
-  }),
-
-  sendMessage: (request: SendMessageRequest) => ({
-    successOrNot: 'Y' as const,
-    statusCode: 201,
-    data: {
-      id: 'new-msg-' + Date.now(),
-      room_id: request.room_id,
-      sender_id: 'current-user',
-      content: request.content,
-      status: 'sent' as const,
-      created_at: new Date().toISOString(),
-      sender: { id: 'current-user', nickname: '현재사용자', avatar_path: '/my-avatar.jpg' }
-    }
-  })
+const mockStats = {
+  total_rooms: 5,
+  active_rooms: 3,
+  total_messages: 124,
+  unread_messages: 8,
+  participants_count: 15
 };
 
-// Mock 서비스 오버라이드
-const originalMessageService = require('../../../../lib/services/messageService');
-jest.mock('../../../../lib/services/messageService', () => ({
-  MessageService: class MockMessageService {
-    async getChatRooms() { return mockApi.getChatRooms(); }
-    async getChatRoomsSilent() { return mockApi.getChatRooms(); }
-    async getChatRoom() { return { successOrNot: 'Y', statusCode: 200, data: mockApi.getChatRooms().data.rooms[0] }; }
-    async getMessages() { return mockApi.getMessages(); }
-    async getMessagesSilent() { return mockApi.getMessages(); }
-    async getChatRoomStats() { return mockApi.getChatRoomStats(); }
-    async getChatRoomStatsSilent() { return mockApi.getChatRoomStats(); }
-    async sendMessage(request: SendMessageRequest) { return mockApi.sendMessage(request); }
-    async sendMessageSilent(request: SendMessageRequest) { return mockApi.sendMessage(request); }
-    async getChatParticipants() { return { successOrNot: 'Y', statusCode: 200, data: [] }; }
-    async checkDirectChatExists() { return { successOrNot: 'Y', statusCode: 200, data: { exists: false } }; }
-    async getMessageFileUrl() { return { successOrNot: 'Y', statusCode: 200, data: { download_url: 'https://example.com/file.jpg' } }; }
-    async searchMessages() { return mockApi.getMessages(); }
-  }
-}));
+// Mock 훅들
+const useChatRoomsQueryMock = ({ page = 1, pageSize = 20 }: { page?: number; pageSize?: number } = {}) => {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setData({
+        rooms: mockChatRooms,
+        total_count: mockChatRooms.length,
+        has_more: false,
+        current_page: page,
+        total_pages: 1
+      });
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [page, pageSize]);
+  
+  return { 
+    data, 
+    isLoading, 
+    error: null,
+    refetch: () => {
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 500);
+    }
+  };
+};
+
+const useMessagesQueryMock = ({ roomId }: { roomId: string }) => {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      const roomMessages = mockMessages.filter(m => m.room_id === roomId);
+      setData({
+        messages: roomMessages,
+        total_count: roomMessages.length,
+        has_more: false,
+        current_page: 1,
+        total_pages: 1,
+        participants: mockChatRooms.find(r => r.id === roomId)?.participants || []
+      });
+      setIsLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, [roomId]);
+  
+  return { 
+    data, 
+    isLoading, 
+    error: null,
+    refetch: () => {
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 500);
+    }
+  };
+};
+
+const useChatRoomStatsQueryMock = () => {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setData(mockStats);
+      setIsLoading(false);
+    }, 600);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  return { data, isLoading, error: null };
+};
+
+const useSendMessageCommandMock = () => {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<any>(null);
+  
+  const mutateAsync = async ({ request }: { request: any }) => {
+    setIsPending(true);
+    setError(null);
+    
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (Math.random() > 0.1) { // 90% 성공률
+          const newMessage = {
+            id: 'new-msg-' + Date.now(),
+            room_id: request.room_id,
+            sender_id: 'current-user',
+            content: request.content,
+            status: 'sent',
+            created_at: new Date().toISOString(),
+            sender: { id: 'current-user', nickname: '현재사용자', avatar_path: '/my-avatar.jpg' }
+          };
+          setData(newMessage);
+          setIsPending(false);
+          resolve(newMessage);
+        } else {
+          const errorMsg = new Error('네트워크 연결을 확인해주세요.');
+          setError(errorMsg);
+          setIsPending(false);
+          reject(errorMsg);
+        }
+      }, 1200);
+    });
+  };
+  
+  return { isPending, error, data, mutateAsync };
+};
+
+const useCreateChatRoomCommandMock = () => {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const mutateAsync = async (request: any) => {
+    setIsPending(true);
+    setError(null);
+    
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (request.participant_ids.length > 0) {
+          const newRoom = {
+            id: 'room-' + Date.now(),
+            status: 'active',
+            created_at: new Date().toISOString(),
+            participants: request.participant_ids.map((id: string) => ({
+              id: 'participant-' + id,
+              room_id: 'room-' + Date.now(),
+              user_id: id,
+              joined_at: new Date().toISOString(),
+              is_active: true,
+              notification_settings: { mute: false, push_enabled: true }
+            }))
+          };
+          setIsPending(false);
+          resolve(newRoom);
+        } else {
+          const errorMsg = new Error('최소 1명의 참여자가 필요합니다.');
+          setError(errorMsg);
+          setIsPending(false);
+          reject(errorMsg);
+        }
+      }, 1500);
+    });
+  };
+  
+  return { isPending, error, mutateAsync };
+};
 
 const meta: Meta = {
   title: 'Hooks/MessageHooks',
@@ -209,17 +308,7 @@ await sendMessage.mutateAsync({
         `
       }
     }
-  },
-  decorators: [
-    (Story) => (
-      <QueryClientProvider client={queryClient}>
-        <div style={{ padding: '1rem' }}>
-          <Story />
-        </div>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    ),
-  ],
+  }
 };
 
 export default meta;
@@ -230,12 +319,12 @@ type Story = StoryObj<typeof meta>;
  */
 export const ChatRoomsList: Story = {
   render: () => {
-    const { data: chatRooms, isLoading, error, refetch } = useChatRoomsQuery({
+    const { data: chatRooms, isLoading, error, refetch } = useChatRoomsQueryMock({
       page: 1,
       pageSize: 10
     });
 
-    const { data: stats } = useChatRoomStatsQuery();
+    const { data: stats } = useChatRoomStatsQueryMock();
 
     if (isLoading) return <div>채팅방 목록을 불러오는 중...</div>;
     if (error) return <div style={{ color: 'red' }}>오류: {error.message}</div>;
@@ -263,7 +352,7 @@ export const ChatRoomsList: Story = {
         )}
 
         {/* 채팅방 목록 */}
-        {chatRooms?.rooms?.map((room) => (
+        {chatRooms?.rooms?.map((room: any) => (
           <div key={room.id} style={{ 
             border: '1px solid #e0e0e0', 
             borderRadius: '8px', 
@@ -275,17 +364,10 @@ export const ChatRoomsList: Story = {
               <div>
                 <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
                   채팅방 ID: {room.id}
-                  {room.unread_count! > 0 && (
-                    <span style={{ 
-                      background: '#ef4444', 
-                      color: 'white', 
-                      borderRadius: '12px', 
-                      padding: '2px 8px', 
-                      fontSize: '12px',
-                      marginLeft: '0.5rem'
-                    }}>
+                  {room.unread_count > 0 && (
+                    <Badge variant="danger" style={{ marginLeft: '0.5rem' }}>
                       {room.unread_count}
-                    </span>
+                    </Badge>
                   )}
                 </div>
                 {room.last_message && (
@@ -304,16 +386,9 @@ export const ChatRoomsList: Story = {
           </div>
         ))}
 
-        <button onClick={() => refetch()} style={{ 
-          padding: '0.5rem 1rem', 
-          background: '#3b82f6', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}>
+        <Button onClick={() => refetch()} variant="secondary">
           🔄 새로고침
-        </button>
+        </Button>
       </div>
     );
   },
@@ -334,20 +409,11 @@ export const MessagesManagement: Story = {
     const [selectedRoomId, setSelectedRoomId] = useState('room-1');
     const [newMessage, setNewMessage] = useState('');
     
-    const { data: messages, isLoading: messagesLoading, refetch } = useMessagesQuery({
-      roomId: selectedRoomId,
-      page: 1,
-      pageSize: 20
-    });
-
-    const { data: participants } = useChatParticipantsQuery({
+    const { data: messages, isLoading: messagesLoading, refetch } = useMessagesQueryMock({
       roomId: selectedRoomId
     });
 
-    const sendMessage = useSendMessageCommand();
-    const updateMessage = useUpdateMessageCommand();
-    const deleteMessage = useDeleteMessageCommand();
-    const markAsRead = useMarkMessagesAsReadCommand();
+    const sendMessage = useSendMessageCommandMock();
 
     const handleSendMessage = async () => {
       if (!newMessage.trim()) return;
@@ -361,25 +427,13 @@ export const MessagesManagement: Story = {
         });
         setNewMessage('');
         // 성공 후 refetch는 자동으로 처리됨
+        setTimeout(() => refetch(), 500);
       } catch (error) {
         console.error('메시지 전송 실패:', error);
       }
     };
 
-    const handleMarkAsRead = async () => {
-      try {
-        await markAsRead.mutateAsync({
-          request: {
-            room_id: selectedRoomId,
-            read_until: new Date().toISOString()
-          }
-        });
-      } catch (error) {
-        console.error('읽음 처리 실패:', error);
-      }
-    };
-
-    if (messagesLoading) return <div>메시지를 불러오는 중...</div>;
+    if (messagesLoading) return <Skeleton className="w-full h-64" />;
 
     return (
       <div style={{ maxWidth: '700px' }}>
@@ -393,7 +447,7 @@ export const MessagesManagement: Story = {
           <select 
             value={selectedRoomId} 
             onChange={(e) => setSelectedRoomId(e.target.value)}
-            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', width: '100%' }}
           >
             <option value="room-1">일반 채팅방 (room-1)</option>
             <option value="room-2">프로젝트 논의 (room-2)</option>
@@ -402,26 +456,19 @@ export const MessagesManagement: Story = {
         </div>
 
         {/* 참여자 정보 */}
-        {participants && participants.length > 0 && (
+        {messages?.participants && messages.participants.length > 0 && (
           <div style={{ 
             background: '#f8f9fa', 
             padding: '0.75rem', 
             borderRadius: '8px',
             marginBottom: '1rem'
           }}>
-            <strong>👥 참여자 ({participants.length}명):</strong>
+            <strong>👥 참여자 ({messages.participants.length}명):</strong>
             <div style={{ marginTop: '0.5rem' }}>
-              {participants.map((p) => (
-                <span key={p.id} style={{ 
-                  display: 'inline-block',
-                  background: '#e9ecef',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  marginRight: '0.5rem'
-                }}>
+              {messages.participants.map((p: any) => (
+                <Badge key={p.id} variant="secondary" style={{ marginRight: '0.5rem' }}>
                   {p.user?.nickname}
-                </span>
+                </Badge>
               ))}
             </div>
           </div>
@@ -438,7 +485,7 @@ export const MessagesManagement: Story = {
           overflowY: 'auto',
           background: '#fafafa'
         }}>
-          {messages?.messages?.map((message) => (
+          {messages?.messages?.map((message: any) => (
             <div key={message.id} style={{ 
               marginBottom: '1rem',
               padding: '0.75rem',
@@ -451,9 +498,12 @@ export const MessagesManagement: Story = {
                 <strong style={{ fontSize: '14px' }}>{message.sender?.nickname}</strong>
                 <div style={{ fontSize: '12px', color: '#666' }}>
                   {new Date(message.created_at).toLocaleTimeString()}
-                  <span style={{ marginLeft: '0.5rem', color: '#10b981' }}>
+                  <Badge 
+                    variant={message.status === 'read' ? 'success' : 'secondary'} 
+                    style={{ marginLeft: '0.5rem' }}
+                  >
                     {message.status === 'read' ? '읽음' : '전송됨'}
-                  </span>
+                  </Badge>
                 </div>
               </div>
               <div style={{ fontSize: '14px' }}>{message.content}</div>
@@ -486,45 +536,25 @@ export const MessagesManagement: Story = {
             }}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
-          <button 
+          <Button 
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || sendMessage.isPending}
-            style={{ 
-              padding: '0.75rem 1rem', 
-              background: sendMessage.isPending ? '#ccc' : '#3b82f6', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: sendMessage.isPending ? 'not-allowed' : 'pointer'
-            }}
+            loading={sendMessage.isPending}
+            variant="primary"
           >
-            {sendMessage.isPending ? '전송 중...' : '📤 전송'}
-          </button>
+            📤 전송
+          </Button>
         </div>
 
         {/* 액션 버튼들 */}
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button onClick={handleMarkAsRead} style={{ 
-            padding: '0.5rem 1rem', 
-            background: '#10b981', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}>
+          <Button variant="success" size="sm">
             ✅ 모두 읽음 처리
-          </button>
+          </Button>
           
-          <button onClick={() => refetch()} style={{ 
-            padding: '0.5rem 1rem', 
-            background: '#6b7280', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}>
+          <Button onClick={() => refetch()} variant="secondary" size="sm">
             🔄 메시지 새로고침
-          </button>
+          </Button>
         </div>
 
         {/* 에러 표시 */}
@@ -559,20 +589,24 @@ export const ChatRoomManagement: Story = {
     const [participantIds, setParticipantIds] = useState('user-2,user-3');
     const [roomName, setRoomName] = useState('새로운 채팅방');
     const [targetUserId, setTargetUserId] = useState('user-2');
+    const [directChatExists, setDirectChatExists] = useState({ exists: false, room_id: undefined });
 
-    const createChatRoom = useCreateChatRoomCommand();
-    const createDirectChat = useGetOrCreateDirectChatCommand();
-    const leaveChatRoom = useLeaveChatRoomCommand();
-    const inviteParticipants = useInviteParticipantsCommand();
+    const createChatRoom = useCreateChatRoomCommandMock();
 
-    const { data: directChatExists } = useDirectChatExistsQuery({
-      targetUserId,
-      enabled: !!targetUserId
-    });
+    // 1:1 채팅방 존재 여부 시뮬레이션
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDirectChatExists({
+          exists: targetUserId === 'user-2',
+          room_id: targetUserId === 'user-2' ? 'room-direct-1' : undefined
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }, [targetUserId]);
 
     const handleCreateChatRoom = async () => {
       try {
-        const request: CreateChatRoomRequest = {
+        const request = {
           participant_ids: participantIds.split(',').map(id => id.trim()),
           room_name: roomName,
           room_type: 'group'
@@ -582,27 +616,6 @@ export const ChatRoomManagement: Story = {
         console.log('채팅방 생성 성공:', result);
       } catch (error) {
         console.error('채팅방 생성 실패:', error);
-      }
-    };
-
-    const handleCreateDirectChat = async () => {
-      try {
-        const result = await createDirectChat.mutateAsync(targetUserId);
-        console.log('1:1 채팅방 생성 성공:', result);
-      } catch (error) {
-        console.error('1:1 채팅방 생성 실패:', error);
-      }
-    };
-
-    const handleInviteParticipants = async () => {
-      try {
-        await inviteParticipants.mutateAsync({
-          room_id: 'room-1',
-          user_ids: ['user-4', 'user-5']
-        });
-        console.log('참여자 초대 성공');
-      } catch (error) {
-        console.error('참여자 초대 실패:', error);
       }
     };
 
@@ -639,20 +652,14 @@ export const ChatRoomManagement: Story = {
               style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
             />
           </div>
-          <button 
+          <Button 
             onClick={handleCreateChatRoom}
             disabled={createChatRoom.isPending}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              background: createChatRoom.isPending ? '#ccc' : '#3b82f6', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: createChatRoom.isPending ? 'not-allowed' : 'pointer'
-            }}
+            loading={createChatRoom.isPending}
+            variant="primary"
           >
-            {createChatRoom.isPending ? '생성 중...' : '🏗️ 채팅방 생성'}
-          </button>
+            🏗️ 채팅방 생성
+          </Button>
           
           {createChatRoom.error && (
             <div style={{ color: '#ef4444', marginTop: '0.5rem', fontSize: '14px' }}>
@@ -679,65 +686,38 @@ export const ChatRoomManagement: Story = {
             />
           </div>
           
-          {directChatExists && (
-            <div style={{ 
-              background: directChatExists.exists ? '#d1fae5' : '#fef3c7',
-              padding: '0.5rem',
-              borderRadius: '4px',
-              marginBottom: '1rem',
-              fontSize: '14px'
-            }}>
-              {directChatExists.exists 
-                ? `✅ 기존 채팅방이 있습니다 (ID: ${directChatExists.room_id})`
-                : '❌ 기존 채팅방이 없습니다'
-              }
-            </div>
-          )}
+          <div style={{ 
+            background: directChatExists.exists ? '#d1fae5' : '#fef3c7',
+            padding: '0.5rem',
+            borderRadius: '4px',
+            marginBottom: '1rem',
+            fontSize: '14px'
+          }}>
+            {directChatExists.exists 
+              ? `✅ 기존 채팅방이 있습니다 (ID: ${directChatExists.room_id})`
+              : '❌ 기존 채팅방이 없습니다'
+            }
+          </div>
           
-          <button 
-            onClick={handleCreateDirectChat}
-            disabled={createDirectChat.isPending}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              background: createDirectChat.isPending ? '#ccc' : '#10b981', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: createDirectChat.isPending ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {createDirectChat.isPending ? '처리 중...' : '👤 1:1 채팅방 찾기/생성'}
-          </button>
+          <Button variant="success">
+            👤 1:1 채팅방 찾기/생성
+          </Button>
         </div>
 
         {/* 참여자 초대 */}
         <div style={{ 
           border: '1px solid #e0e0e0', 
           borderRadius: '8px', 
-          padding: '1rem',
-          marginBottom: '1rem'
+          padding: '1rem'
         }}>
           <h4>➕ 참여자 관리</h4>
-          <button 
-            onClick={handleInviteParticipants}
-            disabled={inviteParticipants.isPending}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              background: inviteParticipants.isPending ? '#ccc' : '#8b5cf6', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: inviteParticipants.isPending ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {inviteParticipants.isPending ? '초대 중...' : '➕ 참여자 초대 (room-1)'}
-          </button>
+          <Button variant="outline" size="sm">
+            ➕ 참여자 초대 (room-1)
+          </Button>
           
-          {participants && (
-            <div style={{ marginTop: '0.5rem', fontSize: '14px', color: '#666' }}>
-              현재 참여자: {participants.length}명
-            </div>
-          )}
+          <div style={{ marginTop: '0.5rem', fontSize: '14px', color: '#666' }}>
+            현재 참여자: 2명
+          </div>
         </div>
       </div>
     );
@@ -758,27 +738,29 @@ export const MessageSearch: Story = {
   render: () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchRoomId, setSearchRoomId] = useState('room-1');
-    const [senderId, setSenderId] = useState('');
-    const [messageType, setMessageType] = useState<'text' | 'file' | 'all'>('all');
-
-    const searchOptions = {
-      room_id: searchRoomId,
-      query: searchQuery,
-      sender_id: senderId || undefined,
-      message_type: messageType,
-      page: 1,
-      page_size: 10
-    };
-
-    const { data: searchResults, isLoading, refetch } = useMessageSearchQuery({
-      searchOptions,
-      enabled: !!searchQuery && !!searchRoomId
-    });
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<any>(null);
 
     const handleSearch = () => {
-      if (searchQuery.trim()) {
-        refetch();
-      }
+      if (!searchQuery.trim()) return;
+      
+      setIsSearching(true);
+      setTimeout(() => {
+        const filteredMessages = mockMessages.filter(msg => 
+          msg.room_id === searchRoomId && 
+          msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        
+        setSearchResults({
+          messages: filteredMessages,
+          total_count: filteredMessages.length,
+          has_more: false,
+          current_page: 1,
+          total_pages: 1,
+          participants: []
+        });
+        setIsSearching(false);
+      }, 1000);
     };
 
     return (
@@ -792,43 +774,17 @@ export const MessageSearch: Story = {
           padding: '1rem',
           marginBottom: '1rem'
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.25rem' }}>채팅방 ID:</label>
-              <select 
-                value={searchRoomId} 
-                onChange={(e) => setSearchRoomId(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-              >
-                <option value="room-1">일반 채팅방</option>
-                <option value="room-2">프로젝트 논의</option>
-                <option value="room-3">1:1 대화</option>
-              </select>
-            </div>
-            
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.25rem' }}>메시지 타입:</label>
-              <select 
-                value={messageType} 
-                onChange={(e) => setMessageType(e.target.value as 'text' | 'file' | 'all')}
-                style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-              >
-                <option value="all">전체</option>
-                <option value="text">텍스트만</option>
-                <option value="file">파일만</option>
-              </select>
-            </div>
-          </div>
-          
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.25rem' }}>발신자 ID (선택사항):</label>
-            <input
-              type="text"
-              value={senderId}
-              onChange={(e) => setSenderId(e.target.value)}
-              placeholder="user-1"
+            <label style={{ display: 'block', marginBottom: '0.25rem' }}>채팅방 선택:</label>
+            <select 
+              value={searchRoomId} 
+              onChange={(e) => setSearchRoomId(e.target.value)}
               style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-            />
+            >
+              <option value="room-1">일반 채팅방</option>
+              <option value="room-2">프로젝트 논의</option>
+              <option value="room-3">1:1 대화</option>
+            </select>
           </div>
           
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -845,20 +801,14 @@ export const MessageSearch: Story = {
               }}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
-            <button 
+            <Button 
               onClick={handleSearch}
-              disabled={!searchQuery.trim() || isLoading}
-              style={{ 
-                padding: '0.5rem 1rem', 
-                background: isLoading ? '#ccc' : '#f59e0b', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '4px',
-                cursor: isLoading ? 'not-allowed' : 'pointer'
-              }}
+              disabled={!searchQuery.trim() || isSearching}
+              loading={isSearching}
+              variant="secondary"
             >
-              {isLoading ? '검색 중...' : '🔍 검색'}
-            </button>
+              🔍 검색
+            </Button>
           </div>
         </div>
 
@@ -877,7 +827,7 @@ export const MessageSearch: Story = {
               </div>
             ) : (
               <div>
-                {searchResults.messages.map((message) => (
+                {searchResults.messages.map((message: any) => (
                   <div key={message.id} style={{ 
                     background: '#f8f9fa',
                     padding: '0.75rem',
@@ -893,18 +843,6 @@ export const MessageSearch: Story = {
                     <div style={{ marginTop: '0.5rem', fontSize: '14px' }}>
                       {message.content}
                     </div>
-                    {message.file_info && (
-                      <div style={{ 
-                        marginTop: '0.5rem', 
-                        fontSize: '12px', 
-                        color: '#8b5cf6',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                      }}>
-                        📎 {message.file_info.name} ({(message.file_info.size / 1024).toFixed(1)}KB)
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -930,33 +868,29 @@ export const FileUpload: Story = {
   render: () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [roomId, setRoomId] = useState('room-1');
-
-    const uploadFile = useUploadMessageFileCommand();
-    const { data: fileUrl } = useMessageFileUrlQuery({
-      fileId: 'sample-file-id',
-      enabled: true
-    });
+    const [uploadResult, setUploadResult] = useState<any>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (file) {
         setSelectedFile(file);
+        setUploadResult(null);
       }
     };
 
     const handleUpload = async () => {
       if (!selectedFile) return;
 
-      try {
-        const result = await uploadFile.mutateAsync({
-          file: selectedFile,
-          roomId
+      setIsUploading(true);
+      setTimeout(() => {
+        setUploadResult({
+          file_id: 'file-' + Date.now(),
+          file_url: `https://example.com/files/${selectedFile.name}`
         });
-        console.log('파일 업로드 성공:', result);
+        setIsUploading(false);
         setSelectedFile(null);
-      } catch (error) {
-        console.error('파일 업로드 실패:', error);
-      }
+      }, 2000);
     };
 
     return (
@@ -1009,28 +943,16 @@ export const FileUpload: Story = {
             </div>
           )}
 
-          <button 
+          <Button 
             onClick={handleUpload}
-            disabled={!selectedFile || uploadFile.isPending}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              background: (!selectedFile || uploadFile.isPending) ? '#ccc' : '#06b6d4', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: (!selectedFile || uploadFile.isPending) ? 'not-allowed' : 'pointer'
-            }}
+            disabled={!selectedFile || isUploading}
+            loading={isUploading}
+            variant="primary"
           >
-            {uploadFile.isPending ? '업로드 중...' : '📤 파일 업로드'}
-          </button>
+            📤 파일 업로드
+          </Button>
           
-          {uploadFile.error && (
-            <div style={{ color: '#ef4444', marginTop: '1rem', fontSize: '14px' }}>
-              업로드 실패: {uploadFile.error.message}
-            </div>
-          )}
-          
-          {uploadFile.data && (
+          {uploadResult && (
             <div style={{ 
               background: '#d1fae5',
               padding: '0.75rem',
@@ -1039,40 +961,38 @@ export const FileUpload: Story = {
             }}>
               <div style={{ fontWeight: 'bold', color: '#10b981' }}>✅ 업로드 성공!</div>
               <div style={{ fontSize: '14px', marginTop: '0.25rem' }}>
-                파일 ID: {uploadFile.data.file_id}
+                파일 ID: {uploadResult.file_id}
               </div>
               <div style={{ fontSize: '14px' }}>
-                파일 URL: <a href={uploadFile.data.file_url} target="_blank" rel="noopener noreferrer">
-                  {uploadFile.data.file_url}
+                파일 URL: <a href={uploadResult.file_url} target="_blank" rel="noopener noreferrer">
+                  {uploadResult.file_url}
                 </a>
               </div>
             </div>
           )}
         </div>
 
-        {/* 파일 URL 조회 예시 */}
-        {fileUrl && (
-          <div style={{ 
-            border: '1px solid #e0e0e0', 
-            borderRadius: '8px', 
-            padding: '1rem'
-          }}>
-            <h4>🔗 파일 다운로드 URL 조회 예시</h4>
-            <div style={{ fontSize: '14px', color: '#666' }}>
-              샘플 파일 ID에 대한 다운로드 URL:
-            </div>
-            <div style={{ 
-              background: '#f8f9fa',
-              padding: '0.5rem',
-              borderRadius: '4px',
-              marginTop: '0.5rem',
-              fontFamily: 'monospace',
-              fontSize: '12px'
-            }}>
-              {fileUrl.download_url}
-            </div>
+        {/* 파일 다운로드 URL 조회 예시 */}
+        <div style={{ 
+          border: '1px solid #e0e0e0', 
+          borderRadius: '8px', 
+          padding: '1rem'
+        }}>
+          <h4>🔗 파일 다운로드 URL 조회 예시</h4>
+          <div style={{ fontSize: '14px', color: '#666' }}>
+            샘플 파일 ID에 대한 다운로드 URL:
           </div>
-        )}
+          <div style={{ 
+            background: '#f8f9fa',
+            padding: '0.5rem',
+            borderRadius: '4px',
+            marginTop: '0.5rem',
+            fontFamily: 'monospace',
+            fontSize: '12px'
+          }}>
+            https://example.com/files/sample-file.jpg
+          </div>
+        </div>
       </div>
     );
   },
