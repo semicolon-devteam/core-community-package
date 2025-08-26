@@ -1,5 +1,6 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 import { mergeConfig } from 'vite';
+import path from 'path';
 
 const config: StorybookConfig = {
   stories: [
@@ -36,9 +37,9 @@ const config: StorybookConfig = {
     return mergeConfig(config, {
       resolve: {
         alias: {
-          '@team-semicolon/community-core': '../lib',
-          '@': '../lib',
-          '@components': './src/components',
+          '@team-semicolon/community-core': path.resolve(__dirname, '../../lib'),
+          '@': path.resolve(__dirname, '../../lib'),
+          '@components': path.resolve(__dirname, '../src/components'),
         },
       },
       css: {
