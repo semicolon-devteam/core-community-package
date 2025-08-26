@@ -38,6 +38,7 @@ const config: StorybookConfig = {
         alias: {
           '@team-semicolon/community-core': '../lib',
           '@': '../lib',
+          '@components': './src/components',
         },
       },
       css: {

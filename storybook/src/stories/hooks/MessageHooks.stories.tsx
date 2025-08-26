@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState, useEffect } from 'react';
-import { Button } from '../../components/Button';
-import { Badge } from '../../components/Badge';
-import { Skeleton } from '../../components/Skeleton';
+import { Button } from '@components/Button';
+import { Badge } from '@components/Badge';
+import { Skeleton } from '@components/Skeleton';
 
 // Mock 메시징 데이터
 const mockChatRooms = [
