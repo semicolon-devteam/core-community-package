@@ -6,6 +6,7 @@ export { default as BoardService, boardService } from './boardService';
 export { default as AuthService, authService } from './authService';
 export { default as PermissionService, permissionService } from './permissionService';
 export { NotificationService, notificationService } from './notificationService';
+export { MessageService, messageService } from './messageService';
 
 // Type Exports
 export type { RequestOptions, HttpMethod } from './baseService';
@@ -64,3 +65,21 @@ export type {
   NotificationSendResult,
   NotificationStats
 } from './notificationService';
+export type {
+  MessageServiceOptions,
+  ChatRoom,
+  ChatParticipant,
+  Message,
+  ChatRoomListResponse,
+  MessageListResponse,
+  CreateChatRoomRequest,
+  SendMessageRequest,
+  UpdateChatRoomSettingsRequest,
+  MessageSearchOptions,
+  InviteChatParticipantRequest,
+  ChatRoomStats,
+  MarkMessagesAsReadRequest,
+  OnlineUser,
+  ChatRoomStatus,
+  MessageStatus
+} from './messageService';

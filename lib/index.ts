@@ -110,7 +110,8 @@ export {
   BoardService,
   AuthService,
   PermissionService,
-  NotificationService
+  NotificationService,
+  MessageService
 } from './services';
 
 // Legacy Service Objects (backward compatibility)
@@ -121,7 +122,8 @@ export {
   boardService,
   authService,
   permissionService,
-  notificationService
+  notificationService,
+  messageService
 } from './services';
 
 // Service Types
@@ -170,7 +172,23 @@ export type {
   NotificationSettings,
   BulkNotificationRequest,
   NotificationSendResult,
-  NotificationStats
+  NotificationStats,
+  MessageServiceOptions,
+  ChatRoom,
+  ChatParticipant,
+  Message,
+  ChatRoomListResponse,
+  MessageListResponse,
+  CreateChatRoomRequest,
+  SendMessageRequest,
+  UpdateChatRoomSettingsRequest,
+  MessageSearchOptions,
+  InviteChatParticipantRequest,
+  ChatRoomStats,
+  MarkMessagesAsReadRequest,
+  OnlineUser,
+  ChatRoomStatus,
+  MessageStatus
 } from './services';
 
 // =============================================================================
@@ -204,6 +222,30 @@ export {
   useScheduleNotificationCommand,
   useCancelScheduledNotificationCommand
 } from './hooks/commands/useNotificationCommand';
+
+// Messaging System Hooks
+export {
+  useChatRoomsQuery,
+  useChatRoomQuery,
+  useMessagesQuery,
+  useChatParticipantsQuery,
+  useChatRoomStatsQuery,
+  useMessageSearchQuery,
+  useDirectChatExistsQuery,
+  useMessageFileUrlQuery
+} from './hooks/queries/useMessageQuery';
+export {
+  useCreateChatRoomCommand,
+  useGetOrCreateDirectChatCommand,
+  useSendMessageCommand,
+  useUpdateMessageCommand,
+  useDeleteMessageCommand,
+  useMarkMessagesAsReadCommand,
+  useLeaveChatRoomCommand,
+  useInviteParticipantsCommand,
+  useUpdateChatRoomSettingsCommand,
+  useUploadMessageFileCommand
+} from './hooks/commands/useMessageCommand';
 
 // Common Utility Hooks
 export { useDeviceType } from './hooks/common/useDeviceType';
@@ -281,5 +323,5 @@ export type {
 // =============================================================================
 // VERSION INFO
 // =============================================================================
-export const VERSION = '1.7.0';
+export const VERSION = '1.8.0';
 export const PACKAGE_NAME = '@team-semicolon/community-core';
