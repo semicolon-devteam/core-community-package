@@ -209,7 +209,81 @@ export const AuthExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'useAuth 훅을 사용한 인증 상태 관리 예시입니다.',
+        story: `useAuth 훅을 사용한 인증 상태 관리 예시입니다.
+
+## 실제 구현 코드
+
+### 기본 사용법
+\`\`\`tsx
+import { useAuth } from '@team-semicolon/community-core';
+
+function LoginComponent() {
+  const { user, isLoggedIn, loginWithLoader, logoutWithLoader, isLoading } = useAuth();
+  
+  const handleLogin = async () => {
+    try {
+      const result = await loginWithLoader({
+        email: 'user@example.com',
+        password: 'password123'
+      });
+      
+      if (result.success) {
+        console.log('로그인 성공:', result.user);
+        // 추가 처리 로직...
+      }
+    } catch (error) {
+      console.error('로그인 실패:', error);
+    }
+  };
+  
+  const handleLogout = async () => {
+    try {
+      await logoutWithLoader();
+      console.log('로그아웃 완료');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+    }
+  };
+  
+  return (
+    <div>
+      {isLoggedIn ? (
+        <div>
+          <p>환영합니다, {user?.name}님!</p>
+          <button onClick={handleLogout} disabled={isLoading}>
+            {isLoading ? '처리 중...' : '로그아웃'}
+          </button>
+        </div>
+      ) : (
+        <button onClick={handleLogin} disabled={isLoading}>
+          {isLoading ? '로그인 중...' : '로그인'}
+        </button>
+      )}
+    </div>
+  );
+}
+\`\`\`
+
+### 조건부 렌더링
+\`\`\`tsx
+import { useAuth } from '@team-semicolon/community-core';
+
+function ProtectedComponent() {
+  const { isLoggedIn, isAdmin, isUser } = useAuth();
+  
+  if (!isLoggedIn) {
+    return <div>로그인이 필요합니다.</div>;
+  }
+  
+  return (
+    <div>
+      <h1>보호된 콘텐츠</h1>
+      {isAdmin() && <AdminPanel />}
+      {isUser() && <UserContent />}
+    </div>
+  );
+}
+\`\`\``,
       },
     },
   },
@@ -263,7 +337,105 @@ export const GlobalLoaderExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'useGlobalLoader 훅을 사용한 전역 로딩 상태 관리 예시입니다.',
+        story: `useGlobalLoader 훅을 사용한 전역 로딩 상태 관리 예시입니다.
+
+## 실제 구현 코드
+
+### 기본 사용법 - withLoader
+\`\`\`tsx
+import { useGlobalLoader } from '@team-semicolon/community-core';
+
+function DataFetchComponent() {
+  const { withLoader } = useGlobalLoader();
+  const [data, setData] = useState(null);
+  
+  const fetchData = async () => {
+    await withLoader(async () => {
+      // API 호출 - 전역 로더가 자동으로 표시됩니다
+      const response = await fetch('/api/data');
+      const result = await response.json();
+      setData(result);
+    });
+  };
+  
+  return (
+    <div>
+      <button onClick={fetchData}>데이터 불러오기</button>
+      {data && <div>데이터: {JSON.stringify(data)}</div>}
+    </div>
+  );
+}
+\`\`\`
+
+### 수동 제어 - showLoader/hideLoader
+\`\`\`tsx
+import { useGlobalLoader } from '@team-semicolon/community-core';
+
+function ManualLoaderComponent() {
+  const { showLoader, hideLoader, isLoading } = useGlobalLoader();
+  
+  const handleComplexOperation = async () => {
+    try {
+      showLoader('복잡한 작업을 처리하는 중...');
+      
+      // 여러 단계의 작업
+      await step1();
+      showLoader('2단계 진행 중...');
+      
+      await step2();
+      showLoader('마무리 작업 중...');
+      
+      await step3();
+      
+    } catch (error) {
+      console.error('작업 실패:', error);
+    } finally {
+      hideLoader(); // 항상 로더를 숨김
+    }
+  };
+  
+  return (
+    <button 
+      onClick={handleComplexOperation} 
+      disabled={isLoading}
+    >
+      {isLoading ? '처리 중...' : '복잡한 작업 시작'}
+    </button>
+  );
+}
+\`\`\`
+
+### Service와 함께 사용
+\`\`\`tsx
+import { useGlobalLoader, PostService } from '@team-semicolon/community-core';
+
+function PostListComponent() {
+  const { withLoader } = useGlobalLoader();
+  const [posts, setPosts] = useState([]);
+  
+  const loadPosts = async () => {
+    await withLoader(async () => {
+      const postService = new PostService();
+      const response = await postService.getPosts({ page: 1, limit: 10 });
+      
+      if (response.successOrNot === 'Y') {
+        setPosts(response.data);
+      }
+    });
+  };
+  
+  return (
+    <div>
+      <button onClick={loadPosts}>게시글 불러오기</button>
+      <div>
+        {posts.map(post => (
+          <div key={post.id}>{post.title}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+\`\`\``,
       },
     },
   },
@@ -344,7 +516,101 @@ export const DeviceTypeExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'useDeviceType 훅을 사용한 반응형 디바이스 타입 감지 예시입니다.',
+        story: `useDeviceType 훅을 사용한 반응형 디바이스 타입 감지 예시입니다.
+
+## 실제 구현 코드
+
+### 기본 사용법
+\`\`\`tsx
+import { useDeviceType } from '@team-semicolon/community-core';
+
+function ResponsiveComponent() {
+  const deviceType = useDeviceType();
+  
+  return (
+    <div>
+      <h1>현재 디바이스: {deviceType}</h1>
+      
+      {deviceType === 'mobile' && (
+        <MobileLayout>
+          <p>모바일용 콘텐츠</p>
+        </MobileLayout>
+      )}
+      
+      {deviceType === 'tablet' && (
+        <TabletLayout>
+          <p>태블릿용 콘텐츠</p>
+        </TabletLayout>
+      )}
+      
+      {deviceType === 'desktop' && (
+        <DesktopLayout>
+          <p>데스크톱용 콘텐츠</p>
+        </DesktopLayout>
+      )}
+    </div>
+  );
+}
+\`\`\`
+
+### 조건부 렌더링과 스타일링
+\`\`\`tsx
+import { useDeviceType } from '@team-semicolon/community-core';
+
+function AdaptiveNavigation() {
+  const deviceType = useDeviceType();
+  const isMobile = deviceType === 'mobile';
+  
+  return (
+    <nav className={\`navigation \${isMobile ? 'mobile' : 'desktop'}\`}>
+      {isMobile ? (
+        <HamburgerMenu />
+      ) : (
+        <HorizontalMenu />
+      )}
+      
+      <div 
+        style={{
+          fontSize: deviceType === 'mobile' ? '14px' : '16px',
+          padding: deviceType === 'desktop' ? '20px' : '10px'
+        }}
+      >
+        반응형 콘텐츠
+      </div>
+    </nav>
+  );
+}
+\`\`\`
+
+### 이미지 최적화
+\`\`\`tsx
+import { useDeviceType } from '@team-semicolon/community-core';
+
+function OptimizedImage({ src, alt }) {
+  const deviceType = useDeviceType();
+  
+  const getImageSize = () => {
+    switch (deviceType) {
+      case 'mobile': return { width: 320, height: 200 };
+      case 'tablet': return { width: 640, height: 400 };
+      case 'desktop': return { width: 1200, height: 600 };
+      default: return { width: 640, height: 400 };
+    }
+  };
+  
+  const { width, height } = getImageSize();
+  
+  return (
+    <img 
+      src={\`\${src}?w=\${width}&h=\${height}\`}
+      alt={alt}
+      width={width}
+      height={height}
+      loading="lazy"
+    />
+  );
+}
+\`\`\``,
       },
     },
   },
@@ -449,7 +715,166 @@ export const ReactQueryExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'usePostQuery 훅을 사용한 React Query 기반 데이터 페칭 예시입니다.',
+        story: `usePostQuery 훅을 사용한 React Query 기반 데이터 페칭 예시입니다.
+
+## 실제 구현 코드
+
+### 기본 사용법
+\`\`\`tsx
+import { usePostQuery } from '@team-semicolon/community-core';
+
+function PostListComponent() {
+  const [boardId, setBoardId] = useState(1);
+  const [page, setPage] = useState(1);
+  
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    refetch 
+  } = usePostQuery({
+    boardId,
+    page,
+    pageSize: 10,
+    enabled: true // 쿼리 활성화 여부
+  });
+  
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>오류: {error.message}</div>;
+  
+  return (
+    <div>
+      <h2>게시글 목록</h2>
+      
+      {/* 게시판 선택 */}
+      <select value={boardId} onChange={(e) => setBoardId(Number(e.target.value))}>
+        <option value={1}>자유게시판</option>
+        <option value={2}>질문게시판</option>
+      </select>
+      
+      {/* 게시글 목록 */}
+      <div>
+        {data?.items?.map(post => (
+          <div key={post.id}>
+            <h3>{post.title}</h3>
+            <p>{post.author}</p>
+          </div>
+        ))}
+      </div>
+      
+      {/* 페이지네이션 */}
+      <div>
+        <button 
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          이전
+        </button>
+        <span>페이지 {page}</span>
+        <button 
+          onClick={() => setPage(p => p + 1)}
+          disabled={!data?.hasNextPage}
+        >
+          다음
+        </button>
+      </div>
+      
+      <button onClick={() => refetch()}>새로고침</button>
+    </div>
+  );
+}
+\`\`\`
+
+### 조건부 쿼리와 의존성
+\`\`\`tsx
+import { usePostQuery, useAuth } from '@team-semicolon/community-core';
+
+function MyPostsComponent() {
+  const { user, isLoggedIn } = useAuth();
+  const [showMyPosts, setShowMyPosts] = useState(false);
+  
+  const { data: myPosts, isLoading } = usePostQuery({
+    boardId: 1,
+    page: 1,
+    authorId: user?.id,
+    enabled: isLoggedIn && showMyPosts // 조건부 실행
+  });
+  
+  return (
+    <div>
+      {isLoggedIn ? (
+        <div>
+          <button onClick={() => setShowMyPosts(!showMyPosts)}>
+            {showMyPosts ? '모든 게시글 보기' : '내 게시글만 보기'}
+          </button>
+          
+          {showMyPosts && (
+            <div>
+              {isLoading ? (
+                <div>내 게시글을 불러오는 중...</div>
+              ) : (
+                <div>
+                  <h2>내 게시글 ({myPosts?.totalCount || 0}개)</h2>
+                  {myPosts?.items?.map(post => (
+                    <div key={post.id}>{post.title}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div>로그인이 필요합니다.</div>
+      )}
+    </div>
+  );
+}
+\`\`\`
+
+### 에러 처리와 재시도
+\`\`\`tsx
+import { usePostQuery } from '@team-semicolon/community-core';
+
+function RobustPostList() {
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    refetch,
+    isRefetching,
+    isError
+  } = usePostQuery({
+    boardId: 1,
+    page: 1,
+    retry: 3, // 3번 재시도
+    retryDelay: 1000 // 1초 후 재시도
+  });
+  
+  if (isLoading) {
+    return <SkeletonLoader />;
+  }
+  
+  if (isError) {
+    return (
+      <div className="error-container">
+        <p>게시글을 불러오는데 실패했습니다.</p>
+        <p>오류: {error?.message}</p>
+        <button onClick={() => refetch()} disabled={isRefetching}>
+          {isRefetching ? '재시도 중...' : '다시 시도'}
+        </button>
+      </div>
+    );
+  }
+  
+  return (
+    <div>
+      {data?.items?.map(post => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </div>
+  );
+}
+\`\`\``,
       },
     },
   },

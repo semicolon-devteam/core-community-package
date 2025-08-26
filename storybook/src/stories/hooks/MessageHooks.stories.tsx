@@ -305,6 +305,408 @@ await sendMessage.mutateAsync({
   }
 });
 \`\`\`
+
+## 실제 구현 코드 예시
+
+### 채팅방 목록 컴포넌트 구현
+\`\`\`tsx
+import { useChatRoomsQuery, useChatRoomStatsQuery } from '@team-semicolon/community-core';
+
+function ChatRoomList() {
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const { 
+    data: chatRooms, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useChatRoomsQuery({
+    page,
+    pageSize: 20,
+    search: searchQuery
+  });
+  
+  const { data: stats } = useChatRoomStatsQuery();
+  
+  if (isLoading) return <div>채팅방 목록을 불러오는 중...</div>;
+  if (error) return <div>채팅방을 불러올 수 없습니다: {error.message}</div>;
+  
+  return (
+    <div className="chat-room-list">
+      <div className="stats-bar">
+        <span>전체 채팅방: {stats?.total_rooms}</span>
+        <span>활성 채팅방: {stats?.active_rooms}</span>
+        <span>읽지 않은 메시지: {stats?.unread_messages}</span>
+      </div>
+      
+      <div className="search-bar">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="채팅방 검색..."
+        />
+        <button onClick={() => refetch()}>새로고침</button>
+      </div>
+      
+      <div className="room-list">
+        {chatRooms?.rooms?.map(room => (
+          <div key={room.id} className="room-item">
+            <div className="room-info">
+              <h3>채팅방 {room.id}</h3>
+              <p className="last-message">
+                {room.last_message ? (
+                  <>
+                    <strong>{room.last_message.sender?.nickname}:</strong>
+                    {room.last_message.content}
+                  </>
+                ) : (
+                  '메시지가 없습니다'
+                )}
+              </p>
+              <span className="timestamp">
+                {new Date(room.last_message_at || room.created_at).toLocaleString()}
+              </span>
+            </div>
+            
+            <div className="room-meta">
+              <div className="participant-count">
+                👥 {room.participants?.length || 0}명
+              </div>
+              {room.unread_count > 0 && (
+                <div className="unread-badge">
+                  {room.unread_count}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="pagination">
+        <button 
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          이전
+        </button>
+        <span>페이지 {page}</span>
+        <button 
+          onClick={() => setPage(p => p + 1)}
+          disabled={!chatRooms?.has_more}
+        >
+          다음
+        </button>
+      </div>
+    </div>
+  );
+}
+\`\`\`
+
+### 실시간 채팅 컴포넌트 구현
+\`\`\`tsx
+import { 
+  useMessagesQuery,
+  useSendMessageCommand,
+  useMarkAllMessagesAsReadCommand 
+} from '@team-semicolon/community-core';
+
+function ChatRoom({ roomId }: { roomId: string }) {
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // 메시지 목록 조회
+  const { 
+    data: messages, 
+    isLoading, 
+    refetch 
+  } = useMessagesQuery({ 
+    roomId,
+    refetchInterval: 3000 // 3초마다 자동 새로고침
+  });
+  
+  // 메시지 전송
+  const sendMessage = useSendMessageCommand();
+  
+  // 모든 메시지 읽음 처리
+  const markAllAsRead = useMarkAllMessagesAsReadCommand();
+  
+  // 메시지 전송 핸들러
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    
+    try {
+      await sendMessage.mutateAsync({
+        request: {
+          room_id: roomId,
+          content: newMessage.trim()
+        }
+      });
+      
+      setNewMessage('');
+      // 새 메시지 전송 후 스크롤을 맨 아래로
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      
+    } catch (error) {
+      console.error('메시지 전송 실패:', error);
+    }
+  };
+  
+  // 메시지 읽음 처리
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead.mutateAsync(roomId);
+    } catch (error) {
+      console.error('읽음 처리 실패:', error);
+    }
+  };
+  
+  // 컴포넌트 마운트 시 읽음 처리
+  useEffect(() => {
+    if (messages?.messages?.length > 0) {
+      handleMarkAllAsRead();
+    }
+  }, [roomId, messages?.messages?.length]);
+  
+  if (isLoading) return <div>메시지를 불러오는 중...</div>;
+  
+  return (
+    <div className="chat-room">
+      <div className="chat-header">
+        <h2>채팅방 {roomId}</h2>
+        <div className="participants">
+          👥 {messages?.participants?.length || 0}명 참여 중
+        </div>
+      </div>
+      
+      <div className="message-list" style={{ height: '400px', overflowY: 'auto' }}>
+        {messages?.messages?.map(message => (
+          <div 
+            key={message.id} 
+            className={'message ' + (message.sender_id === 'current-user' ? 'own' : 'other')}
+          >
+            <div className="message-header">
+              <span className="sender">{message.sender?.nickname}</span>
+              <span className="timestamp">
+                {new Date(message.created_at).toLocaleTimeString()}
+              </span>
+              <span className={'status ' + message.status}>
+                {message.status === 'read' ? '읽음' : '전송됨'}
+              </span>
+            </div>
+            <div className="message-content">
+              {message.reply_to_id && (
+                <div className="reply-indicator">↳ 답장</div>
+              )}
+              {message.content}
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      <form className="message-input" onSubmit={handleSendMessage}>
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="메시지를 입력하세요..."
+          disabled={sendMessage.isPending}
+        />
+        <button 
+          type="submit"
+          disabled={!newMessage.trim() || sendMessage.isPending}
+        >
+          {sendMessage.isPending ? '전송 중...' : '전송'}
+        </button>
+      </form>
+      
+      {sendMessage.error && (
+        <div className="error-message">
+          전송 실패: {sendMessage.error.message}
+        </div>
+      )}
+    </div>
+  );
+}
+\`\`\`
+
+### 채팅방 생성 컴포넌트 구현
+\`\`\`tsx
+import { 
+  useCreateChatRoomCommand,
+  useDirectChatRoomQuery,
+  useInviteParticipantsCommand 
+} from '@team-semicolon/community-core';
+
+function CreateChatRoom() {
+  const [roomType, setRoomType] = useState<'group' | 'direct'>('group');
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
+  const [roomName, setRoomName] = useState('');
+  const [targetUserId, setTargetUserId] = useState('');
+  
+  const createChatRoom = useCreateChatRoomCommand();
+  const inviteParticipants = useInviteParticipantsCommand();
+  
+  // 1:1 채팅방 존재 여부 확인
+  const { data: directChat } = useDirectChatRoomQuery(
+    targetUserId,
+    { enabled: roomType === 'direct' && !!targetUserId }
+  );
+  
+  const handleCreateGroup = async () => {
+    try {
+      const result = await createChatRoom.mutateAsync({
+        participant_ids: participantIds,
+        room_name: roomName,
+        room_type: 'group'
+      });
+      
+      console.log('그룹 채팅방 생성 성공:', result);
+      
+      // 초기화
+      setParticipantIds([]);
+      setRoomName('');
+      
+    } catch (error) {
+      console.error('채팅방 생성 실패:', error);
+    }
+  };
+  
+  const handleCreateDirectChat = async () => {
+    if (directChat?.exists) {
+      // 기존 채팅방으로 이동
+      window.location.href = \`/chat/\${directChat.room_id}\`;
+      return;
+    }
+    
+    try {
+      const result = await createChatRoom.mutateAsync({
+        participant_ids: [targetUserId],
+        room_type: 'direct'
+      });
+      
+      console.log('1:1 채팅방 생성 성공:', result);
+      
+    } catch (error) {
+      console.error('1:1 채팅방 생성 실패:', error);
+    }
+  };
+  
+  return (
+    <div className="create-chat-room">
+      <h2>새 채팅방 만들기</h2>
+      
+      <div className="room-type-selector">
+        <label>
+          <input
+            type="radio"
+            value="group"
+            checked={roomType === 'group'}
+            onChange={(e) => setRoomType(e.target.value as 'group')}
+          />
+          그룹 채팅
+        </label>
+        <label>
+          <input
+            type="radio"
+            value="direct"
+            checked={roomType === 'direct'}
+            onChange={(e) => setRoomType(e.target.value as 'direct')}
+          />
+          1:1 채팅
+        </label>
+      </div>
+      
+      {roomType === 'group' && (
+        <div className="group-chat-form">
+          <div className="form-field">
+            <label>채팅방 이름</label>
+            <input
+              type="text"
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)}
+              placeholder="채팅방 이름을 입력하세요"
+            />
+          </div>
+          
+          <div className="form-field">
+            <label>참여자 (사용자 ID로 입력)</label>
+            <input
+              type="text"
+              placeholder="참여자 ID를 입력하고 Enter"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  const value = e.currentTarget.value.trim();
+                  if (value && !participantIds.includes(value)) {
+                    setParticipantIds([...participantIds, value]);
+                    e.currentTarget.value = '';
+                  }
+                }
+              }}
+            />
+            <div className="participant-list">
+              {participantIds.map(id => (
+                <span key={id} className="participant-tag">
+                  {id}
+                  <button onClick={() => setParticipantIds(ids => ids.filter(i => i !== id))}>
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          <button 
+            onClick={handleCreateGroup}
+            disabled={createChatRoom.isPending || !roomName || participantIds.length === 0}
+          >
+            {createChatRoom.isPending ? '생성 중...' : '그룹 채팅방 생성'}
+          </button>
+        </div>
+      )}
+      
+      {roomType === 'direct' && (
+        <div className="direct-chat-form">
+          <div className="form-field">
+            <label>대화할 사용자 ID</label>
+            <input
+              type="text"
+              value={targetUserId}
+              onChange={(e) => setTargetUserId(e.target.value)}
+              placeholder="사용자 ID를 입력하세요"
+            />
+          </div>
+          
+          {targetUserId && directChat?.exists && (
+            <div className="existing-chat-notice">
+              ✅ 이미 대화 중인 채팅방이 있습니다.
+            </div>
+          )}
+          
+          <button 
+            onClick={handleCreateDirectChat}
+            disabled={!targetUserId || createChatRoom.isPending}
+          >
+            {createChatRoom.isPending ? '처리 중...' : 
+             directChat?.exists ? '기존 채팅방으로 이동' : '1:1 채팅 시작'}
+          </button>
+        </div>
+      )}
+      
+      {createChatRoom.error && (
+        <div className="error-message">
+          생성 실패: {createChatRoom.error.message}
+        </div>
+      )}
+    </div>
+  );
+}
+\`\`\`
         `
       }
     }
@@ -313,6 +715,139 @@ await sendMessage.mutateAsync({
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+// 문서 스토리 (최상단 배치)
+export const Docs: Story = {
+  render: () => (
+    <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+      <h1>MessageHooks 사용 가이드</h1>
+      <p><strong>@team-semicolon/community-core</strong>의 MessageHooks는 실시간 메시징 시스템을 위한 React Query 기반 훅들을 제공합니다.</p>
+      
+      <h2>📋 제공하는 훅들</h2>
+      <ul>
+        <li><strong>💬 useMessagesQuery</strong>: 특정 채팅방의 메시지 목록 조회</li>
+        <li><strong>📤 useSendMessageCommand</strong>: 새 메시지 전송</li>
+        <li><strong>🔄 useMessageRealtime</strong>: 실시간 메시지 업데이트 구독</li>
+      </ul>
+      
+      <div style={{ 
+        marginTop: '2rem', 
+        padding: '1rem', 
+        backgroundColor: '#f8f9fa', 
+        borderRadius: '8px',
+        border: '1px solid #e9ecef'
+      }}>
+        <h3>📚 완전한 사용 가이드</h3>
+        <p>실제 구현 코드 예시와 상세한 사용법은 별도 문서를 참고하세요:</p>
+        <a 
+          href="https://github.com/semicolon-labs/community-core/blob/main/storybook/src/stories/hooks/MessageHooks.md" 
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ 
+            color: '#0066cc', 
+            textDecoration: 'none',
+            fontWeight: '500'
+          }}
+        >
+          📖 MessageHooks 완전한 사용 가이드 보기
+        </a>
+      </div>
+      
+      <h3>🚀 주요 패턴</h3>
+      <div style={{ marginTop: '1rem' }}>
+        <h4>1. 기본 채팅방 구현</h4>
+        <pre style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '1rem', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          overflow: 'auto'
+        }}>
+{`const { data: messages } = useMessagesQuery({ roomId });
+const { mutate: sendMessage } = useSendMessageCommand();
+
+const handleSend = (content) => {
+  sendMessage({ roomId, content, userId });
+};
+
+return (
+  <div>
+    {messages?.map(msg => (
+      <div key={msg.id}>{msg.content}</div>
+    ))}
+    <MessageInput onSend={handleSend} />
+  </div>
+);`}
+        </pre>
+      </div>
+      
+      <div style={{ marginTop: '1rem' }}>
+        <h4>2. 실시간 채팅방</h4>
+        <pre style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '1rem', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          overflow: 'auto'
+        }}>
+{`// 실시간 메시지 업데이트
+useMessageRealtime({
+  roomId,
+  onNewMessage: (message) => {
+    scrollToBottom();
+    playNotificationSound();
+  },
+  onTyping: (data) => {
+    setTypingUsers(data.users);
+  }
+});`}
+        </pre>
+      </div>
+      
+      <div style={{ marginTop: '1rem' }}>
+        <h4>3. 채팅방 목록 관리</h4>
+        <pre style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '1rem', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          overflow: 'auto'
+        }}>
+{`const { data: rooms } = useChatRoomsQuery({ userId });
+
+return (
+  <div>
+    {rooms?.map(room => (
+      <ChatRoomItem 
+        key={room.id}
+        room={room}
+        onClick={() => selectRoom(room.id)}
+        unreadCount={room.unreadCount}
+      />
+    ))}
+  </div>
+);`}
+        </pre>
+      </div>
+      
+      <h3>💡 주요 특징</h3>
+      <ul style={{ marginTop: '1rem' }}>
+        <li>🔄 <strong>실시간 동기화</strong>: Supabase Realtime을 통한 실시간 메시지 업데이트</li>
+        <li>📱 <strong>반응형 UI</strong>: 모바일과 데스크톱 모두 지원</li>
+        <li>🔍 <strong>고급 검색</strong>: 메시지 내용, 파일, 사용자별 검색</li>
+        <li>📎 <strong>파일 지원</strong>: 이미지, 문서 등 다양한 파일 형식 지원</li>
+        <li>⚡ <strong>성능 최적화</strong>: React Query 캐싱으로 빠른 응답</li>
+      </ul>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: '완전한 MessageHooks 사용 가이드입니다. 실제 채팅 시스템 구현에 필요한 모든 패턴을 포함합니다.'
+      }
+    }
+  }
+};
 
 /**
  * 채팅방 목록 조회 기능 테스트
@@ -1004,3 +1539,4 @@ export const FileUpload: Story = {
     }
   }
 };
+

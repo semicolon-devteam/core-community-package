@@ -149,6 +149,220 @@ const { data: notifications } = useNotificationsQuery({ page: 1 });
 const { data: unreadCount } = useUnreadNotificationCountQuery();
 const { mutate: markAsRead } = useMarkNotificationAsReadCommand();
 \`\`\`
+
+## 실제 구현 코드 예시
+
+### 알림 센터 컴포넌트 구현
+\`\`\`tsx
+import { 
+  useNotificationsQuery,
+  useUnreadNotificationCountQuery,
+  useMarkNotificationAsReadCommand 
+} from '@team-semicolon/community-core';
+
+function NotificationCenter() {
+  const [page, setPage] = useState(1);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  
+  // 알림 목록 조회
+  const {
+    data: notifications,
+    isLoading,
+    error,
+    refetch
+  } = useNotificationsQuery({
+    page,
+    pageSize: 10,
+    onlyUnread: showUnreadOnly
+  });
+  
+  // 읽지 않은 알림 개수
+  const { data: unreadCount } = useUnreadNotificationCountQuery();
+  
+  // 알림 읽음 처리
+  const markAsRead = useMarkNotificationAsReadCommand();
+  
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      await markAsRead.mutateAsync(notificationId);
+      // React Query가 자동으로 캐시를 무효화하여 UI 업데이트
+    } catch (error) {
+      console.error('읽음 처리 실패:', error);
+    }
+  };
+  
+  if (isLoading) return <div>알림을 불러오는 중...</div>;
+  if (error) return <div>알림을 불러올 수 없습니다: {error.message}</div>;
+  
+  return (
+    <div className="notification-center">
+      <header>
+        <h2>
+          알림 센터
+          {unreadCount > 0 && (
+            <span className="unread-badge">{unreadCount}</span>
+          )}
+        </h2>
+        
+        <div className="controls">
+          <button 
+            onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+            className={showUnreadOnly ? 'active' : ''}
+          >
+            {showUnreadOnly ? '전체 보기' : '읽지 않음만'}
+          </button>
+          <button onClick={() => refetch()}>새로고침</button>
+        </div>
+      </header>
+      
+      <div className="notification-list">
+        {notifications?.notifications?.map(notification => (
+          <div 
+            key={notification.id}
+            className={'notification-item ' + (!notification.is_read ? 'unread' : '')}
+          >
+            <div className="notification-content">
+              <h3>{notification.title}</h3>
+              <p>{notification.body}</p>
+              <span className="timestamp">
+                {new Date(notification.created_at).toLocaleString('ko-KR')}
+              </span>
+            </div>
+            
+            <div className="notification-actions">
+              {notification.web_landing_url && (
+                <button onClick={() => window.location.href = notification.web_landing_url}>
+                  보기
+                </button>
+              )}
+              
+              {!notification.is_read && (
+                <button 
+                  onClick={() => handleMarkAsRead(notification.id)}
+                  disabled={markAsRead.isPending}
+                >
+                  읽음 처리
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* 페이지네이션 */}
+      <div className="pagination">
+        <button 
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          이전
+        </button>
+        <span>페이지 {page}</span>
+        <button 
+          onClick={() => setPage(p => p + 1)}
+          disabled={!notifications?.has_more}
+        >
+          다음
+        </button>
+      </div>
+    </div>
+  );
+}
+\`\`\`
+
+### 네비게이션 바에 알림 배지 구현
+\`\`\`tsx
+import { useUnreadNotificationCountQuery } from '@team-semicolon/community-core';
+
+function NavigationBar() {
+  const { data: unreadCount, isLoading } = useUnreadNotificationCountQuery();
+  
+  return (
+    <nav className="navigation-bar">
+      <div className="nav-items">
+        {/* 다른 네비게이션 항목들 */}
+        
+        <div className="notification-icon">
+          <button className="icon-button">
+            🔔
+            {!isLoading && unreadCount > 0 && (
+              <span className="notification-badge">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
+\`\`\`
+
+### 알림 설정 페이지 구현
+\`\`\`tsx
+import { useNotificationSettingsQuery, useUpdateNotificationSettingsCommand } from '@team-semicolon/community-core';
+
+function NotificationSettings() {
+  const { data: settings, isLoading } = useNotificationSettingsQuery();
+  const updateSettings = useUpdateNotificationSettingsCommand();
+  
+  const handleSettingChange = async (key: string, value: boolean) => {
+    try {
+      await updateSettings.mutateAsync({
+        [key]: value
+      });
+      // 성공 시 토스트 메시지 표시
+      console.log('설정이 저장되었습니다.');
+    } catch (error) {
+      console.error('설정 저장 실패:', error);
+    }
+  };
+  
+  if (isLoading) return <div>설정을 불러오는 중...</div>;
+  
+  const settingItems = [
+    { key: 'push_enabled', label: '푸시 알림', description: '브라우저/앱 푸시 알림 수신' },
+    { key: 'email_enabled', label: '이메일 알림', description: '이메일로 알림 수신' },
+    { key: 'comment_notifications', label: '댓글 알림', description: '내 글에 댓글이 달릴 때' },
+    { key: 'message_notifications', label: '쪽지 알림', description: '새로운 쪽지 수신 시' },
+    { key: 'system_notifications', label: '시스템 알림', description: '공지사항 및 시스템 메시지' },
+    { key: 'marketing_notifications', label: '마케팅 알림', description: '이벤트 및 프로모션 정보' }
+  ];
+  
+  return (
+    <div className="notification-settings">
+      <h2>알림 설정</h2>
+      
+      <div className="settings-list">
+        {settingItems.map(item => (
+          <div key={item.key} className="setting-item">
+            <div className="setting-info">
+              <h3>{item.label}</h3>
+              <p>{item.description}</p>
+            </div>
+            
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings[item.key] || false}
+                onChange={(e) => handleSettingChange(item.key, e.target.checked)}
+                disabled={updateSettings.isPending}
+              />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
+        ))}
+      </div>
+      
+      <div className="settings-summary">
+        <p>
+          활성화된 알림: {Object.values(settings).filter(Boolean).length}개
+        </p>
+      </div>
+    </div>
+  );
+}
+\`\`\`
         `,
       },
     },
@@ -158,6 +372,155 @@ const { mutate: markAsRead } = useMarkNotificationAsReadCommand();
 
 export default meta;
 type Story = StoryObj;
+
+// 문서 스토리 (최상단 배치)
+export const Docs: Story = {
+  render: () => (
+    <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+      <h1>NotificationHooks 사용 가이드</h1>
+      <p><strong>@team-semicolon/community-core</strong>의 NotificationHooks는 알림 시스템을 위한 React Query 기반 훅들을 제공합니다.</p>
+      
+      <h2>📋 제공하는 훅들</h2>
+      <ul>
+        <li><strong>🔔 useNotificationsQuery</strong>: 사용자 알림 목록 조회</li>
+        <li><strong>✅ useMarkNotificationReadCommand</strong>: 알림을 읽음 상태로 변경</li>
+        <li><strong>🗑️ useDeleteNotificationCommand</strong>: 알림 삭제</li>
+        <li><strong>📊 useNotificationStatsQuery</strong>: 읽지 않은 알림 개수 등 통계 조회</li>
+      </ul>
+      
+      <div style={{ 
+        marginTop: '2rem', 
+        padding: '1rem', 
+        backgroundColor: '#f8f9fa', 
+        borderRadius: '8px',
+        border: '1px solid #e9ecef'
+      }}>
+        <h3>📚 완전한 사용 가이드</h3>
+        <p>실제 구현 코드 예시와 상세한 사용법은 별도 문서를 참고하세요:</p>
+        <a 
+          href="https://github.com/semicolon-labs/community-core/blob/main/storybook/src/stories/hooks/NotificationHooks.md" 
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ 
+            color: '#0066cc', 
+            textDecoration: 'none',
+            fontWeight: '500'
+          }}
+        >
+          📖 NotificationHooks 완전한 사용 가이드 보기
+        </a>
+      </div>
+      
+      <h3>🚀 주요 패턴</h3>
+      <div style={{ marginTop: '1rem' }}>
+        <h4>1. 기본 알림 센터 구현</h4>
+        <pre style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '1rem', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          overflow: 'auto'
+        }}>
+{`const { 
+  data: notifications, 
+  isLoading 
+} = useNotificationsQuery({ userId });
+
+const { mutate: markAsRead } = useMarkNotificationReadCommand({
+  onSuccess: () => refetch()
+});
+
+const handleNotificationClick = (notification) => {
+  if (!notification.is_read) {
+    markAsRead({ notificationId: notification.id });
+  }
+  
+  if (notification.action_url) {
+    window.location.href = notification.action_url;
+  }
+};`}
+        </pre>
+      </div>
+      
+      <div style={{ marginTop: '1rem' }}>
+        <h4>2. 헤더 알림 벨 아이콘</h4>
+        <pre style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '1rem', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          overflow: 'auto'
+        }}>
+{`const { data: stats } = useNotificationStatsQuery({ userId });
+const unreadCount = stats?.unreadCount || 0;
+
+return (
+  <button className="notification-bell">
+    🔔
+    {unreadCount > 0 && (
+      <span className="notification-badge">
+        {unreadCount > 99 ? '99+' : unreadCount}
+      </span>
+    )}
+  </button>
+);`}
+        </pre>
+      </div>
+      
+      <div style={{ marginTop: '1rem' }}>
+        <h4>3. 실시간 토스트 알림</h4>
+        <pre style={{ 
+          backgroundColor: '#f8f9fa', 
+          padding: '1rem', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          overflow: 'auto'
+        }}>
+{`// 실시간으로 최신 알림 체크
+const { data: latestNotifications } = useNotificationsQuery({
+  userId,
+  filter: 'unread',
+  limit: 1,
+  refetchInterval: 30000, // 30초마다 체크
+});
+
+useEffect(() => {
+  if (latestNotifications?.items?.length) {
+    const notification = latestNotifications.items[0];
+    showToast(notification);
+  }
+}, [latestNotifications]);`}
+        </pre>
+      </div>
+      
+      <h3>💡 주요 특징</h3>
+      <ul style={{ marginTop: '1rem' }}>
+        <li>🔔 <strong>실시간 알림</strong>: 최신 알림을 실시간으로 업데이트</li>
+        <li>🎯 <strong>타겟 액션</strong>: 알림 클릭 시 관련 페이지로 자동 이동</li>
+        <li>📱 <strong>푸시 알림</strong>: 브라우저 푸시 알림 지원</li>
+        <li>⚙️ <strong>세밀한 설정</strong>: 알림 유형별 on/off 설정</li>
+        <li>📊 <strong>통계 정보</strong>: 읽지 않은 알림 개수 추적</li>
+        <li>🔄 <strong>배치 처리</strong>: 여러 알림 한번에 읽음 처리</li>
+      </ul>
+      
+      <h3>🎨 UI 컴포넌트 패턴</h3>
+      <ul style={{ marginTop: '1rem' }}>
+        <li>🎯 <strong>알림 센터</strong>: 전체 알림 목록과 필터 기능</li>
+        <li>🔔 <strong>벨 아이콘</strong>: 헤더의 알림 드롭다운 메뉴</li>
+        <li>🍞 <strong>토스트</strong>: 새 알림 도착 시 자동 표시</li>
+        <li>⚙️ <strong>설정 패널</strong>: 알림 유형별 세부 설정</li>
+        <li>📱 <strong>푸시 매니저</strong>: 브라우저 푸시 알림 관리</li>
+      </ul>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: '완전한 NotificationHooks 사용 가이드입니다. 실제 알림 시스템 구현에 필요한 모든 패턴을 포함합니다.'
+      }
+    }
+  }
+};
 
 // 알림 목록 조회 훅 예시
 export const NotificationListExample: Story = {
@@ -213,9 +576,9 @@ export const NotificationListExample: Story = {
               {data.notifications.map((notification: any) => (
                 <div 
                   key={notification.id} 
-                  className={`p-3 rounded-lg border ${
-                    notification.is_read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'
-                  }`}
+                  className={'p-3 rounded-lg border ' + 
+                    (notification.is_read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200')
+                  }
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -399,9 +762,9 @@ export const NotificationSettingsExample: Story = {
           {settingItems.map((item) => (
             <div 
               key={item.key}
-              className={`flex items-center justify-between p-3 border rounded-lg ${
-                isUpdating ? 'opacity-50' : ''
-              }`}
+              className={'flex items-center justify-between p-3 border rounded-lg ' + 
+                (isUpdating ? 'opacity-50' : '')
+              }
             >
               <div className="flex-1">
                 <div className="font-medium text-sm">{item.label}</div>
@@ -512,9 +875,9 @@ export const NotificationSystemExample: Story = {
               {notifications.notifications.map((notification: any) => (
                 <div 
                   key={notification.id}
-                  className={`p-4 hover:bg-gray-50 transition-colors ${
-                    !notification.is_read ? 'bg-blue-50' : ''
-                  }`}
+                  className={'p-4 hover:bg-gray-50 transition-colors ' + 
+                    (!notification.is_read ? 'bg-blue-50' : '')
+                  }
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -577,3 +940,4 @@ export const NotificationSystemExample: Story = {
     },
   },
 };
+
