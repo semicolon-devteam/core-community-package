@@ -39,7 +39,12 @@
       "Bash(rm:*)",
       "Bash(touch:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:api.github.com)"
+      "WebFetch(domain:api.github.com)",
+      "Read(/Users/jeonjunyeong/**)",
+      "Read(/Users/jeonjunyeong/.config/claude/**)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "additionalDirectories": [
