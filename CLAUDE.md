@@ -34,6 +34,10 @@ npm run lint                   # ESLint 실행 (향후 추가)
 # Package Management
 npm run prepublishOnly         # 배포 전 자동 빌드
 npm publish --access public    # NPM에 패키지 배포
+
+# MCP (Model Context Protocol) 설정
+npm run mcp:setup              # MCP 설정 스크립트 실행
+npm run mcp:check              # MCP 설정 상태 확인
 ```
 
 ## Package Architecture Overview
@@ -1658,26 +1662,112 @@ function ExampleComponent() {
 - [ ] 변경된 API 반영하여 코드 수정
 - [ ] 주의사항이나 특징 업데이트
 
+## 🤖 하이브리드 MCP (Model Context Protocol) 통합
+
+이 프로젝트는 **효율적인 하이브리드 MCP 전략**을 사용합니다:
+- 🌍 **PostgreSQL MCP**: 글로벌 설정 (모든 프로젝트에서 공유)  
+- 🏢 **Supabase MCP**: 프로젝트별 설정 (커뮤니티 서비스별 독립)
+
+### 🚀 하이브리드 MCP 아키텍처
+
+#### 🏢 Supabase MCP (프로젝트별 설정)
+- **범위**: 이 커뮤니티 서비스에만 적용
+- **기능**: 프로젝트별 스키마 관리, TypeScript 타입 생성, 서비스별 데이터 쿼리
+- **모드**: 읽기 전용 (안전한 개발)
+- **장점**: 
+  - 서비스별 보안 격리
+  - 프로젝트 특화된 설정
+  - 독립적인 관리 및 업데이트
+
+#### 🌍 PostgreSQL MCP (글로벌 설정)  
+- **범위**: 모든 Claude Code 프로젝트에서 사용 가능
+- **기능**: 데이터베이스 성능 분석, 크로스 플랫폼 쿼리, 인프라 관리
+- **모드**: 읽기 전용 (데이터 안전성)
+- **장점**:
+  - 일관된 DB 분석 환경
+  - 여러 프로젝트 간 비교 분석
+  - 한 번 설정으로 모든 곳에서 사용
+
+### ⚙️ 하이브리드 설정 방법
+
+#### 1️⃣ 프로젝트별 Supabase MCP 설정
+```bash
+# 프로젝트별 Supabase 설정 (이 프로젝트에서만 사용)
+npm run mcp:setup  # 하이브리드 설정 스크립트 실행
+
+# 환경 변수 파일 생성 및 설정
+cp .env.mcp.example .env.mcp
+# .env.mcp 파일에 이 커뮤니티 서비스의 Supabase 정보 입력:
+# SUPABASE_ACCESS_TOKEN=sbp_your_token_here
+# SUPABASE_PROJECT_REF=your_community_project_ref
+
+# 프로젝트별 설정 상태 확인
+npm run mcp:check
+```
+
+#### 2️⃣ 글로벌 PostgreSQL MCP 설정 (한 번만)
+```bash
+# 글로벌 환경 변수 설정 (모든 프로젝트에서 사용)
+export POSTGRES_CONNECTION_STRING="postgresql://username:password@hostname:port/database"
+
+# Claude Code CLI를 통한 글로벌 설정
+claude mcp add postgres-global \
+  --global \
+  --env POSTGRES_CONNECTION_STRING \
+  -- npx -y @modelcontextprotocol/server-postgres
+
+# 또는 수동 글로벌 설정 파일 생성
+mkdir -p ~/.config/claude
+echo '{"mcpServers":{"postgres-global":{"command":"npx","args":["-y","@modelcontextprotocol/server-postgres","${POSTGRES_CONNECTION_STRING}"]}}}' > ~/.config/claude/mcp.json
+```
+
+### 🎯 하이브리드 MCP 활용 예시
+
+#### 🏢 프로젝트별 Supabase 작업
+```
+# 이 커뮤니티 서비스의 스키마 관리
+"현재 커뮤니티 프로젝트의 테이블 구조를 보여줘"
+
+# 프로젝트별 TypeScript 타입 생성  
+"이 커뮤니티 스키마를 기반으로 TypeScript 인터페이스를 생성해줘"
+
+# 서비스별 데이터 분석
+"이 커뮤니티의 사용자 활동 통계를 분석해줘"
+
+# 프로젝트별 스키마 설계
+"커뮤니티 게시판을 위한 테이블 설계를 제안해줘"
+```
+
+#### 🌍 글로벌 PostgreSQL 작업 (모든 프로젝트에서 사용 가능)
+```
+# 데이터베이스 성능 분석
+"연결된 PostgreSQL의 성능 상태를 분석해줘"
+
+# 크로스 플랫폼 데이터 비교
+"이 커뮤니티와 다른 데이터베이스의 구조를 비교해줘"
+
+# 인프라 관리
+"인덱스 사용 현황을 분석하고 최적화 방안을 제안해줘"
+
+# 데이터베이스 건강 상태 체크
+"전체 데이터베이스의 상태를 종합적으로 점검해줘"
+```
+
+### 📚 관련 문서
+- **프로젝트별 설정**: `docs/MCP_SETUP.md` (Supabase 프로젝트별)
+- **글로벌 설정**: `docs/MCP_GLOBAL_SETUP.md` (PostgreSQL 글로벌)
+- **환경 변수 템플릿**: `.env.mcp.example`
+- **프로젝트 MCP 설정**: `.mcp.json`
+
 ## Important Notes
 
-- Never commit sensitive information (API keys, tokens)
+- Never commit sensitive information (API keys, tokens, MCP credentials)
 - Use TypeScript strictly - all components and functions should be properly typed
 - Follow the existing code patterns and architectural decisions
 - The global loading system is automatic - don't create duplicate loading states
 - Permission checks are centralized - don't implement custom authorization logic
 - All API responses follow the `CommonResponse<T>` pattern
-- **새로운 기능 추가 시 반드시 위의 업데이트 관리 규칙을 준수할 것**
-- **문서와 코드의 동기화를 위해 체크리스트를 활용할 것**
-- **🚨 Storybook 동기화 없이는 어떤 컴포넌트도 완성된 것으로 간주하지 않음**
-
-## Important Notes
-
-- Never commit sensitive information (API keys, tokens)
-- Use TypeScript strictly - all components and functions should be properly typed
-- Follow the existing code patterns and architectural decisions
-- The global loading system is automatic - don't create duplicate loading states
-- Permission checks are centralized - don't implement custom authorization logic
-- All API responses follow the `CommonResponse<T>` pattern
+- **MCP 환경 변수는 절대로 커밋하지 말 것 (`.env.mcp` 파일은 `.gitignore`에 포함됨)**
 - **새로운 기능 추가 시 반드시 위의 업데이트 관리 규칙을 준수할 것**
 - **문서와 코드의 동기화를 위해 체크리스트를 활용할 것**
 - **🚨 Storybook 동기화 없이는 어떤 컴포넌트도 완성된 것으로 간주하지 않음**

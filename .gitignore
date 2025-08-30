@@ -54,3 +54,6 @@ deploy.tar.gz
 .docs
 
 /dist
+
+CLAUDE.md
+.claude/*

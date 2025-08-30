@@ -29,7 +29,11 @@
       "Bash(git push:*)",
       "Bash(killall:*)",
       "Bash(curl:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "WebSearch",
+      "Bash(psql:*)",
+      "Bash(source:*)",
+      "Bash(npx @modelcontextprotocol/server-postgres:*)"
     ],
     "deny": [],
     "additionalDirectories": [
