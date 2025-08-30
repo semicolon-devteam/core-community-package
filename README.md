@@ -1,13 +1,17 @@
-# @semicolon/community-core
+# @team-semicolon/community-core
 
-[![npm version](https://img.shields.io/npm/v/@semicolon/community-core.svg)](https://www.npmjs.com/package/@semicolon/community-core)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+<div align="center">
+
+[![npm version](https://img.shields.io/npm/v/@team-semicolon/community-core.svg)](https://www.npmjs.com/package/@team-semicolon/community-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/Build-Passing-green.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Storybook](https://img.shields.io/badge/Storybook-Available-ff4785.svg)](https://semicolon-community-core.vercel.app)
 
-세미콜론 커뮤니티 플랫폼을 위한 **종합 React 패키지**입니다. 현대적인 UI 컴포넌트, 유틸리티 함수, 타입 정의, 설정 도구를 제공합니다.
+세미콜론 커뮤니티 플랫폼을 위한 재사용 가능한 React 컴포넌트 라이브러리
 
-> **Version 1.0.0** | **Phase 1 완료** - 기본 유틸리티와 핵심 컴포넌트 구현
+> **Version 1.8.1** | 완전한 커뮤니티 기능 구현
+
+</div>
 
 ## 🚀 특징
 
@@ -35,101 +39,91 @@ yarn add @semicolon/community-core
 ### 기본 사용법
 
 ```typescript
-import { formatNumberWithComma } from '@semicolon/community-core';
+// 컴포넌트 import
+import { Button, Input, Skeleton } from '@team-semicolon/community-core';
 
-const formatted = formatNumberWithComma(1234567);
-console.log(formatted); // "1,234,567"
+// 훅 import
+import { useAuth, useGlobalLoader } from '@team-semicolon/community-core';
+
+// 서비스 import
+import { UserService, PostService } from '@team-semicolon/community-core';
+
+// 유틸리티 import
+import { formatNumberWithComma, timeAgo } from '@team-semicolon/community-core';
 ```
 
-### 패키지 초기화 (권장)
+### 카테고리별 Import (Tree Shaking 최적화)
 
 ```typescript
-import { initializeCommunityCore } from '@semicolon/community-core';
-
-// 앱 시작 시 한 번 호출
-initializeCommunityCore({
-  apiUrl: process.env.REACT_APP_API_URL,
-  supabaseUrl: process.env.REACT_APP_SUPABASE_URL,
-  supabaseAnonKey: process.env.REACT_APP_SUPABASE_ANON_KEY,
-});
+import { Button, Skeleton } from '@team-semicolon/community-core/components';
+import { useAuth } from '@team-semicolon/community-core/hooks';
+import { UserService } from '@team-semicolon/community-core/services';
 ```
 
-### 개별 모듈 import
+### 컴포넌트 사용 예시
 
-```typescript
-// 전체 import
-import { Button, useAuth, BaseService } from '@semicolon/community-core';
-
-// 카테고리별 import (번들 크기 최적화)
-import { Button } from '@semicolon/community-core/components';
-import { useAuth } from '@semicolon/community-core/hooks';
-import { BaseService } from '@semicolon/community-core/services';
+```tsx
+function MyComponent() {
+  const { user, isLoggedIn, loginWithLoader } = useAuth();
+  
+  return (
+    <div>
+      {isLoggedIn ? (
+        <Button variant="primary" size="lg">
+          환영합니다, {user.name}!
+        </Button>
+      ) : (
+        <Button onClick={loginWithLoader} loading>
+          로그인
+        </Button>
+      )}
+    </div>
+  );
+}
 ```
 
-## 📚 현재 구현된 기능 (Phase 1)
+## 📚 주요 기능
 
-### ✅ Core Utilities
-필수 유틸리티 함수들
+### 🧩 컴포넌트
+- **Button** - 5가지 variant, 4가지 size, 로딩 상태
+- **Input** - 라벨, 에러, 아이콘 지원
+- **Badge** - 상태 표시, dot 인디케이터
+- **Avatar** - 온라인 상태, 폴백 이미지
+- **Skeleton** - 로딩 플레이스홀더
 
-```typescript
-import { 
-  formatNumberWithComma,  // 숫자에 천 단위 쉼표 추가
-  formatDate,            // 날짜를 한국어 형식으로 포맷팅  
-  timeAgo,              // 상대적 시간 표시 ("2시간 전")
-  isAdmin               // 사용자 관리자 권한 체크
-} from '@semicolon/community-core';
-```
+### 🪝 React Hooks
+- **useAuth** - 인증 상태 관리
+- **useGlobalLoader** - 전역 로딩 상태
+- **usePermission** - 권한 체크
+- **usePostQuery** - 게시글 데이터 페칭
+- **useUserQuery** - 사용자 데이터 페칭
 
-### ✅ Essential Components  
-Atomic Design 기반 핵심 컴포넌트
+### 🔧 서비스 레이어
+- **UserService** - 사용자 관련 API
+- **PostService** - 게시글 관련 API
+- **BoardService** - 게시판 관련 API
+- **AuthService** - 인증/인가 처리
 
-```typescript
-import { 
-  Button,    // 완전한 기능의 버튼 (5가지 variant, 로딩 상태, 아이콘)
-  Badge,     // 상태/레벨/태그 표시 뱃지
-  Avatar     // 사용자 프로필 이미지 (폴백, 상태 표시)
-} from '@semicolon/community-core';
-```
-
-### ✅ Core Types
-TypeScript 타입 정의
-
-```typescript
-import type { 
-  User,             // 사용자 정보 인터페이스
-  CommonResponse,   // API 응답 표준 형식
-  ButtonProps,      // Button 컴포넌트 Props
-  BadgeProps,       // Badge 컴포넌트 Props  
-  AvatarProps       // Avatar 컴포넌트 Props
-} from '@semicolon/community-core';
-```
-
-### ✅ Configuration System
-패키지 설정 및 초기화
-
-```typescript
-import { 
-  initializeCommunityCore,  // 패키지 전역 설정
-  getPackageConfig         // 현재 설정 조회
-} from '@semicolon/community-core';
-```
+### 🛠️ 유틸리티
+- **formatNumberWithComma** - 숫자 포맷팅
+- **formatDate** - 날짜 포맷팅
+- **timeAgo** - 상대 시간 표시
+- **isAdmin** - 관리자 권한 체크
 
 ## 🏗️ 아키텍처
 
 ```
-@semicolon/community-core/
-├── components/          # UI 컴포넌트
-│   ├── atoms/          # 기본 UI 요소
-│   ├── molecules/      # 조합된 UI 컴포넌트
-│   └── organisms/      # 복합 비즈니스 컴포넌트
-├── hooks/              # React 훅
-│   ├── common/         # 범용 훅
-│   ├── queries/        # 데이터 페칭
-│   └── commands/       # 데이터 변경
-├── services/           # API 서비스
-├── utils/             # 유틸리티 함수
-├── types/             # TypeScript 타입
-└── config/            # 설정 관리
+@team-semicolon/community-core/
+├── lib/                # 소스 코드
+│   ├── components/     # UI 컴포넌트 (Atomic Design)
+│   ├── hooks/          # React Hooks
+│   ├── services/       # API 서비스
+│   ├── utils/          # 유틸리티 함수
+│   ├── types/          # TypeScript 타입
+│   └── constants/      # 상수 정의
+├── dist/               # 빌드 출력
+├── storybook/          # Storybook 문서
+└── docs/               # 프로젝트 문서
 ```
 
 ## 🔧 개발 환경 설정
@@ -157,42 +151,34 @@ module.exports = {
 };
 ```
 
-### 스타일 import
 
-```typescript
-// _app.tsx 또는 layout.tsx
-import '@semicolon/community-core/styles';
-```
 
-## 📊 번들 크기 최적화
-
-이 패키지는 Tree Shaking을 지원하여 사용하는 모듈만 번들에 포함됩니다.
-
-```typescript
-// ✅ 최적화된 import (권장)
-import { formatNumberWithComma } from '@semicolon/community-core/utils';
-
-// ❌ 전체 패키지 import (비권장)
-import * as CommunityCore from '@semicolon/community-core';
-```
-
-## 🧪 개발 모드
-
-패키지 개발 시 watch 모드를 사용할 수 있습니다:
+## 🛠️ 개발
 
 ```bash
-npm run dev  # Rollup watch 모드
+# 개발 서버 실행
+npm run dev
+
+# Storybook 실행
+npm run storybook
+
+# 테스트 실행
+npm test
+
+# 빌드
+npm run build
 ```
 
 ## 🤝 기여하기
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+기여를 환영합니다! [Contributing Guide](./CONTRIBUTING.md)를 읽고 개발 프로세스를 확인해주세요.
 
-자세한 기여 가이드라인은 [CONTRIBUTING.md](.docs/CONTRIBUTING.md)를 참조하세요.
+### 기여 방법
+1. 이슈 생성 또는 기존 이슈 확인
+2. Fork & Clone
+3. 브랜치 생성 (`feature/your-feature`)
+4. 변경사항 커밋
+5. Pull Request 생성
 
 ## 📋 요구사항
 
@@ -202,24 +188,20 @@ npm run dev  # Rollup watch 모드
 
 ## 📖 문서
 
-- **[Storybook](https://storybook.semi-colon.space/)** - 인터랙티브 컴포넌트 문서 및 예제
-- **[API Reference](./docs/API_REFERENCE.md)** - 완전한 API 문서 및 사용 가이드
-- **[Usage Examples](./docs/USAGE_EXAMPLES.md)** - 실제 사용 예제 및 통합 시나리오
-- **[Changelog](./docs/CHANGELOG.md)** - 버전별 변경사항 및 릴리스 노트
-- **[개발 가이드](./CLAUDE.md)** - 개발자를 위한 상세 가이드라인
+- [📚 API Reference](./docs/API_REFERENCE.md) - 전체 API 문서
+- [💡 사용 예제](./docs/USAGE_EXAMPLES.md) - 실제 사용 예시
+- [🏗️ 아키텍처](./docs/ARCHITECTURE.md) - 패키지 구조 및 설계
+- [🚀 개발 가이드](./docs/DEVELOPMENT.md) - 개발 환경 설정
+- [🔄 마이그레이션](./docs/MIGRATION.md) - 버전 업그레이드 가이드
+- [🎨 Storybook](https://semicolon-community-core.vercel.app) - 컴포넌트 플레이그라운드
 
-### 추가 문서
-- [구현 전략](.docs/IMPLEMENTATION_STRATEGY.md)
-- [패키징 가이드](.docs/PACKAGING_GUIDE.md)
+## 📝 라이선스
 
-## 🐛 이슈 리포트
+MIT © Semicolon Dev Team
 
-버그를 발견했거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/semicolon-devteam/community-core/issues)를 통해 알려주세요.
+## 🔗 링크
 
-## 📄 라이센스
-
-MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 확인하세요.
-
----
-
-Made with ❤️ by Semicolon Community
+- [NPM 패키지](https://www.npmjs.com/package/@team-semicolon/community-core)
+- [GitHub 레포지토리](https://github.com/semicolon-devteam/community-core)
+- [Storybook](https://semicolon-community-core.vercel.app)
+- [이슈 트래커](https://github.com/semicolon-devteam/community-core/issues)

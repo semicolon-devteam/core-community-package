@@ -33,7 +33,13 @@
       "WebSearch",
       "Bash(psql:*)",
       "Bash(source:*)",
-      "Bash(npx @modelcontextprotocol/server-postgres:*)"
+      "Bash(npx @modelcontextprotocol/server-postgres:*)",
+      "Read(/Users/jeonjunyeong/.config/claude/**)",
+      "Bash(tree:*)",
+      "Bash(rm:*)",
+      "Bash(touch:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)"
     ],
     "deny": [],
     "additionalDirectories": [
