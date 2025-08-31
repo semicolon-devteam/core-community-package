@@ -84,12 +84,24 @@ const Tooltip: React.FC<TooltipProps> = ({
   forceVisible = false,
 }) => {
   const [isVisible, setIsVisible] = useState(forceVisible);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [tooltipPosition, setTooltipPosition] = useState({ top: -9999, left: -9999 });
   const [isPositioned, setIsPositioned] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isTargetInView, setIsTargetInView] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // 타겟 요소가 뷰포트 내에 있는지 확인
+  const isElementInViewport = (rect: DOMRect) => {
+    const threshold = 10; // 최소한 10px는 보여야 함
+    return (
+      rect.bottom > threshold &&
+      rect.top < window.innerHeight - threshold &&
+      rect.right > threshold &&
+      rect.left < window.innerWidth - threshold
+    );
+  };
 
   // 툴팁 위치 계산
   const calculateTooltipPosition = () => {
@@ -99,6 +111,15 @@ const Tooltip: React.FC<TooltipProps> = ({
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
+    
+    // 타겟이 뷰포트 밖에 있으면 툴팁 숨김 (forceVisible 포함)
+    const inView = isElementInViewport(triggerRect);
+    setIsTargetInView(inView);
+    
+    if (!inView) {
+      setIsPositioned(false);
+      return;
+    }
     const gap = showArrow ? 12 : 8;
 
     let top = 0;
@@ -133,6 +154,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
+    // 타겟이 부분적으로만 보일 때 툴팁 위치 조정
     if (left < padding) {
       left = padding;
     } else if (left + tooltipRect.width > viewportWidth - padding) {
@@ -205,28 +227,45 @@ const Tooltip: React.FC<TooltipProps> = ({
   // 툴팁이 표시될 때 위치 계산
   useEffect(() => {
     if (isVisible) {
+      // 초기 위치를 화면 밖으로 설정하고 계산
       setIsPositioned(false);
       // 다음 렌더링 사이클에서 위치 계산
-      setTimeout(calculateTooltipPosition, 0);
+      requestAnimationFrame(() => {
+        calculateTooltipPosition();
+      });
     } else {
       setIsPositioned(false);
     }
   }, [isVisible, position]);
 
-  // 윈도우 리사이즈 시 위치 재계산
+  // 윈도우 리사이즈 및 스크롤 시 위치 재계산
   useEffect(() => {
     const handleResize = () => {
       if (isVisible) {
         calculateTooltipPosition();
       }
     };
+    
+    const handleScroll = () => {
+      if (isVisible && triggerRef.current) {
+        const triggerRect = triggerRef.current.getBoundingClientRect();
+        const inView = isElementInViewport(triggerRect);
+        setIsTargetInView(inView);
+        
+        if (inView) {
+          calculateTooltipPosition();
+        }
+      }
+    };
 
     window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize);
+    window.addEventListener('scroll', handleScroll, true); // capture phase로 스크롤 감지
+    document.addEventListener('scroll', handleScroll, true);
     
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize);
+      window.removeEventListener('scroll', handleScroll, true);
+      document.removeEventListener('scroll', handleScroll, true);
     };
   }, [isVisible]);
 
@@ -284,18 +323,18 @@ const Tooltip: React.FC<TooltipProps> = ({
     currentSize,
     // Variant 스타일 (Tailwind 클래스가 있으면 사용, 없으면 인라인 스타일로 폴백)
     currentVariant.classes,
-    // 애니메이션
-    'transition-all duration-200 ease-in-out',
-    // 가시성 기반 스타일
-    isPositioned ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+    // 애니메이션 (opacity만 transition)
+    'transition-opacity duration-200 ease-in-out',
+    // 가시성 기반 스타일 (타겟이 뷰포트에 있고 positioned일 때만 표시)
+    isPositioned && isTargetInView ? 'opacity-100' : 'opacity-0',
     // 사용자 정의 클래스
     className
   );
   
   // 최소한의 인라인 스타일 (위치와 Tailwind로 표현 불가능한 것들)
   const tooltipInlineStyles: React.CSSProperties = {
-    top: `${tooltipPosition.top}px`,
-    left: `${tooltipPosition.left}px`,
+    top: isPositioned ? `${tooltipPosition.top}px` : '-9999px',
+    left: isPositioned ? `${tooltipPosition.left}px` : '-9999px',
     maxWidth: `${maxWidth}px`,
     // Tailwind 클래스로 커버되지 않는 경우를 위한 폴백
     ...(!currentVariant.classes && {
@@ -352,14 +391,14 @@ const Tooltip: React.FC<TooltipProps> = ({
     }
   };
 
-  // 툴팁 엘리먼트
-  const tooltipElement = isVisible && (
+  // 툴팁 엘리먼트 (타겟이 보일 때만 렌더링)
+  const tooltipElement = isVisible && isTargetInView && (
     <div
       ref={tooltipRef}
       style={tooltipInlineStyles}
       className={tooltipClasses}
       role="tooltip"
-      aria-hidden={!isVisible}
+      aria-hidden={!isVisible || !isTargetInView}
     >
       {content}
       

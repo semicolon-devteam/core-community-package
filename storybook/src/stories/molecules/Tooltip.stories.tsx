@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
-import Tooltip from '../../../../lib/components/molecules/Tooltip';
-import type { TooltipProps } from '../../../../lib/components/molecules/Tooltip/tooltip.model';
+import { useState } from 'react';
 import { Button } from '../../../../lib/components/atoms/Button';
+import Tooltip from '../../../../lib/components/molecules/Tooltip';
 
 const meta = {
   title: 'Molecules/Tooltip',
@@ -59,7 +58,7 @@ hover, click, focus 등 다양한 트리거 방식을 지원하며, 자동으로
     delay: {
       control: { type: 'range', min: 0, max: 2000, step: 100 },
       description: '툴팁 표시 지연 시간 (ms)',
-      defaultValue: 500,
+      defaultValue: 200,
     },
     maxWidth: {
       control: { type: 'range', min: 100, max: 500, step: 50 },
