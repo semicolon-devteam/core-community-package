@@ -1,7 +1,25 @@
 import type { Preview } from '@storybook/react';
+import React from 'react';
+import { ThemeProvider } from '../../lib/theme/ThemeProvider';
 import '../src/styles/globals.css';
 
 const preview: Preview = {
+  decorators: [
+    (Story, context) => {
+      const themeMode = context.globals.theme || 'light';
+      
+      return React.createElement(
+        ThemeProvider,
+        {
+          config: {
+            mode: themeMode,
+            respectSystemTheme: false,
+          },
+        },
+        React.createElement(Story)
+      );
+    },
+  ],
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {

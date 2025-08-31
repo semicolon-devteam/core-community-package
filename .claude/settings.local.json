@@ -44,7 +44,11 @@
       "Read(/Users/jeonjunyeong/.config/claude/**)",
       "Bash(gh auth:*)",
       "Bash(gh repo view:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Read(/tmp/cm-land/**)",
+      "Read(/tmp/cm-land/src/component/atoms/AnimatedPoint/**)",
+      "Read(/tmp/cm-land/src/component/molecules/Tooltip/**)",
+      "Read(/tmp/cm-land/src/services/**)"
     ],
     "deny": [],
     "additionalDirectories": [

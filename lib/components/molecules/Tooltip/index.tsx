@@ -1,32 +1,105 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { TooltipProps } from './tooltip.model';
+import clsx from 'clsx';
 
+const sizeStyles = {
+  sm: 'px-2 py-1 text-xs',
+  md: 'px-3 py-2 text-sm',
+  lg: 'px-4 py-3 text-base'
+};
+
+const variantStyles = {
+  default: { 
+    bg: '#333', 
+    text: '#fff', 
+    border: undefined,
+    classes: 'bg-gray-800 text-white'
+  },
+  dark: { 
+    bg: '#1f2937', 
+    text: '#f9fafb', 
+    border: undefined,
+    classes: 'bg-gray-800 text-gray-50'
+  },
+  light: { 
+    bg: '#f9fafb', 
+    text: '#1f2937', 
+    border: '#e5e7eb',
+    classes: 'bg-gray-50 text-gray-800 border border-gray-200'
+  },
+  primary: { 
+    bg: '#f37021', 
+    text: '#fff', 
+    border: undefined,
+    classes: 'bg-orange-500 text-white'
+  },
+  success: { 
+    bg: '#10b981', 
+    text: '#fff', 
+    border: undefined,
+    classes: 'bg-emerald-500 text-white'
+  },
+  warning: { 
+    bg: '#f59e0b', 
+    text: '#fff', 
+    border: undefined,
+    classes: 'bg-amber-500 text-white'
+  },
+  error: { 
+    bg: '#ef4444', 
+    text: '#fff', 
+    border: undefined,
+    classes: 'bg-red-500 text-white'
+  }
+};
+
+
+/**
+ * 툴팁 컴포넌트
+ * 마우스 호버, 클릭, 포커스 시 추가 정보를 표시합니다.
+ * 
+ * @example
+ * ```tsx
+ * <Tooltip content="추가 정보">
+ *   <button>호버하세요</button>
+ * </Tooltip>
+ * ```
+ */
 const Tooltip: React.FC<TooltipProps> = ({
   children,
   content,
   position = 'top',
-  backgroundColor = '#333',
-  textColor = '#fff',
-  delay = 500,
+  size = 'md',
+  variant = 'default',
+  delay = 100,
   disabled = false,
   className = '',
   maxWidth = 200,
+  trigger = 'hover',
+  showArrow = true,
+  animationDuration = 200, // eslint-disable-line @typescript-eslint/no-unused-vars
+  forceVisible = false,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const [isVisible, setIsVisible] = useState(forceVisible);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [isPositioned, setIsPositioned] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   // 툴팁 위치 계산
   const calculateTooltipPosition = () => {
-    if (!triggerRef.current || !tooltipRef.current) return;
+    if (!triggerRef.current || !tooltipRef.current) {
+      return;
+    }
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
-    const gap = 8; // 툴팁과 타겟 사이의 간격
+    const gap = showArrow ? 12 : 8;
 
     let top = 0;
     let left = 0;
@@ -48,6 +121,11 @@ const Tooltip: React.FC<TooltipProps> = ({
         top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
         left = triggerRect.right + gap;
         break;
+      default:
+        // 기본값은 top
+        top = triggerRect.top - tooltipRect.height - gap;
+        left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
+        break;
     }
 
     // 화면 경계 체크 및 조정
@@ -67,25 +145,33 @@ const Tooltip: React.FC<TooltipProps> = ({
       top = viewportHeight - tooltipRect.height - padding;
     }
 
-    setTooltipStyle({
-      position: 'fixed',
-      top: `${top}px`,
-      left: `${left}px`,
-      zIndex: 9999,
+    setTooltipPosition({
+      top: Math.max(top, 10),
+      left: Math.max(left, 10)
     });
+    setIsPositioned(true);
   };
 
-  // 마우스 진입 시 툴팁 표시
-  const handleMouseEnter = () => {
-    if (disabled || !content) return;
-
-    timeoutRef.current = setTimeout(() => {
+  // 이벤트 핸들러들
+  const showTooltip = () => {
+    if (disabled || !content || forceVisible) {
+      return;
+    }
+    
+    if (delay > 0) {
+      timeoutRef.current = setTimeout(() => {
+        setIsVisible(true);
+      }, delay);
+    } else {
       setIsVisible(true);
-    }, delay);
+    }
   };
 
-  // 마우스 이탈 시 툴팁 숨김
-  const handleMouseLeave = () => {
+  const hideTooltip = () => {
+    if (forceVisible) {
+      return; // forceVisible일 때는 숨기지 않음
+    }
+    
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -93,11 +179,37 @@ const Tooltip: React.FC<TooltipProps> = ({
     setIsVisible(false);
   };
 
+  const handleMouseEnter = () => {
+    if (trigger === 'hover') showTooltip();
+  };
+
+  const handleMouseLeave = () => {
+    if (trigger === 'hover') hideTooltip();
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (trigger === 'click') {
+      e.stopPropagation();
+      isVisible ? hideTooltip() : showTooltip();
+    }
+  };
+
+  const handleFocus = () => {
+    if (trigger === 'focus') showTooltip();
+  };
+
+  const handleBlur = () => {
+    if (trigger === 'focus') hideTooltip();
+  };
+
   // 툴팁이 표시될 때 위치 계산
   useEffect(() => {
     if (isVisible) {
+      setIsPositioned(false);
       // 다음 렌더링 사이클에서 위치 계산
       setTimeout(calculateTooltipPosition, 0);
+    } else {
+      setIsPositioned(false);
     }
   }, [isVisible, position]);
 
@@ -110,8 +222,32 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleResize);
+    };
   }, [isVisible]);
+
+  // Click outside handler for click trigger
+  useEffect(() => {
+    if (trigger === 'click' && isVisible) {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (
+          triggerRef.current &&
+          !triggerRef.current.contains(e.target as Node) &&
+          tooltipRef.current &&
+          !tooltipRef.current.contains(e.target as Node)
+        ) {
+          hideTooltip();
+        }
+      };
+
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [trigger, isVisible]);
 
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
@@ -122,65 +258,143 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
+  // Portal을 위한 마운트 체크
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  // forceVisible이 변경될 때 상태 업데이트
+  useEffect(() => {
+    setIsVisible(forceVisible);
+  }, [forceVisible]);
+
+  const currentVariant = variantStyles[variant];
+  const currentSize = sizeStyles[size];
+  const bgColor = currentVariant.bg;
+  const txtColor = currentVariant.text;
+  
+  // 동적 Tailwind 클래스 생성
+  const tooltipClasses = clsx(
+    // 기본 스타일
+    'fixed rounded-md font-medium shadow-lg whitespace-pre-wrap break-words pointer-events-none',
+    // z-index
+    'z-[9999]',
+    // 크기 스타일
+    currentSize,
+    // Variant 스타일 (Tailwind 클래스가 있으면 사용, 없으면 인라인 스타일로 폴백)
+    currentVariant.classes,
+    // 애니메이션
+    'transition-all duration-200 ease-in-out',
+    // 가시성 기반 스타일
+    isPositioned ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+    // 사용자 정의 클래스
+    className
+  );
+  
+  // 최소한의 인라인 스타일 (위치와 Tailwind로 표현 불가능한 것들)
+  const tooltipInlineStyles: React.CSSProperties = {
+    top: `${tooltipPosition.top}px`,
+    left: `${tooltipPosition.left}px`,
+    maxWidth: `${maxWidth}px`,
+    // Tailwind 클래스로 커버되지 않는 경우를 위한 폴백
+    ...(!currentVariant.classes && {
+      backgroundColor: bgColor,
+      color: txtColor,
+      borderColor: currentVariant.border
+    })
+  };
+
+  // 화살표 위치별 클래스
+  const arrowClasses = clsx(
+    'absolute w-0 h-0',
+    position === 'top' && 'bottom-[-8px] left-1/2 -translate-x-1/2',
+    position === 'bottom' && 'top-[-8px] left-1/2 -translate-x-1/2',
+    position === 'left' && 'right-[-8px] top-1/2 -translate-y-1/2',
+    position === 'right' && 'left-[-8px] top-1/2 -translate-y-1/2'
+  );
+  
+  // 화살표 스타일 (색상은 인라인으로)
+  const getArrowStyle = () => {
+    const baseStyle = { borderStyle: 'solid' as const };
+    
+    switch (position) {
+      case 'top':
+        return {
+          ...baseStyle,
+          borderWidth: '8px 8px 0 8px',
+          borderColor: `${bgColor} transparent transparent transparent`
+        };
+      case 'bottom':
+        return {
+          ...baseStyle,
+          borderWidth: '0 8px 8px 8px',
+          borderColor: `transparent transparent ${bgColor} transparent`
+        };
+      case 'left':
+        return {
+          ...baseStyle,
+          borderWidth: '8px 0 8px 8px',
+          borderColor: `transparent transparent transparent ${bgColor}`
+        };
+      case 'right':
+        return {
+          ...baseStyle,
+          borderWidth: '8px 8px 8px 0',
+          borderColor: `transparent ${bgColor} transparent transparent`
+        };
+      default:
+        return {
+          ...baseStyle,
+          borderWidth: '8px 8px 0 8px',
+          borderColor: `${bgColor} transparent transparent transparent`
+        };
+    }
+  };
+
+  // 툴팁 엘리먼트
+  const tooltipElement = isVisible && (
+    <div
+      ref={tooltipRef}
+      style={tooltipInlineStyles}
+      className={tooltipClasses}
+      role="tooltip"
+      aria-hidden={!isVisible}
+    >
+      {content}
+      
+      {/* 화살표 */}
+      {showArrow && (
+        <div
+          className={arrowClasses}
+          style={getArrowStyle()}
+        />
+      )}
+    </div>
+  );
+
   return (
     <>
       <div
         ref={triggerRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         className="inline-block"
+        tabIndex={trigger === 'focus' ? 0 : undefined}
       >
         {children}
       </div>
-
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          style={{
-            ...tooltipStyle,
-            backgroundColor,
-            color: textColor,
-            maxWidth: `${maxWidth}px`,
-          }}
-          className={`
-            px-2 py-1 rounded text-sm font-medium shadow-lg
-            whitespace-nowrap break-words
-            pointer-events-none
-            ${className}
-          `}
-        >
-          {content}
-          {/* 화살표 */}
-          <div
-            className="absolute w-2 h-2 transform rotate-45"
-            style={{
-              backgroundColor,
-              ...(position === 'top' && {
-                bottom: '-4px',
-                left: '50%',
-                transform: 'translateX(-50%) rotate(45deg)',
-              }),
-              ...(position === 'bottom' && {
-                top: '-4px',
-                left: '50%',
-                transform: 'translateX(-50%) rotate(45deg)',
-              }),
-              ...(position === 'left' && {
-                right: '-4px',
-                top: '50%',
-                transform: 'translateY(-50%) rotate(45deg)',
-              }),
-              ...(position === 'right' && {
-                left: '-4px',
-                top: '50%',
-                transform: 'translateY(-50%) rotate(45deg)',
-              }),
-            }}
-          />
-        </div>
-      )}
+      
+      {/* Portal을 사용하여 body에 툴팁 렌더링 */}
+      {isMounted && typeof document !== 'undefined' 
+        ? createPortal(tooltipElement, document.body)
+        : tooltipElement}
     </>
   );
 };
 
 export default Tooltip;
+export type { TooltipProps } from './tooltip.model';

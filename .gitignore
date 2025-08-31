@@ -56,3 +56,5 @@ deploy.tar.gz
 
 CLAUDE.md
 .claude/*
+
+.docs/*

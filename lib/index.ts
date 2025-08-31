@@ -45,6 +45,10 @@ export { getPackageConfig } from './config/init';
 export { Button, Badge, Avatar } from './components/atoms';
 export type { ButtonProps, BadgeProps, AvatarProps } from './components/atoms';
 
+// cm-land extracted components (Phase 1.9)
+export { default as AnimatedPoint } from './components/atoms/AnimatedPoint';
+export type { AnimatedPointProps } from './components/atoms/AnimatedPoint';
+
 // Phase 2.1 Form Components
 export { 
   Input, 
@@ -76,6 +80,8 @@ export type { SkeletonProps } from './components/atoms';
 
 // Phase 2.3 Molecule Components
 export { default as Board } from './components/molecules/Board';
+export { default as Tooltip } from './components/molecules/Tooltip';
+export type { TooltipProps } from './components/molecules/Tooltip';
 export { 
   BoardContainer,
   BoardHeader,

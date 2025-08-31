@@ -871,81 +871,116 @@ npm run build && npm run storybook
 
 ### 🚨 Storybook Import 에러 방지 가이드
 
-**가장 흔한 에러**: `Failed to fetch dynamically imported module`
+**가장 흔한 에러들**:
+1. `Failed to fetch dynamically imported module` 
+2. `TypeError: Failed to fetch dynamically imported module`
+3. `Cannot resolve module` 에러
 
 #### ✅ 올바른 Import 방식
 
-**스토리에서 컴포넌트 import 시 직접 소스 참조 사용:**
+**스토리에서 컴포넌트 import 시 정확한 소스 참조 사용:**
 
 ```typescript
-// ✅ 올바른 방식 - 직접 소스 경로 사용
-import Board from '../../../../lib/components/molecules/Board';
-import BoardContainer from '../../../../lib/components/molecules/Board/Container';
-import type { BoardCategory } from '../../../../lib/components/molecules/Board/types';
+// ✅ 올바른 방식 - 정확한 파일 경로 사용
+import Tooltip from '../../../../lib/components/molecules/Tooltip';
+import type { TooltipProps } from '../../../../lib/components/molecules/Tooltip/tooltip.model';
+import { Button } from '../../../../lib/components/atoms/Button';
 
-// ❌ 피해야 할 방식 - 패키지 이름 사용 (개발 환경에서 에러 발생)
-import { Board, BoardContainer } from '@team-semicolon/community-core';
+// ❌ 피해야 할 방식 - 잘못된 타입 import 경로
+import type { TooltipProps } from '../../../../lib/components/molecules/Tooltip';
+// ❌ 피해야 할 방식 - index.ts를 통한 re-export 의존
+import { Button } from '../../../../lib/components/atoms';
 ```
 
-#### 📝 Import 경로 규칙
+#### 📝 Import 경로 규칙 (개정됨)
 
-1. **Storybook 스토리에서만**: 직접 소스 경로 사용 (`../../../../lib/...`)
-2. **실제 프로젝트에서**: 패키지 이름 사용 (`@team-semicolon/community-core`)
-3. **타입 import**: 항상 소스에서 직접 import
+1. **컴포넌트 Import**: 항상 정확한 파일 경로 사용
+   - `../../../../lib/components/{category}/{ComponentName}` (index.tsx 파일)
+   
+2. **타입 Import**: 타입 정의 파일의 정확한 경로 사용
+   - `../../../../lib/components/{category}/{ComponentName}/{file}.model.ts`
+   - index.tsx에서 re-export하는 타입은 사용하지 않기
+   
+3. **의존성 컴포넌트**: 구체적인 파일 경로 사용
+   - `{ Button }` ← `../../../../lib/components/atoms/Button`
+   - `{ Input }` ← `../../../../lib/components/atoms/Input`
 
-#### 🔧 Storybook 설정 최적화
+#### 🔧 체계적인 Import 에러 해결법
 
-**`.storybook/main.ts` 설정:**
+**단계별 진단 및 해결:**
 
-```typescript
-viteFinal: async (config) => {
-  return mergeConfig(config, {
-    resolve: {
-      alias: {
-        '@team-semicolon/community-core': '../lib',
-        '@': '../lib',
-      },
-    },
-    // ... 기타 설정
-  });
-},
+```bash
+# 1. 파일 구조 확인
+ls -la lib/components/molecules/Tooltip/
+# 예상 결과: index.tsx, tooltip.model.ts 등
+
+# 2. 타입 정의 위치 확인
+cat lib/components/molecules/Tooltip/index.tsx | grep "export.*TooltipProps"
+# 만약 없다면 별도 모델 파일에서 import 필요
+
+# 3. Storybook 설정의 alias 확인
+cat storybook/.storybook/main.ts | grep -A5 "alias"
 ```
 
-#### ⚠️ 에러 발생 시 체크리스트
+#### 🚨 필수 점검사항 (Storybook 스토리 작성 시)
+
+1. **파일 존재성 검증**
+   ```typescript
+   // 각 import 경로의 파일이 실제로 존재하는지 확인
+   // ls -la 명령어로 실제 파일 구조와 비교
+   ```
+
+2. **타입 정의 분리 확인**
+   ```typescript
+   // 컴포넌트 파일에서 타입을 re-export하는지 확인
+   // 별도 모델 파일(.model.ts)이 있는지 확인
+   ```
+
+3. **순환 참조 방지**
+   ```typescript
+   // index.ts 파일을 통한 re-export 의존성 최소화
+   // 직접적인 파일 경로 사용 우선
+   ```
+
+#### ⚠️ 에러 발생 시 체크리스트 (확장됨)
 
 **`Failed to fetch dynamically imported module` 에러 발생 시:**
 
-1. **Import 경로 확인**
+1. **Import 경로 정확성 검사**
    ```bash
-   # 파일 존재 여부 확인
-   ls -la lib/components/molecules/Board/
+   # 정확한 파일 경로 확인
+   find lib -name "*.tsx" | grep Tooltip
+   find lib -name "*.ts" | grep tooltip
    ```
 
-2. **상대 경로 검증**
-   ```typescript
-   // storybook/src/stories/molecules/Board.stories.tsx에서
-   // ../../../../lib/components/molecules/Board 경로가 정확한지 확인
+2. **타입 정의 위치 확인**
+   ```bash
+   # 타입이 어느 파일에서 export되는지 확인
+   grep -r "TooltipProps" lib/components/molecules/Tooltip/
    ```
 
-3. **Storybook 서버 재시작**
+3. **Storybook 캐시 완전 정리**
    ```bash
-   # Storybook 서버 재시작
+   # 더 철저한 캐시 정리
+   rm -rf node_modules/.vite
+   rm -rf storybook/node_modules/.vite  
+   rm -rf .storybook-static
+   rm -rf storybook/dist
    npm run storybook
    ```
 
-4. **캐시 클리어**
+4. **Vite 설정 호환성 검사**
    ```bash
-   # 캐시 클리어 후 재시작
-   rm -rf node_modules/.vite storybook/node_modules/.vite
-   npm run storybook
+   # main.ts의 viteFinal 설정 검증
+   cat storybook/.storybook/main.ts | grep -A15 "viteFinal"
    ```
 
-5. **패키지 빌드 상태 확인**
-   ```bash
-   # 패키지가 제대로 빌드되었는지 확인
-   npm run build
-   ls -la dist/
-   ```
+#### 🛡️ 예방적 개발 규칙
+
+1. **새 컴포넌트 추가 시**: 즉시 해당 스토리 파일 생성하여 import 에러 사전 검증
+2. **타입 정의 변경 시**: 관련 스토리 파일의 import 경로 동시 업데이트  
+3. **파일 구조 변경 시**: 모든 스토리 파일의 상대 경로 재검증
+4. **패키지 빌드 후**: Storybook에서 모든 스토리 정상 로딩 확인
 
 
 
