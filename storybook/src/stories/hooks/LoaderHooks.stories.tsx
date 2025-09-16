@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { Button } from '../../components/Button';
-import { Badge } from '../../components/Badge';
+// UI 컴포넌트는 직접 구현 (코어 패키지에서 제거됨)
 
 // Mock useGlobalLoader hook (실제로는 @team-semicolon/community-core에서 import)
 const useGlobalLoaderMock = () => {
@@ -373,18 +372,26 @@ export const BasicLoader: Story = {
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
           <span>로딩 상태:</span>
-          <Badge variant={isLoading ? 'warning' : 'success'}>
+          <span className={'px-2 py-0.5 text-xs rounded ' + (isLoading ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')}>
             {isLoading ? '로딩 중' : '완료'}
-          </Badge>
+          </span>
         </div>
         
         <div className="space-x-2">
-          <Button onClick={handleAsyncOperation} disabled={isLoading}>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={handleAsyncOperation}
+            disabled={isLoading}
+          >
             withLoader 사용
-          </Button>
-          <Button onClick={handleManualLoader} disabled={isLoading} variant="outline">
+          </button>
+          <button
+            className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+            onClick={handleManualLoader}
+            disabled={isLoading}
+          >
             수동 로더 제어
-          </Button>
+          </button>
         </div>
         
         <div className="text-sm text-gray-600">
@@ -412,17 +419,27 @@ export const AuthHook: Story = {
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
           <span>인증 상태:</span>
-          <Badge variant={isLoggedIn ? 'success' : 'default'}>
+          <span className={'px-2 py-0.5 text-xs rounded ' + (isLoggedIn ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700')}>
             {isLoggedIn ? '로그인됨' : '로그아웃됨'}
-          </Badge>
+          </span>
           {user && <span className="text-sm text-gray-600">({user.name})</span>}
         </div>
         
         <div className="space-x-2">
           {!isLoggedIn ? (
-            <Button onClick={handleLogin}>로그인</Button>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={handleLogin}
+            >
+              로그인
+            </button>
           ) : (
-            <Button onClick={logout} variant="outline">로그아웃</Button>
+            <button
+              className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              onClick={logout}
+            >
+              로그아웃
+            </button>
           )}
         </div>
         
@@ -449,18 +466,27 @@ export const PermissionHook: Story = {
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
           <span>권한 확인:</span>
-          <Badge variant={loading ? 'warning' : hasPermission ? 'success' : 'error'}>
+          <span className={'px-2 py-0.5 text-xs rounded ' +
+            (loading ? 'bg-yellow-100 text-yellow-700' :
+             hasPermission ? 'bg-green-100 text-green-700' :
+             'bg-red-100 text-red-700')}>
             {loading ? '확인 중' : hasPermission ? '권한 있음' : '권한 없음'}
-          </Badge>
+          </span>
         </div>
         
         <div className="space-x-2">
-          <Button disabled={loading || !hasPermission}>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            disabled={loading || !hasPermission}
+          >
             레벨 5 필요한 작업
-          </Button>
-          <Button variant="outline" disabled={!hasPermission}>
+          </button>
+          <button
+            className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+            disabled={!hasPermission}
+          >
             권한 기반 버튼
-          </Button>
+          </button>
         </div>
         
         <div className="text-sm text-gray-600">
@@ -508,34 +534,39 @@ export const CombinedExample: Story = {
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-sm font-medium mb-1">로그인</div>
-            <Badge variant={isLoggedIn ? 'success' : 'error'}>
+            <span className={'px-2 py-0.5 text-xs rounded ' + (isLoggedIn ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')}>
               {isLoggedIn ? '완료' : '필요'}
-            </Badge>
+            </span>
           </div>
           
           <div className="text-center">
             <div className="text-sm font-medium mb-1">권한 (Lv.3)</div>
-            <Badge variant={permissionLoading ? 'warning' : hasPermission ? 'success' : 'error'}>
+            <span className={'px-2 py-0.5 text-xs rounded ' +
+              (permissionLoading ? 'bg-yellow-100 text-yellow-700' :
+               hasPermission ? 'bg-green-100 text-green-700' :
+               'bg-red-100 text-red-700')}>
               {permissionLoading ? '확인 중' : hasPermission ? '충족' : '부족'}
-            </Badge>
+            </span>
           </div>
           
           <div className="text-center">
             <div className="text-sm font-medium mb-1">작업</div>
-            <Badge variant={isLoading ? 'warning' : canPerformAction ? 'info' : 'default'}>
+            <span className={'px-2 py-0.5 text-xs rounded ' +
+              (isLoading ? 'bg-yellow-100 text-yellow-700' :
+               canPerformAction ? 'bg-blue-100 text-blue-700' :
+               'bg-gray-100 text-gray-700')}>
               {isLoading ? '실행 중' : canPerformAction ? '준비됨' : '대기'}
-            </Badge>
+            </span>
           </div>
         </div>
         
-        <Button 
+        <button
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
           onClick={handleProtectedAction}
           disabled={!canPerformAction || isLoading}
-          loading={isLoading}
-          fullWidth
         >
-          보호된 작업 실행
-        </Button>
+          {isLoading ? '실행 중...' : '보호된 작업 실행'}
+        </button>
         
         <div className="text-sm text-gray-600">
           <p>• 인증, 권한, 로딩 상태를 모두 조합한 실제 사용 예시</p>

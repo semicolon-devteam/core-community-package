@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState, useEffect } from 'react';
-import { Button } from '@components/Button';
-import { Badge } from '@components/Badge';
-import { Skeleton } from '@components/Skeleton';
+// UI 컴포넌트는 직접 구현 (코어 패키지에서 제거됨)
 
 // Mock 알림 데이터
 const mockNotifications = [
@@ -541,21 +539,19 @@ export const NotificationListExample: Story = {
         <h3 className="text-lg font-semibold">useNotificationsQuery 훅 예시</h3>
         
         <div className="flex gap-2 mb-4">
-          <Button
-            size="sm"
-            variant={onlyUnread ? 'primary' : 'outline'}
+          <button
+            className={'px-3 py-1 text-sm rounded ' + (onlyUnread ? 'bg-blue-500 text-white' : 'border border-gray-300')}
             onClick={() => setOnlyUnread(!onlyUnread)}
           >
             {onlyUnread ? '전체 보기' : '읽지 않음만'}
-          </Button>
+          </button>
           
-          <Button
-            size="sm"
-            variant="outline"
+          <button
+            className="px-3 py-1 text-sm border border-gray-300 rounded"
             onClick={() => setPage(p => p === 1 ? 2 : 1)}
           >
             페이지 {page === 1 ? 2 : 1}로 이동
-          </Button>
+          </button>
         </div>
         
         <div className="border border-gray-200 rounded-lg p-4">
@@ -563,10 +559,10 @@ export const NotificationListExample: Story = {
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-start space-x-3">
-                  <Skeleton className="w-2 h-2 rounded-full mt-2" />
+                  <div className="w-2 h-2 rounded-full mt-2 bg-gray-200 animate-pulse" />
                   <div className="flex-1">
-                    <Skeleton className="w-3/4 h-4 mb-2" />
-                    <Skeleton className="w-full h-3" />
+                    <div className="w-3/4 h-4 mb-2 bg-gray-200 animate-pulse" />
+                    <div className="w-full h-3 bg-gray-200 animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -585,7 +581,7 @@ export const NotificationListExample: Story = {
                       <div className="flex items-center space-x-2 mb-1">
                         <h4 className="font-medium text-sm">{notification.title}</h4>
                         {!notification.is_read && (
-                          <Badge variant="primary" size="sm">NEW</Badge>
+                          <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded">NEW</span>
                         )}
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{notification.body}</p>
@@ -595,15 +591,13 @@ export const NotificationListExample: Story = {
                     </div>
                     
                     {!notification.is_read && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                      <button
+                        className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
                         onClick={() => handleMarkAsRead(notification.id)}
-                        loading={isMarking}
                         disabled={isMarking}
                       >
-                        읽음 처리
-                      </Button>
+                        {isMarking ? '처리중...' : '읽음 처리'}
+                      </button>
                     )}
                   </div>
                 </div>
@@ -653,27 +647,25 @@ export const UnreadCountExample: Story = {
         
         <div className="p-4 bg-gray-50 rounded-lg text-center">
           <div className="relative inline-block">
-            <Button 
-              variant="outline" 
+            <button
+              className="px-4 py-2 border border-gray-300 rounded"
               onClick={() => setShowDetails(!showDetails)}
             >
               🔔 알림
-            </Button>
+            </button>
             
             {!isLoading && unreadCount > 0 && (
-              <Badge 
-                variant="error" 
-                size="sm"
-                className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center"
+              <span
+                className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs rounded-full"
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
-              </Badge>
+              </span>
             )}
           </div>
           
           <div className="mt-3 text-sm text-gray-600">
             {isLoading ? (
-              <Skeleton className="w-32 h-4 mx-auto" />
+              <div className="w-32 h-4 mx-auto bg-gray-200 animate-pulse" />
             ) : (
               <p>읽지 않은 알림: <strong>{unreadCount}개</strong></p>
             )}
@@ -736,8 +728,8 @@ export const NotificationSettingsExample: Story = {
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center justify-between p-3 border rounded">
-                <Skeleton className="w-32 h-4" />
-                <Skeleton className="w-12 h-6 rounded-full" />
+                <div className="w-32 h-4 bg-gray-200 animate-pulse" />
+                <div className="w-12 h-6 rounded-full bg-gray-200 animate-pulse" />
               </div>
             ))}
           </div>
@@ -771,14 +763,13 @@ export const NotificationSettingsExample: Story = {
                 <div className="text-xs text-gray-500">{item.description}</div>
               </div>
               
-              <Button
-                size="sm"
-                variant={settings[item.key] ? 'success' : 'outline'}
+              <button
+                className={'px-3 py-1 text-sm rounded ' + (settings[item.key] ? 'bg-green-500 text-white' : 'border border-gray-300')}
                 onClick={() => updateSetting(item.key, !settings[item.key])}
                 disabled={isUpdating}
               >
                 {settings[item.key] ? 'ON' : 'OFF'}
-              </Button>
+              </button>
             </div>
           ))}
         </div>
@@ -832,27 +823,25 @@ export const NotificationSystemExample: Story = {
             <span className="text-lg">🔔</span>
             <h4 className="font-medium">알림 센터</h4>
             {!countLoading && unreadCount > 0 && (
-              <Badge variant="error" size="sm">
+              <span className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded">
                 {unreadCount}개 안읽음
-              </Badge>
+              </span>
             )}
           </div>
           
           <div className="flex space-x-1">
-            <Button
-              size="sm"
-              variant={currentTab === 'all' ? 'primary' : 'ghost'}
+            <button
+              className={'px-3 py-1 text-sm rounded ' + (currentTab === 'all' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100')}
               onClick={() => setCurrentTab('all')}
             >
               전체
-            </Button>
-            <Button
-              size="sm"
-              variant={currentTab === 'unread' ? 'primary' : 'ghost'}
+            </button>
+            <button
+              className={'px-3 py-1 text-sm rounded ' + (currentTab === 'unread' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100')}
               onClick={() => setCurrentTab('unread')}
             >
               안읽음
-            </Button>
+            </button>
           </div>
         </div>
         
@@ -862,10 +851,10 @@ export const NotificationSystemExample: Story = {
             <div className="p-4 space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-start space-x-3">
-                  <Skeleton className="w-2 h-2 rounded-full mt-2" />
+                  <div className="w-2 h-2 rounded-full mt-2 bg-gray-200 animate-pulse" />
                   <div className="flex-1">
-                    <Skeleton className="w-3/4 h-4 mb-2" />
-                    <Skeleton className="w-full h-3" />
+                    <div className="w-3/4 h-4 mb-2 bg-gray-200 animate-pulse" />
+                    <div className="w-full h-3 bg-gray-200 animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -894,19 +883,18 @@ export const NotificationSystemExample: Story = {
                       )}
                       
                       {notification.web_landing_url && (
-                        <Button size="sm" variant="ghost">
+                        <button className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">
                           보기
-                        </Button>
+                        </button>
                       )}
                       
                       {!notification.is_read && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
+                        <button
+                          className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
                           onClick={() => markAsRead(notification.id)}
                         >
                           읽음
-                        </Button>
+                        </button>
                       )}
                     </div>
                   </div>

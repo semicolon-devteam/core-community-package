@@ -1,23 +1,13 @@
 import type { Preview } from '@storybook/react';
 import React from 'react';
-import { ThemeProvider } from '../../lib/theme/ThemeProvider';
+// ThemeProvider가 제거됨 - 테마 기능은 향후 재구현 필요
 import '../src/styles/globals.css';
 
 const preview: Preview = {
   decorators: [
     (Story, context) => {
-      const themeMode = context.globals.theme || 'light';
-      
-      return React.createElement(
-        ThemeProvider,
-        {
-          config: {
-            mode: themeMode,
-            respectSystemTheme: false,
-          },
-        },
-        React.createElement(Story)
-      );
+      // ThemeProvider 제거됨 - Story를 직접 렌더링
+      return React.createElement(Story);
     },
   ],
   parameters: {

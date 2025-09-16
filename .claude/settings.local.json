@@ -48,11 +48,17 @@
       "Read(/tmp/cm-land/**)",
       "Read(/tmp/cm-land/src/component/atoms/AnimatedPoint/**)",
       "Read(/tmp/cm-land/src/component/molecules/Tooltip/**)",
-      "Read(/tmp/cm-land/src/services/**)"
+      "Read(/tmp/cm-land/src/services/**)",
+      "mcp__github__get_file_contents",
+      "Read(//tmp/cm-land/**)"
     ],
     "deny": [],
     "additionalDirectories": [
       "C:\\c\\Users\\USER\\Documents\\sources"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "github"
+  ]
 }

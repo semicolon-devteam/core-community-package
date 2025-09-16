@@ -1,6 +1,7 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 import { mergeConfig } from 'vite';
 import path from 'path';
+import { useClientPlugin } from './vite-plugin-use-client';
 
 const config: StorybookConfig = {
   stories: [
@@ -35,6 +36,10 @@ const config: StorybookConfig = {
   },
   viteFinal: async (config) => {
     return mergeConfig(config, {
+      plugins: [
+        ...(config.plugins || []),
+        useClientPlugin(), // 'use client' 지시어 처리 플러그인 추가
+      ],
       resolve: {
         alias: {
           '@team-semicolon/community-core': path.resolve(__dirname, '../../lib'),
@@ -65,8 +70,30 @@ const config: StorybookConfig = {
           output: {
             manualChunks: undefined,
           },
+          onwarn(warning, warn) {
+            // 'use client' 지시어 경고 무시
+            if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+              return;
+            }
+            warn(warning);
+          },
         },
         chunkSizeWarningLimit: 1000,
+        sourcemap: false, // sourcemap 에러 방지
+      },
+      esbuild: {
+        // 'use client' 지시어를 제거하는 transform
+        banner: '/* @vite-ignore */',
+        logOverride: { 'this-is-undefined-in-esm': 'silent' },
+      },
+      optimizeDeps: {
+        exclude: ['@storybook/blocks'],
+        esbuildOptions: {
+          // 'use client' 지시어 처리
+          banner: {
+            js: '"use client";',
+          },
+        },
       },
     });
   },

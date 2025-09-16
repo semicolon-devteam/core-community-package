@@ -11,10 +11,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **@semicolon/community-core**는 세미콜론 커뮤니티 플랫폼의 핵심 기능을 재사용 가능한 React 패키지로 제공하는 라이브러리입니다. 
 
 ### 패키지 특성
-- **패키지 타입**: React 컴포넌트 라이브러리 + 유틸리티 패키지
+- **패키지 타입**: 커뮤니티 플랫폼 기능 라이브러리 (Services + Hooks + Utils)
 - **빌드 시스템**: Rollup (ESM + CJS 이중 빌드)
 - **타입 시스템**: TypeScript 5.0+ (점진적 타입 강화 전략)
-- **아키텍처**: Atomic Design + Service Layer Pattern
+- **아키텍처**: Service Layer Pattern + Custom Hooks
 - **의존성 전략**: Minimal Dependencies + Peer Dependencies
 
 ## Development Commands
@@ -48,12 +48,12 @@ npm run mcp:check              # MCP 설정 상태 확인
 
 ```typescript
 // 전체 패키지 import
-import { Button, useAuth, BaseService } from '@semicolon/community-core';
+import { useAuth, BaseService, formatNumberWithComma } from '@semicolon/community-core';
 
 // 개별 모듈 import (Tree Shaking 최적화)
-import { Button } from '@semicolon/community-core/components';
 import { useAuth } from '@semicolon/community-core/hooks';
 import { BaseService } from '@semicolon/community-core/services';
+import { formatNumberWithComma } from '@semicolon/community-core/utils';
 ```
 
 ### 🏗️ 계층별 아키텍처
@@ -64,10 +64,6 @@ import { BaseService } from '@semicolon/community-core/services';
 - 글로벌 로딩 인디케이터 자동 처리 (Silent 메서드로 바이패스 가능)
 - `CommonResponse<T>` 래퍼로 일관된 API 응답 구조
 
-**🧩 Component Layer**: Atomic Design 기반 컴포넌트 시스템
-- **atoms/**: 독립적인 기본 UI 요소 (Button, Icon, Input)
-- **molecules/**: 조합된 UI 컴포넌트 (SearchBar, Pagination)
-- **organisms/**: 비즈니스 로직을 포함한 복합 컴포넌트 (GlobalLoader, AuthGuard)
 
 **🪝 Hooks Layer**: 비즈니스 로직 캡슐화
 - **common/**: 범용 유틸리티 훅 (useGlobalLoader, useDeviceType)
@@ -88,10 +84,6 @@ import { BaseService } from '@semicolon/community-core/services';
 
 ```text
 lib/                          # 패키지 소스 (src/ 대신)
-├── components/               # UI 컴포넌트 (Atomic Design)
-│   ├── atoms/               # 기본 UI 요소
-│   ├── molecules/           # 조합된 컴포넌트
-│   └── organisms/           # 비즈니스 로직 포함 컴포넌트
 ├── hooks/                   # Custom React 훅
 │   ├── common/              # 범용 유틸리티 훅
 │   ├── queries/             # React Query 데이터 페칭
@@ -233,7 +225,7 @@ export default function SomeComponent() {
 
 ```typescript
 // ✅ Correct - Use skeleton loaders for content areas during pagination/updates
-import { Skeleton } from "@atoms/Skeleton";
+// Note: Skeleton components should be implemented in your project
 import { useGlobalLoader } from "@hooks/common/useGlobalLoader";
 
 export default function SomeDataComponent() {
@@ -332,14 +324,6 @@ export default function SomeClientComponent() {
 const userIdResponse = await userService.getUserUuid(); // Unnecessary API call
 ```
 
-### Component Development
-
-**Follow Atomic Design Principles**:
-
-- Keep atoms stateless and dependency-free
-- Use molecules for composite UI without business logic
-- Place all business logic and state in organisms
-- Use consistent TypeScript interfaces for props
 
 **Page Component Structure**: Keep pages as server components and extract client-side logic:
 
@@ -597,28 +581,6 @@ isAdmin(user); // boolean
 checkPermission(user, 'write', 5); // level-based permission
 ```
 
-**🧩 Essential Components** (완전 구현 ✅)
-```typescript
-// Button 컴포넌트 (5가지 variant, 4가지 size, 로딩 상태)
-import { Button, type ButtonProps } from '@team-semicolon/community-core';
-<Button variant="primary" size="lg" loading={isSubmitting}>저장</Button>
-
-// Badge 컴포넌트 (5가지 variant, 3가지 size, dot 표시)
-import { Badge, type BadgeProps } from '@team-semicolon/community-core';
-<Badge variant="success" dot>온라인</Badge>
-
-// Avatar 컴포넌트 (5가지 size, 3가지 shape, 온라인 상태)
-import { Avatar, type AvatarProps } from '@team-semicolon/community-core';
-<Avatar src="/profile.jpg" name="김철수" size="lg" status="online" />
-
-// Input 컴포넌트 (4가지 variant, 3가지 size, 아이콘 지원)
-import { Input, type InputProps } from '@team-semicolon/community-core';
-<Input label="이메일" error="오류 메시지" leftIcon={<SearchIcon />} />
-
-// Skeleton 컴포넌트 (4가지 variant, 미리 정의된 컴포넌트들)
-import { Skeleton, SkeletonCard, SkeletonText } from '@team-semicolon/community-core';
-<SkeletonCard /> // 완전한 카드 스켈레톤
-```
 
 **🪝 Advanced Hooks** (완전 구현 ✅)
 ```typescript
@@ -681,20 +643,17 @@ initializeCommunityCore({
 
 **📦 Import Strategies** (최적화된 import 방식)
 ```typescript
-// ✅ 메인 패키지에서 직접 import (권장) - v1.3.0
-import { 
-  // Components
-  Button, Skeleton, SkeletonText,
-  // Hooks  
+// ✅ 메인 패키지에서 직접 import (권장) - v1.8.0
+import {
+  // Hooks
   useAuth, useGlobalLoader, usePostQuery,
   // Services
   UserService, PostService,
   // Utils
-  formatNumberWithComma, isAdmin 
+  formatNumberWithComma, isAdmin
 } from '@semicolon/community-core';
 
-// ✅ 카테고리별 import (Tree Shaking 최적화)  
-import { Button, Skeleton } from '@semicolon/community-core/components';
+// ✅ 카테고리별 import (Tree Shaking 최적화)
 import { useAuth, useGlobalLoader } from '@semicolon/community-core/hooks';
 import { formatNumberWithComma } from '@semicolon/community-core/utils';
 

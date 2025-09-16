@@ -5,7 +5,7 @@
   "description": "Storybook for @team-semicolon/community-core components",
   "scripts": {
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "NODE_OPTIONS='--max-old-space-size=4096' storybook build --quiet",
     "preview-storybook": "storybook dev --ci",
     "test-storybook": "test-storybook"
   },

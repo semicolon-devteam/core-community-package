@@ -7,7 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Storybook](https://img.shields.io/badge/Storybook-Available-ff4785.svg)](https://semicolon-community-core.vercel.app)
 
-세미콜론 커뮤니티 플랫폼을 위한 재사용 가능한 React 컴포넌트 라이브러리
+세미콜론 커뮤니티 플랫폼의 핵심 기능 라이브러리 (Services, Hooks, Utils)
 
 > **Version 1.8.1** | 완전한 커뮤니티 기능 구현
 
@@ -15,12 +15,12 @@
 
 ## 🚀 특징
 
-- **🏗️ 모듈화된 아키텍처**: Atomic Design 기반의 컴포넌트 시스템
+- **🏗️ 모듈화된 아키텍처**: Service Layer Pattern 및 Custom Hooks 시스템
 - **⚡ Tree Shaking 지원**: 사용하는 기능만 번들에 포함
 - **🔒 완전한 TypeScript 지원**: 타입 안전성과 개발자 경험 극대화
 - **🌐 Framework Agnostic**: Next.js 의존성 최소화로 범용 사용 가능
-- **📱 반응형 디자인**: 모바일 퍼스트 디자인 지원
-- **♿ 접근성**: WCAG 2.1 AA 준수
+- **🔧 완전한 API 통합**: Supabase 및 REST API 지원
+- **🔄 React Query 통합**: 서버 상태 관리 및 캐싱
 
 ## 📦 설치
 
@@ -39,9 +39,6 @@ yarn add @semicolon/community-core
 ### 기본 사용법
 
 ```typescript
-// 컴포넌트 import
-import { Button, Input, Skeleton } from '@team-semicolon/community-core';
-
 // 훅 import
 import { useAuth, useGlobalLoader } from '@team-semicolon/community-core';
 
@@ -50,32 +47,42 @@ import { UserService, PostService } from '@team-semicolon/community-core';
 
 // 유틸리티 import
 import { formatNumberWithComma, timeAgo } from '@team-semicolon/community-core';
+
+// 타입 import
+import type { User, CommonResponse } from '@team-semicolon/community-core';
 ```
 
 ### 카테고리별 Import (Tree Shaking 최적화)
 
 ```typescript
-import { Button, Skeleton } from '@team-semicolon/community-core/components';
 import { useAuth } from '@team-semicolon/community-core/hooks';
 import { UserService } from '@team-semicolon/community-core/services';
+import { formatNumberWithComma } from '@team-semicolon/community-core/utils';
 ```
 
-### 컴포넌트 사용 예시
+### 기능 사용 예시
 
 ```tsx
 function MyComponent() {
   const { user, isLoggedIn, loginWithLoader } = useAuth();
-  
+  const { withLoader } = useGlobalLoader();
+
+  const handleDataFetch = async () => {
+    await withLoader(async () => {
+      const response = await UserService.getUserInfo();
+      console.log('사용자 정보:', response.data);
+    });
+  };
+
   return (
     <div>
       {isLoggedIn ? (
-        <Button variant="primary" size="lg">
-          환영합니다, {user.name}!
-        </Button>
+        <div>
+          <h1>환영합니다, {user.name}!</h1>
+          <button onClick={handleDataFetch}>데이터 불러오기</button>
+        </div>
       ) : (
-        <Button onClick={loginWithLoader} loading>
-          로그인
-        </Button>
+        <button onClick={loginWithLoader}>로그인</button>
       )}
     </div>
   );
@@ -84,12 +91,6 @@ function MyComponent() {
 
 ## 📚 주요 기능
 
-### 🧩 컴포넌트
-- **Button** - 5가지 variant, 4가지 size, 로딩 상태
-- **Input** - 라벨, 에러, 아이콘 지원
-- **Badge** - 상태 표시, dot 인디케이터
-- **Avatar** - 온라인 상태, 폴백 이미지
-- **Skeleton** - 로딩 플레이스홀더
 
 ### 🪝 React Hooks
 - **useAuth** - 인증 상태 관리
@@ -115,12 +116,12 @@ function MyComponent() {
 ```
 @team-semicolon/community-core/
 ├── lib/                # 소스 코드
-│   ├── components/     # UI 컴포넌트 (Atomic Design)
 │   ├── hooks/          # React Hooks
 │   ├── services/       # API 서비스
 │   ├── utils/          # 유틸리티 함수
 │   ├── types/          # TypeScript 타입
-│   └── constants/      # 상수 정의
+│   ├── constants/      # 상수 정의
+│   └── theme/          # 테마 시스템
 ├── dist/               # 빌드 출력
 ├── storybook/          # Storybook 문서
 └── docs/               # 프로젝트 문서

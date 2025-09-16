@@ -1,8 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState, useEffect } from 'react';
-import { Button } from '@components/Button';
-import { Badge } from '@components/Badge';
-import { Skeleton } from '@components/Skeleton';
 
 // Mock 메시징 데이터
 const mockChatRooms = [
@@ -900,9 +897,9 @@ export const ChatRoomsList: Story = {
                 <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
                   채팅방 ID: {room.id}
                   {room.unread_count > 0 && (
-                    <Badge variant="danger" style={{ marginLeft: '0.5rem' }}>
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-semibold text-white bg-gray-500 rounded-full" variant="danger" style={{ marginLeft: '0.5rem' }}>
                       {room.unread_count}
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 {room.last_message && (
@@ -921,9 +918,9 @@ export const ChatRoomsList: Story = {
           </div>
         ))}
 
-        <Button onClick={() => refetch()} variant="secondary">
+        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" onClick={() => refetch()} variant="secondary">
           🔄 새로고침
-        </Button>
+        </button>
       </div>
     );
   },
@@ -968,7 +965,7 @@ export const MessagesManagement: Story = {
       }
     };
 
-    if (messagesLoading) return <Skeleton className="w-full h-64" />;
+    if (messagesLoading) return <div className="w-full h-64" />;
 
     return (
       <div style={{ maxWidth: '700px' }}>
@@ -1001,9 +998,9 @@ export const MessagesManagement: Story = {
             <strong>👥 참여자 ({messages.participants.length}명):</strong>
             <div style={{ marginTop: '0.5rem' }}>
               {messages.participants.map((p: any) => (
-                <Badge key={p.id} variant="secondary" style={{ marginRight: '0.5rem' }}>
+                <span className="inline-flex items-center px-2 py-1 text-xs font-semibold text-white bg-gray-500 rounded-full" key={p.id} variant="secondary" style={{ marginRight: '0.5rem' }}>
                   {p.user?.nickname}
-                </Badge>
+                </span>
               ))}
             </div>
           </div>
@@ -1033,12 +1030,12 @@ export const MessagesManagement: Story = {
                 <strong style={{ fontSize: '14px' }}>{message.sender?.nickname}</strong>
                 <div style={{ fontSize: '12px', color: '#666' }}>
                   {new Date(message.created_at).toLocaleTimeString()}
-                  <Badge 
+                  <span className="inline-flex items-center px-2 py-1 text-xs font-semibold text-white bg-gray-500 rounded-full" 
                     variant={message.status === 'read' ? 'success' : 'secondary'} 
                     style={{ marginLeft: '0.5rem' }}
                   >
                     {message.status === 'read' ? '읽음' : '전송됨'}
-                  </Badge>
+                  </span>
                 </div>
               </div>
               <div style={{ fontSize: '14px' }}>{message.content}</div>
@@ -1071,25 +1068,25 @@ export const MessagesManagement: Story = {
             }}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
-          <Button 
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" 
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || sendMessage.isPending}
             loading={sendMessage.isPending}
             variant="primary"
           >
             📤 전송
-          </Button>
+          </button>
         </div>
 
         {/* 액션 버튼들 */}
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <Button variant="success" size="sm">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" variant="success" size="sm">
             ✅ 모두 읽음 처리
-          </Button>
+          </button>
           
-          <Button onClick={() => refetch()} variant="secondary" size="sm">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" onClick={() => refetch()} variant="secondary" size="sm">
             🔄 메시지 새로고침
-          </Button>
+          </button>
         </div>
 
         {/* 에러 표시 */}
@@ -1187,14 +1184,14 @@ export const ChatRoomManagement: Story = {
               style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
             />
           </div>
-          <Button 
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" 
             onClick={handleCreateChatRoom}
             disabled={createChatRoom.isPending}
             loading={createChatRoom.isPending}
             variant="primary"
           >
             🏗️ 채팅방 생성
-          </Button>
+          </button>
           
           {createChatRoom.error && (
             <div style={{ color: '#ef4444', marginTop: '0.5rem', fontSize: '14px' }}>
@@ -1234,9 +1231,9 @@ export const ChatRoomManagement: Story = {
             }
           </div>
           
-          <Button variant="success">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" variant="success">
             👤 1:1 채팅방 찾기/생성
-          </Button>
+          </button>
         </div>
 
         {/* 참여자 초대 */}
@@ -1246,9 +1243,9 @@ export const ChatRoomManagement: Story = {
           padding: '1rem'
         }}>
           <h4>➕ 참여자 관리</h4>
-          <Button variant="outline" size="sm">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" variant="outline" size="sm">
             ➕ 참여자 초대 (room-1)
-          </Button>
+          </button>
           
           <div style={{ marginTop: '0.5rem', fontSize: '14px', color: '#666' }}>
             현재 참여자: 2명
@@ -1336,14 +1333,14 @@ export const MessageSearch: Story = {
               }}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
-            <Button 
+            <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" 
               onClick={handleSearch}
               disabled={!searchQuery.trim() || isSearching}
               loading={isSearching}
               variant="secondary"
             >
               🔍 검색
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -1478,14 +1475,14 @@ export const FileUpload: Story = {
             </div>
           )}
 
-          <Button 
+          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600" 
             onClick={handleUpload}
             disabled={!selectedFile || isUploading}
             loading={isUploading}
             variant="primary"
           >
             📤 파일 업로드
-          </Button>
+          </button>
           
           {uploadResult && (
             <div style={{ 
