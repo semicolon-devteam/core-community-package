@@ -201,64 +201,8 @@ export { useRouterWithLoader } from './hooks/common/useRouterWithLoader';
 // export * as Services from './services';   // Completed in Phase 2
 
 // =============================================================================
-// THEME SYSTEM EXPORTS - Phase 4 Complete ✅
+// THEME SYSTEM EXPORTS - Removed (UI components not included in this package)
 // =============================================================================
-
-// Theme Provider and Hooks
-export { 
-  ThemeProvider, 
-  useTheme, 
-  useThemeColors, 
-  useThemeTypography,
-  useThemeSpacing,
-  useThemeMode,
-  useCSSVariable 
-} from './theme';
-
-// Theme Creation and Customization
-export {
-  createCustomTheme,
-  createColorPalette,
-  createSemanticColors,
-  createTypographyConfig,
-  createComponentConfig,
-  createQuickTheme
-} from './theme';
-
-// Default Themes
-export {
-  defaultLightTheme,
-  defaultDarkTheme,
-  koreanLightTheme,
-  koreanDarkTheme,
-  getThemePreset,
-  getThemeByMode
-} from './theme';
-
-// CSS Variables and Utilities
-export {
-  generateCSSVariables,
-  createCSSVariable,
-  createColorVariable,
-  createSpacingVariable,
-  createFontSizeVariable,
-  validateThemeOverride,
-  extractThemePreview
-} from './theme';
-
-// Theme Types
-export type {
-  Theme,
-  ThemeConfig,
-  ThemeOverride,
-  ColorPalette,
-  SemanticColors,
-  SystemColors,
-  Typography,
-  ComponentTokens,
-  ComponentVariant,
-  ComponentSize
-} from './theme';
 
 // =============================================================================
 // VERSION INFO

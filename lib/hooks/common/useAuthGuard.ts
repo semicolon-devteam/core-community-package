@@ -1,8 +1,14 @@
 'use client';
 
 import { useAppSelector } from '@hooks/common';
-import type { AuthErrorType } from '@organisms/AuthErrorHandler';
 import { selectUserInfo } from '@redux/Features/User/userSlice';
+
+// AuthErrorType 정의
+export type AuthErrorType =
+  | 'NOT_LOGGED_IN'
+  | 'INSUFFICIENT_LEVEL'
+  | 'ADMIN_ONLY'
+  | 'NO_PERMISSION';
 import {
   hasBoardPermission,
   hasLevelPermission,

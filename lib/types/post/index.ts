@@ -4,7 +4,7 @@ import type {
   PermissionSettings,
   PointSettings,
 } from '../board';
-import { BoardType } from '../../components/organisms/BoardTypes/boardtype.model';
+import { BoardType } from '../board/enum';
 
 export interface Notice {
   id: number;

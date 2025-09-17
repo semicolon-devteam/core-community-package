@@ -1,21 +1,13 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import appReducer from '../App/appSlice';
 import boardReducer from '../Board/boardSlice';
-import modalReducer from '../Modal/modalSlice';
-import popupReducer from '../Popup/popupSlice';
 import postReducer from '../Post/postSlice';
-import toastReducer from '../Toast/toastSlice';
-import uiReducer from '../UI/uiSlice';
 import userReducer from '../User/userSlice';
 
 const rootReducer = combineReducers({
   app: appReducer,
   board: boardReducer,
-  modal: modalReducer,
-  popup: popupReducer,
   post: postReducer,
-  toast: toastReducer,
-  ui: uiReducer,
   user: userReducer,
 });
 
