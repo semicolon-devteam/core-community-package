@@ -50,7 +50,10 @@
       "Read(/tmp/cm-land/src/component/molecules/Tooltip/**)",
       "Read(/tmp/cm-land/src/services/**)",
       "mcp__github__get_file_contents",
-      "Read(//tmp/cm-land/**)"
+      "Read(//tmp/cm-land/**)",
+      "mcp__github__search_repositories",
+      "Bash(gh search repos:*)",
+      "Read(//Users/jeonjunyeong/Desktop/Projects/semicolon-community/communities/cm-template/**)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -6,7 +6,7 @@
     "jsx": "react-jsx",
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./lib",
+    "rootDir": "./src",
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -20,36 +20,22 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "paths": {
-      "@components/*": ["./lib/components/*"],
-      "@hooks/*": ["./lib/hooks/*"],
-      "@services/*": ["./lib/services/*"],
-      "@utils/*": ["./lib/utils/*"],
-      "@types/*": ["./lib/types/*"],
-      "@redux/*": ["./lib/redux/*"],
-      "@config/*": ["./lib/config/*"],
-      "@constants/*": ["./lib/constants/*"]
+      "@/*": ["./src/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@types/*": ["./src/types/*"],
+      "@constants/*": ["./src/constants/*"]
     }
   },
   "include": [
-    "lib/index.ts",
-    "lib/utils/**/*",
-    "lib/types/User/index.ts",
-    "lib/types/common.ts",
-    "lib/config/init.ts",
-    "lib/constants/index.ts",
-    "lib/components/atoms/Button/**/*",
-    "lib/components/atoms/Badge/**/*",
-    "lib/components/atoms/Avatar/**/*",
-    "lib/components/atoms/index.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts", 
+    "src_backup_*",
+    "**/*.test.ts",
     "**/*.test.tsx",
-    "**/*.stories.tsx",
-    "lib/utils/sessionTestUtils.ts",
-    "lib/config/axios.ts",
-    "lib/config/Supabase/**/*"
+    "**/*.stories.tsx"
   ]
 }

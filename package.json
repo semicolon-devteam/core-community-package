@@ -1,8 +1,8 @@
 {
   "name": "@team-semicolon/community-core",
-  "version": "1.9.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Community platform core components and utilities",
+  "description": "cm-template 기반 Auth 훅 패키지 - 커뮤니티 플랫폼 인증 시스템",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -23,15 +23,25 @@
       "import": "./dist/hooks/index.esm.js",
       "types": "./dist/hooks/index.d.ts"
     },
-    "./services": {
-      "require": "./dist/services/index.js",
-      "import": "./dist/services/index.esm.js",
-      "types": "./dist/services/index.d.ts"
+    "./hooks/auth": {
+      "require": "./dist/hooks/auth/index.js",
+      "import": "./dist/hooks/auth/index.esm.js",
+      "types": "./dist/hooks/auth/index.d.ts"
     },
     "./utils": {
       "require": "./dist/utils/index.js",
       "import": "./dist/utils/index.esm.js",
       "types": "./dist/utils/index.d.ts"
+    },
+    "./types": {
+      "require": "./dist/types/index.js",
+      "import": "./dist/types/index.esm.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./constants": {
+      "require": "./dist/constants/index.js",
+      "import": "./dist/constants/index.esm.js",
+      "types": "./dist/constants/index.d.ts"
     }
   },
   "scripts": {
@@ -40,7 +50,7 @@
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build",
     "test": "vitest",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --project tsconfig.package.json --noEmit",
     "dev": "rollup -c -w",
     "deploy": "npm publish --access public",
     "mcp:setup": "./scripts/setup-github-mcp.sh",
@@ -85,10 +95,12 @@
   "keywords": [
     "react",
     "nextjs",
-    "community",
+    "auth",
+    "authentication",
     "hooks",
-    "utils",
-    "services"
+    "community",
+    "permissions",
+    "security"
   ],
   "author": "Team Semicolon",
   "license": "MIT"
