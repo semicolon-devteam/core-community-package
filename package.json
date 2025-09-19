@@ -1,6 +1,6 @@
 {
   "name": "@team-semicolon/community-core",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "type": "module",
   "description": "Next.js 커뮤니티 플랫폼을 위한 공통 기능 패키지 - 훅, 유틸리티, 서비스 레이어",
   "main": "dist/index.js",
