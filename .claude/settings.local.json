@@ -53,7 +53,8 @@
       "Read(//tmp/cm-land/**)",
       "mcp__github__search_repositories",
       "Bash(gh search repos:*)",
-      "Read(//Users/jeonjunyeong/Desktop/Projects/semicolon-community/communities/cm-template/**)"
+      "Read(//Users/jeonjunyeong/Desktop/Projects/semicolon-community/communities/cm-template/**)",
+      "Bash(npm ci:*)"
     ],
     "deny": [],
     "additionalDirectories": [
