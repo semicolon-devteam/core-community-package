@@ -1,244 +1,479 @@
-# 🏗️ @team-semicolon/community-core 아키텍처
+# 🏗️ @team-semicolon/community-core 아키텍처 가이드
 
 ## 📋 목차
-- [패키지 구조](#패키지-구조)
-- [계층별 아키텍처](#계층별-아키텍처)
-- [의존성 관리](#의존성-관리)
-- [빌드 시스템](#빌드-시스템)
-- [설계 원칙](#설계-원칙)
+1. [개요](#개요)
+2. [설계 원칙](#설계-원칙)
+3. [패키지 구조](#패키지-구조)
+4. [핵심 모듈](#핵심-모듈)
+5. [버저닝 전략](#버저닝-전략)
+6. [기술 스택](#기술-스택)
 
-## 패키지 구조
+## 🎯 개요
+
+`@team-semicolon/community-core`는 Next.js 기반 커뮤니티 플랫폼을 위한 공통 기능 패키지입니다.
+
+### 핵심 목표
+- **UI 독립성**: UI 컴포넌트는 Next.js 앱에서 구현, 로직만 패키지에서 제공
+- **백엔드 통합**: Supabase + Spring 백엔드와의 완벽한 통합
+- **재사용성**: 여러 커뮤니티 프로젝트에서 공통으로 사용 가능
+- **확장성**: 쉽게 확장 가능한 인터페이스 제공
+
+## 🔧 설계 원칙
+
+### 1. Separation of Concerns
+```
+UI Layer (Next.js App)
+    ↓
+Logic Layer (This Package)
+    ↓
+Data Layer (Supabase + Spring)
+```
+
+### 2. Dependency Injection
+```typescript
+// 패키지에서 팩토리 패턴 제공
+export function createSupabaseClient(config: SupabaseConfig) {
+  // 표준화된 클라이언트 생성
+  return createClient(config.url, config.anonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+    },
+    ...config.options
+  });
+}
+
+// Next.js 앱에서 환경변수 주입
+const supabase = createSupabaseClient({
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+});
+```
+
+### 3. Composable Hooks
+```typescript
+// 기본 훅을 조합하여 복잡한 기능 구현
+export function useAuthenticatedUser() {
+  const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id);
+  const { permissions } = usePermissions(user?.id);
+
+  return {
+    user,
+    profile,
+    permissions,
+    isFullyLoaded: user && profile && permissions
+  };
+}
+```
+
+## 📁 패키지 구조
 
 ```
-@team-semicolon/community-core
+src/
+├── 🪝 hooks/              # React Hooks
+│   ├── auth/
+│   │   ├── useAuth.ts           # 인증 훅
+│   │   ├── usePermission.ts     # 권한 체크
+│   │   └── useSession.ts        # 세션 관리
+│   ├── queries/
+│   │   ├── useUser.ts           # 사용자 데이터
+│   │   ├── usePosts.ts          # 게시물 조회
+│   │   └── useComments.ts       # 댓글 조회
+│   ├── realtime/
+│   │   ├── useRealtimeChat.ts   # 실시간 채팅
+│   │   ├── usePresence.ts       # 온라인 상태
+│   │   └── useChannelSubscription.ts
+│   └── utils/
+│       ├── useDebounce.ts       # 디바운스
+│       ├── useLocalStorage.ts   # 로컬 스토리지
+│       └── usePrevious.ts       # 이전 값 추적
 │
-├── lib/                     # 소스 코드 (src 대신 lib 사용)
-│   ├── components/          # UI 컴포넌트 (Atomic Design)
-│   │   ├── atoms/          # 기본 UI 요소
-│   │   ├── molecules/      # 조합된 컴포넌트
-│   │   └── organisms/      # 비즈니스 로직 포함 컴포넌트
-│   │
-│   ├── hooks/              # Custom React Hooks
-│   │   ├── common/         # 범용 유틸리티 훅
-│   │   ├── queries/        # React Query 데이터 페칭
-│   │   └── commands/       # 데이터 변경 및 액션
-│   │
-│   ├── services/           # API 서비스 레이어
-│   │   ├── base/          # BaseService 클래스
-│   │   └── domains/       # 도메인별 서비스
-│   │
-│   ├── utils/             # 순수 유틸리티 함수
-│   ├── types/             # TypeScript 타입 정의
-│   ├── constants/         # 상수 정의
-│   └── index.ts          # 메인 진입점
+├── 🔧 services/           # 서비스 레이어
+│   ├── base/
+│   │   ├── BaseService.ts       # 기본 HTTP 서비스
+│   │   └── interceptors.ts      # Axios 인터셉터
+│   ├── auth/
+│   │   ├── AuthService.ts       # Supabase Auth
+│   │   └── TokenManager.ts      # JWT 관리
+│   ├── api/
+│   │   ├── PostService.ts       # 게시물 API
+│   │   ├── UserService.ts       # 사용자 API
+│   │   └── CommentService.ts    # 댓글 API
+│   └── realtime/
+│       ├── RealtimeService.ts   # Supabase Realtime
+│       └── ChatService.ts       # 채팅 서비스
 │
-├── dist/                  # 빌드 출력
-├── storybook/            # Storybook 문서
-└── docs/                 # 프로젝트 문서
+├── 🗄️ stores/            # Zustand 상태 관리
+│   ├── authStore.ts      # 인증 상태
+│   ├── uiStore.ts        # UI 상태 (선택적)
+│   └── createStore.ts    # 스토어 팩토리
+│
+├── 🛠️ utils/             # 유틸리티
+│   ├── formatters/
+│   │   ├── date.ts              # 날짜 포맷
+│   │   ├── number.ts            # 숫자 포맷
+│   │   └── currency.ts          # 통화 포맷
+│   ├── validators/
+│   │   ├── email.ts             # 이메일 검증
+│   │   ├── password.ts          # 비밀번호 검증
+│   │   └── username.ts          # 사용자명 검증
+│   └── helpers/
+│       ├── debounce.ts          # 디바운스
+│       ├── throttle.ts          # 쓰로틀
+│       └── retry.ts             # 재시도 로직
+│
+├── 📝 types/              # TypeScript 타입
+│   ├── auth.ts           # 인증 관련 타입
+│   ├── api.ts            # API 응답 타입
+│   ├── database.ts       # DB 스키마 타입
+│   └── index.ts          # 타입 재export
+│
+├── 🔌 providers/          # React Providers
+│   ├── CommunityProvider.tsx    # 메인 Provider
+│   ├── QueryProvider.tsx        # React Query
+│   └── SupabaseProvider.tsx     # Supabase Context
+│
+└── 📦 index.ts            # 패키지 진입점
 ```
 
-## 계층별 아키텍처
+## 🧩 핵심 모듈
 
-### 🧩 Components Layer
-
-**Atomic Design Pattern**을 따른 컴포넌트 구조:
+### 1. 인증 시스템
 
 ```typescript
-// Atoms: 최소 단위 컴포넌트
-export interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  loading?: boolean;
-}
+// Supabase Auth 통합
+export const useAuth = () => {
+  const supabase = useSupabase();
+  const setAuth = useAuthStore(state => state.setAuth);
 
-// Molecules: 조합된 컴포넌트
-export interface SearchBarProps {
-  placeholder?: string;
-  onSearch: (query: string) => void;
-  loading?: boolean;
-}
+  const signIn = async (credentials: SignInCredentials) => {
+    const { data, error } = await supabase.auth.signInWithPassword(credentials);
+    if (data.user) {
+      setAuth(data.user);
+    }
+    return { data, error };
+  };
 
-// Organisms: 비즈니스 로직 포함
-export interface AuthGuardProps {
-  requiredLevel?: number;
-  adminOnly?: boolean;
-  children: React.ReactNode;
-}
-```
-
-### 🪝 Hooks Layer
-
-**Custom Hooks 계층 구조**:
-
-1. **Common Hooks**: 범용 유틸리티
-   - `useAuth`: 인증 상태 관리
-   - `useGlobalLoader`: 전역 로딩 상태
-   - `usePermission`: 권한 체크
-
-2. **Query Hooks**: 데이터 페칭 (React Query)
-   - `usePostQuery`: 게시글 조회
-   - `useUserQuery`: 사용자 정보 조회
-   - `useBoardQuery`: 게시판 정보 조회
-
-3. **Command Hooks**: 데이터 변경
-   - `useCreatePostCommand`: 게시글 생성
-   - `useUpdateUserCommand`: 사용자 정보 수정
-
-### 🔧 Services Layer
-
-**HTTP 통신 추상화**:
-
-```typescript
-// BaseService: 모든 서비스의 기반 클래스
-export class BaseService<T = any> {
-  protected async get<R = T>(url: string): Promise<CommonResponse<R>>
-  protected async post<R = T>(url: string, data?: any): Promise<CommonResponse<R>>
-  protected async put<R = T>(url: string, data?: any): Promise<CommonResponse<R>>
-  protected async delete<R = T>(url: string): Promise<CommonResponse<R>>
-}
-
-// Domain Service 예시
-export class UserService extends BaseService<User> {
-  async getMyInfo(): Promise<CommonResponse<User>>
-  async updateProfile(data: UpdateProfileDto): Promise<CommonResponse<User>>
-}
-```
-
-## 의존성 관리
-
-### 의존성 구조
-
-```mermaid
-graph TD
-    A[Components] --> B[Hooks]
-    B --> C[Services]
-    C --> D[Utils]
-    B --> D
-    A --> E[Types]
-    B --> E
-    C --> E
-    D --> E
-```
-
-### Peer Dependencies
-
-```json
-{
-  "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "@tanstack/react-query": ">=5.0.0",
-    "@reduxjs/toolkit": ">=2.0.0"
-  }
-}
-```
-
-## 빌드 시스템
-
-### Rollup 설정
-
-**이중 빌드 전략**:
-- ESM 빌드: 모던 브라우저 및 번들러
-- CJS 빌드: Node.js 및 레거시 환경
-
-```javascript
-// rollup.config.js 핵심 설정
-export default [
-  {
-    input: 'lib/index.ts',
-    output: [
-      { file: 'dist/index.js', format: 'cjs' },
-      { file: 'dist/index.esm.js', format: 'esm' }
-    ],
-    external: [...Object.keys(peerDependencies)],
-    plugins: [
-      typescript(),
-      resolve(),
-      commonjs(),
-      preserveDirectives() // "use client" 보존
-    ]
-  }
-];
-```
-
-### Tree Shaking 최적화
-
-```typescript
-// ✅ Tree Shaking 친화적
-export { Button } from './components/atoms/Button';
-export { useAuth } from './hooks/common/useAuth';
-
-// ❌ Tree Shaking 방해
-export default { Button, useAuth };
-```
-
-## 설계 원칙
-
-### 1. Framework Agnostic
-
-Next.js 종속성 최소화:
-```typescript
-// ❌ 프레임워크 종속적
-import Link from 'next/link';
-
-// ✅ 추상화된 인터페이스
-interface NavigationProps {
-  href: string;
-  children: React.ReactNode;
-}
-```
-
-### 2. Minimal Dependencies
-
-외부 의존성 최소화:
-- 필수 의존성만 포함
-- Peer Dependencies 활용
-- 번들 사이즈 최적화
-
-### 3. Type Safety
-
-완전한 TypeScript 지원:
-```typescript
-// 모든 export에 타입 정의
-export interface User {
-  id: string;
-  name: string;
-  level?: number;
-}
-
-export const formatUser = (user: User): string => {
-  return `${user.name} (Level ${user.level || 0})`;
+  // 자동 세션 갱신
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          setAuth(session.user);
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
 };
 ```
 
-### 4. Progressive Enhancement
+### 2. 데이터 페칭 (React Query)
 
-점진적 기능 향상:
 ```typescript
-// 기본 기능
-export const Button: React.FC<ButtonProps> = (props) => { ... };
-
-// 선택적 고급 기능
-export const ButtonWithTooltip: React.FC<ButtonWithTooltipProps> = (props) => { ... };
+// 표준화된 쿼리 훅
+export const usePosts = (params?: PostQueryParams) => {
+  return useQuery({
+    queryKey: ['posts', params],
+    queryFn: () => postService.getPosts(params),
+    staleTime: 5 * 60 * 1000,    // 5분
+    cacheTime: 10 * 60 * 1000,   // 10분
+    suspense: true,               // React 18 Suspense
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+  });
+};
 ```
 
-### 5. Performance First
+### 3. 실시간 기능
 
-성능 최적화:
-- Lazy Loading 지원
-- Code Splitting 친화적
-- 메모이제이션 활용
+```typescript
+// Supabase Realtime + React Query 통합
+export const useRealtimeChat = (roomId: string) => {
+  const supabase = useSupabase();
+  const queryClient = useQueryClient();
 
-## 버전 관리
+  // 초기 메시지 로드
+  const { data: messages } = useQuery({
+    queryKey: ['messages', roomId],
+    queryFn: () => chatService.getMessages(roomId)
+  });
 
-**Semantic Versioning**:
-- MAJOR: 호환성을 깨는 변경
-- MINOR: 하위 호환 기능 추가
-- PATCH: 하위 호환 버그 수정
+  // 실시간 구독
+  useEffect(() => {
+    const channel = supabase
+      .channel(`room:${roomId}`)
+      .on('postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `room_id=eq.${roomId}`
+        },
+        (payload) => {
+          // React Query 캐시 업데이트
+          queryClient.setQueryData(
+            ['messages', roomId],
+            (old: Message[]) => [...old, payload.new as Message]
+          );
+        }
+      )
+      .subscribe();
 
-**현재 로드맵**:
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId]);
+
+  return { messages, ... };
+};
 ```
-v1.8.x - 메시징 시스템
-v1.9.x - Realtime 기능
-v2.0.0 - 완전한 커뮤니티 코어 패키지
+
+### 4. 상태 관리 (Zustand)
+
+```typescript
+// 경량 상태 관리
+interface AuthStore {
+  user: User | null;
+  isAuthenticated: boolean;
+  setAuth: (user: User | null) => void;
+  clearAuth: () => void;
+}
+
+export const useAuthStore = create<AuthStore>((set) => ({
+  user: null,
+  isAuthenticated: false,
+  setAuth: (user) => set({
+    user,
+    isAuthenticated: !!user
+  }),
+  clearAuth: () => set({
+    user: null,
+    isAuthenticated: false
+  })
+}));
 ```
+
+### 5. 에러 처리 & Suspense
+
+```typescript
+// 표준화된 에러 바운더리
+export const CommunityErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => {
+  return (
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={(error, errorInfo) => {
+        console.error('Error caught:', error, errorInfo);
+        // Sentry 또는 로깅 서비스로 전송
+      }}
+      onReset={() => window.location.reload()}
+    >
+      <Suspense fallback={<LoadingSpinner />}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
+```
+
+## 📦 버저닝 전략
+
+### Gitmoji 기반 Semantic Versioning
+
+우리는 Gitmoji를 활용한 자동화된 버저닝 시스템을 사용합니다:
+
+#### 버전 변경 규칙
+
+| Gitmoji | 의미 | 버전 변경 | 예시 |
+|---------|------|-----------|------|
+| 💥 `:boom:` | Breaking Change | **MAJOR** (X.0.0) | `💥 상태관리를 Redux에서 Zustand로 변경` |
+| ✨ `:sparkles:` | 새 기능 | **MINOR** (0.X.0) | `✨ 실시간 채팅 훅 추가` |
+| 🚀 `:rocket:` | 배포/성능 개선 | **MINOR** (0.X.0) | `🚀 번들 크기 50% 감소` |
+| 🐛 `:bug:` | 버그 수정 | **PATCH** (0.0.X) | `🐛 인증 토큰 만료 처리 수정` |
+| 🔧 `:wrench:` | 설정 변경 | **PATCH** (0.0.X) | `🔧 ESLint 규칙 업데이트` |
+| 📝 `:memo:` | 문서 | **PATCH** (0.0.X) | `📝 README 예제 코드 추가` |
+| ♻️ `:recycle:` | 리팩토링 | **PATCH** (0.0.X) | `♻️ 중복 코드 제거` |
+| 🎨 `:art:` | 코드 구조 개선 | **PATCH** (0.0.X) | `🎨 파일 구조 정리` |
+
+#### 자동화 설정 (.github/workflows/release.yml)
+
+```yaml
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+      - next
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Semantic Release with Gitmoji
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
+```
+
+#### Semantic Release 설정 (.releaserc.json)
+
+```json
+{
+  "branches": ["main", "next"],
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "angular",
+      "releaseRules": [
+        {"emoji": "💥", "release": "major"},
+        {"emoji": "✨", "release": "minor"},
+        {"emoji": "🚀", "release": "minor"},
+        {"emoji": "🐛", "release": "patch"},
+        {"emoji": "🔧", "release": "patch"},
+        {"emoji": "📝", "release": "patch"},
+        {"emoji": "♻️", "release": "patch"},
+        {"emoji": "🎨", "release": "patch"}
+      ]
+    }],
+    "@semantic-release/release-notes-generator",
+    ["@semantic-release/changelog", {
+      "changelogFile": "docs/CHANGELOG.md"
+    }],
+    "@semantic-release/npm",
+    ["@semantic-release/github", {
+      "assets": ["docs/CHANGELOG.md", "package.json"]
+    }],
+    "@semantic-release/git"
+  ]
+}
+```
+
+#### 커밋 메시지 예시
+
+```bash
+# Major 버전 (Breaking Change)
+git commit -m "💥 Zustand로 상태관리 전면 교체"
+
+# Minor 버전 (기능 추가)
+git commit -m "✨ useRealtimeChat 훅 추가"
+git commit -m "🚀 React 18 Suspense 지원"
+
+# Patch 버전 (버그 수정, 개선)
+git commit -m "🐛 토큰 갱신 로직 수정"
+git commit -m "📝 API 문서 업데이트"
+git commit -m "♻️ 중복 코드 제거"
+```
+
+## 🔨 기술 스택
+
+### Core Dependencies
+- **React**: ^18.0.0 - Hooks, Suspense, Concurrent Features
+- **TypeScript**: ^5.0.0 - 타입 안전성
+- **Zustand**: ^4.5.0 - 경량 상태 관리 (8KB)
+- **@tanstack/react-query**: ^5.0.0 - 서버 상태 관리
+- **@supabase/supabase-js**: ^2.0.0 - 백엔드 통합
+- **axios**: ^1.0.0 - HTTP 클라이언트
+
+### Dev Dependencies
+- **Rollup**: 번들링
+- **Vitest**: 테스팅
+- **ESLint & Prettier**: 코드 품질
+
+### 번들 크기 최적화
+```
+Before (with Redux Toolkit):
+- @reduxjs/toolkit: ~40KB
+- react-redux: ~8KB
+- Total: ~48KB
+
+After (with Zustand):
+- zustand: ~8KB
+- Total: ~8KB
+
+절감: ~40KB (83% 감소)
+```
+
+## 🔄 마이그레이션 전략
+
+### v1.x → v2.0 마이그레이션
+
+#### 1. Redux → Zustand
+```typescript
+// Before (Redux)
+import { useSelector, useDispatch } from 'react-redux';
+const user = useSelector(state => state.auth.user);
+const dispatch = useDispatch();
+dispatch(setUser(userData));
+
+// After (Zustand)
+import { useAuthStore } from '@team-semicolon/community-core';
+const { user, setAuth } = useAuthStore();
+setAuth(userData);
+```
+
+#### 2. UI 컴포넌트 제거
+```typescript
+// Before
+import { Button, Card, Modal } from '@team-semicolon/community-core';
+
+// After
+// UI 컴포넌트는 Next.js 앱에서 직접 구현
+import { Button } from '@/components/ui/Button';
+// 로직만 패키지에서 가져오기
+import { useAuth } from '@team-semicolon/community-core';
+```
+
+#### 3. 서비스 레이어 변경
+```typescript
+// Before
+import api from '@/services/api';
+
+// After
+import { BaseService, createSupabaseClient } from '@team-semicolon/community-core';
+
+class CustomService extends BaseService {
+  // 확장 구현
+}
+```
+
+## 🚀 로드맵
+
+### Phase 1 (v2.0 - Current)
+- ✅ 아키텍처 재설계
+- ✅ Zustand 마이그레이션
+- ✅ Supabase 통합
+- ✅ 기본 훅 구현
+
+### Phase 2 (v2.1)
+- 🔄 고급 실시간 기능
+- 🔄 오프라인 지원
+- 🔄 낙관적 업데이트
+
+### Phase 3 (v2.2)
+- 📋 React Native 지원
+- 📋 웹소켓 직접 통합
+- 📋 E2E 암호화 채팅
+
+### Phase 4 (v3.0)
+- 📋 마이크로프론트엔드 지원
+- 📋 Module Federation
+- 📋 다중 백엔드 지원
+
+---
+
+이 아키텍처는 지속적으로 발전하고 있으며, 커뮤니티 피드백을 적극 반영합니다.

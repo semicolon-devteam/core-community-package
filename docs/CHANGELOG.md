@@ -2,175 +2,185 @@
 
 모든 주목할만한 변경사항이 이 파일에 기록됩니다.
 
-이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을 준수합니다.
+이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 및 [Gitmoji](https://gitmoji.dev/) 기반 자동 버저닝을 준수합니다.
+
+## [2.0.0] - 2025-01-19
+
+### 💥 Breaking Changes
+
+**아키텍처 전면 개편** - UI 컴포넌트를 제거하고 훅/유틸리티/서비스 중심으로 재설계
+
+#### ❌ Removed
+- **모든 UI 컴포넌트 제거**
+  - `Button`, `Badge`, `Avatar` 등 모든 UI 컴포넌트
+  - 스타일 시스템 및 테마 관련 기능
+  - Storybook 및 UI 문서
+  - UI 컴포넌트는 이제 Next.js 앱에서 직접 구현
+
+- **Redux Toolkit 제거**
+  - `@reduxjs/toolkit` 의존성 제거
+  - Redux store 및 slice 제거
+  - ~32KB 번들 사이즈 감소
+
+#### 🔄 Changed
+- **상태 관리 시스템 변경**
+  - Redux Toolkit → Zustand 마이그레이션
+  - 83% 번들 사이즈 감소 (32KB → 8KB)
+  - 더 간단한 API와 향상된 성능
+
+- **패키지 구조 재편**
+  ```
+  lib/
+  ├── hooks/       # React Hooks (auth, queries, realtime, utils)
+  ├── services/    # API 서비스 레이어
+  ├── stores/      # Zustand 상태 관리
+  ├── utils/       # 순수 유틸리티 함수
+  ├── types/       # TypeScript 타입 정의
+  └── providers/   # React Context Providers
+  ```
+
+### ✨ Added
+
+#### 🪝 새로운 Hook 시스템
+- **인증 훅**
+  - `useAuth` - Supabase 인증 통합
+  - `usePermission` - 레벨 기반 권한 체크
+  - `useAuthGuard` - 라우트 보호
+
+- **데이터 페칭 훅** (React Query v5)
+  - `useUser` - 사용자 데이터 페칭
+  - `usePosts` - 게시물 목록/상세
+  - `useComments` - 댓글 관리
+  - `useInfiniteScroll` - 무한 스크롤
+
+- **실시간 훅** (Supabase Realtime)
+  - `useRealtimeChat` - 실시간 채팅
+  - `useRealtimePresence` - 사용자 프레전스
+  - `useRealtimeUpdates` - 실시간 업데이트
+
+- **유틸리티 훅**
+  - `useDebounce` - 디바운스 처리
+  - `useThrottle` - 쓰로틀 처리
+  - `useLocalStorage` - 로컬 스토리지 동기화
+  - `usePrevious` - 이전 값 추적
+  - `useMediaQuery` - 반응형 쿼리
+
+#### 🔧 서비스 레이어
+- **BaseService** - Axios 기반 HTTP 통신 추상화
+  - 자동 토큰 갱신 (interceptors)
+  - 에러 처리 표준화
+  - 요청/응답 타입 안전성
+
+- **도메인 서비스**
+  - `AuthService` - 인증/인가 처리
+  - `UserService` - 사용자 관리
+  - `PostService` - 게시물 CRUD
+  - `ChatService` - 채팅 기능
+  - `NotificationService` - 알림 처리
+
+#### 🗄️ Zustand Stores
+- `useAuthStore` - 인증 상태 전역 관리
+- `useUIStore` - UI 상태 (모달, 토스트 등)
+- `useAppStore` - 앱 전역 상태
+- `useRealtimeStore` - 실시간 연결 상태
+
+#### 🛠️ 향상된 유틸리티
+- **포맷터**
+  - `formatDate` - 다국어 날짜 포맷
+  - `formatNumber` - 로케일별 숫자 포맷
+  - `formatCurrency` - 통화 포맷
+
+- **검증**
+  - `validateEmail` - 이메일 검증
+  - `validatePassword` - 비밀번호 강도 체크
+  - `validateUsername` - 사용자명 규칙 검증
+
+- **헬퍼**
+  - `debounce` - 함수 디바운스
+  - `throttle` - 함수 쓰로틀
+  - `retry` - 자동 재시도 로직
+  - `memoize` - 함수 메모이제이션
+
+### 🚀 Improvements
+- **성능 최적화**
+  - 번들 크기 75% 감소
+  - Tree-shaking 완벽 지원
+  - React 18 Suspense 통합
+  - Concurrent Features 활용
+
+- **개발자 경험**
+  - TypeScript 5.0+ 완전 지원
+  - 자동 타입 추론 개선
+  - 더 나은 IntelliSense
+  - 상세한 JSDoc 문서
+
+- **보안 강화**
+  - Supabase RLS 통합
+  - JWT 자동 갱신
+  - XSS/CSRF 보호
+  - 환경 변수 기반 설정
+
+### 📚 Documentation
+- 새로운 아키텍처 가이드 (ARCHITECTURE.md)
+- 마이그레이션 가이드 (MIGRATION.md)
+- 상세한 API 레퍼런스
+- 실제 사용 예제 추가
+
+### 🎯 Migration Guide
+v1.x에서 v2.0으로 마이그레이션하려면 [MIGRATION.md](./MIGRATION.md)를 참조하세요.
+
+주요 변경사항:
+1. 모든 UI 컴포넌트 import 제거
+2. Redux 코드를 Zustand로 마이그레이션
+3. 새로운 Provider 설정
+4. Hook 기반 API로 전환
+
+---
+
+## [1.9.0] - 2024-12-01
+
+### ✨ Added
+- `Tooltip` 컴포넌트 - 호버/클릭 툴팁 지원
+- `AnimatedPoint` 컴포넌트 - 애니메이션 포인트 인디케이터
+
+---
 
 ## [1.0.0] - 2024-08-22
 
-### 🎉 초기 릴리스
+### 🎉 Initial Release
+**@team-semicolon/community-core v1.0.0** 정식 출시
 
-**@semicolon/community-core v1.0.0**이 정식 출시되었습니다.
-
-#### ✨ 추가된 기능
-
-**Core Utilities**
-- `formatNumberWithComma()` - 숫자에 천 단위 쉼표 추가
-- `formatDate()` - 날짜를 한국어 형식으로 포맷팅  
-- `timeAgo()` - 상대적 시간 표시
-- `isAdmin()` - 사용자 관리자 권한 체크
-
-**Essential Components**
-- `Button` - 완전한 기능의 버튼 컴포넌트 (5가지 variant, 로딩 상태, 아이콘 지원)
-- `Badge` - 상태, 레벨, 태그 표시용 뱃지 컴포넌트
-- `Avatar` - 사용자 프로필 이미지 표시 컴포넌트 (폴백, 상태 표시 지원)
-
-**Configuration System**
-- `initializeCommunityCore()` - 패키지 전역 설정 초기화 함수
-- `getPackageConfig()` - 현재 설정 조회 함수
-
-**Core Types**
-- `User` 인터페이스 - 사용자 정보 타입 정의
-- `CommonResponse<T>` 인터페이스 - API 응답 표준 형식
-- 모든 컴포넌트별 Props 타입 정의
-
-#### 🏗️ 아키텍처 특징
-
-- **Atomic Design Pattern**: atoms/molecules/organisms 구조
-- **Tree Shaking 최적화**: Named exports 및 개별 모듈 import 지원
-- **Framework Agnostic**: Next.js 의존성 최소화
-- **TypeScript First**: 완전한 타입 지원
-- **Hierarchical Export Strategy**: essential → category → namespace 구조
-
-#### 📦 Build & Distribution
-
-- **이중 빌드**: ESM + CommonJS 모두 지원
-- **Rollup 기반**: 최적화된 번들링
-- **개별 모듈 export**: 세밀한 Tree Shaking 지원
-- **TypeScript 선언 파일**: 완전한 IntelliSense 지원
-
-#### 📚 문서화
-
-- **API Reference**: 완전한 API 문서
-- **Usage Examples**: 실제 사용 예제 및 통합 가이드
-- **CLAUDE.md**: 개발 가이드라인 및 기능 관리 규칙
-- **Phase 기반 로드맵**: 체계적인 기능 확장 계획
-
-#### 🧪 품질 보증
-
-- **TypeScript Strict Mode**: 엄격한 타입 체크
-- **ESLint**: 코드 품질 검증
-- **Accessibility**: WCAG 2.1 AA 준수 (UI 컴포넌트)
-- **Performance**: 최적화된 번들 사이즈
-
-#### 📋 Phase 1 완료 항목
-
-- [x] 패키지 구조 및 빌드 시스템
-- [x] 기본 유틸리티 함수 (formatNumberWithComma, formatDate, timeAgo, isAdmin)
-- [x] 핵심 컴포넌트 (Button, Badge, Avatar)
-- [x] 타입 시스템 (User, CommonResponse, Props types)
-- [x] 설정 시스템 (initializeCommunityCore)
-- [x] 문서화 (API Reference, Usage Examples, CLAUDE.md)
-
-#### 🔮 다음 계획 (Phase 2)
-
-**Form Components**
-- Input, Select, Checkbox, RadioButton 컴포넌트
-- Form validation 및 상태 관리
-
-**React Query Hooks**  
-- useAuth, useUserData, usePostData 등
-- 서버 상태 관리 및 캐싱
-
-**API Service Layer**
-- BaseService, UserService, PostService
-- 표준화된 HTTP 통신 및 에러 핸들링
+[이전 버전 내용은 아카이브됨]
 
 ---
 
-## 버전 관리 가이드
+## Gitmoji 버저닝 규칙
 
-### 버전 번호 규칙
+### 자동 버전 업데이트 트리거
 
-- **MAJOR.MINOR.PATCH** (예: 1.0.0)
-- **MAJOR**: 호환성이 깨지는 변경사항
-- **MINOR**: 새로운 기능 추가 (하위 호환성 유지)
-- **PATCH**: 버그 수정 및 작은 개선사항
+| Gitmoji | 의미 | 버전 변경 | 예시 |
+|---------|------|-----------|------|
+| 💥 `:boom:` | Breaking Change | **MAJOR** (X.0.0) | `2.0.0` |
+| ✨ `:sparkles:` | 새로운 기능 | **MINOR** (0.X.0) | `2.1.0` |
+| 🚀 `:rocket:` | 성능 개선 | **MINOR** (0.X.0) | `2.1.0` |
+| 🐛 `:bug:` | 버그 수정 | **PATCH** (0.0.X) | `2.0.1` |
+| 🔧 `:wrench:` | 설정 변경 | **PATCH** (0.0.X) | `2.0.1` |
+| 📝 `:memo:` | 문서 업데이트 | **PATCH** (0.0.X) | `2.0.1` |
+| ♻️ `:recycle:` | 리팩토링 | **PATCH** (0.0.X) | `2.0.1` |
+| 🎨 `:art:` | 코드 구조 개선 | **PATCH** (0.0.X) | `2.0.1` |
 
-### 릴리스 타입 가이드
-
-#### 🎉 Major Release (x.0.0)
-- 기존 API 변경으로 인한 호환성 중단
-- 아키텍처의 근본적 변경
-- 새로운 주요 기능 도메인 추가
-
-#### ✨ Minor Release (x.y.0)
-- 새로운 컴포넌트 추가
-- 새로운 유틸리티 함수 추가
-- 기존 컴포넌트에 새로운 Props 추가 (하위 호환)
-- 새로운 훅이나 서비스 추가
-
-#### 🐛 Patch Release (x.y.z)
-- 버그 수정
-- 성능 개선
-- 문서 업데이트
-- 타입 정의 수정
-- 의존성 업데이트
-
-### 변경사항 카테고리
-
-- **✨ Added**: 새로운 기능
-- **🔄 Changed**: 기존 기능 수정
-- **🚫 Deprecated**: 곧 제거될 기능
-- **❌ Removed**: 제거된 기능
-- **🐛 Fixed**: 버그 수정
-- **🔒 Security**: 보안 관련 수정
-
----
-
-## 기여 가이드
-
-### 변경사항 기록 방법
-
-1. **각 PR마다 CHANGELOG.md 업데이트**
-2. **버전 번호는 릴리스 시에만 확정**
-3. **변경사항을 명확하고 구체적으로 기술**
-4. **Breaking Changes는 별도로 강조 표시**
-
-### Changelog 작성 템플릿
-
-```markdown
-## [Unreleased]
-
-### ✨ Added
-- 새로운 기능에 대한 설명
-
-### 🔄 Changed  
-- 기존 기능 수정 사항
-
-### 🐛 Fixed
-- 수정된 버그 설명
-
-### 🚫 Deprecated
-- 지원 중단 예정 기능
-
-### ❌ Removed
-- 제거된 기능
-
-### 🔒 Security
-- 보안 관련 수정사항
-```
-
-### 자동화 도구
-
+### 커밋 예시
 ```bash
-# 버전 업데이트와 함께 자동으로 태그 생성
-npm version patch  # 1.0.0 → 1.0.1
-npm version minor  # 1.0.1 → 1.1.0  
-npm version major  # 1.1.0 → 2.0.0
+git commit -m "✨ Add useRealtimeChat hook for real-time messaging"
+# → 자동으로 MINOR 버전 증가 (2.0.0 → 2.1.0)
 
-# Git 태그와 함께 변경사항 푸시
-git push origin main --tags
+git commit -m "💥 Remove all UI components, focus on hooks only"
+# → 자동으로 MAJOR 버전 증가 (2.1.0 → 3.0.0)
+
+git commit -m "🐛 Fix authentication token refresh issue"
+# → 자동으로 PATCH 버전 증가 (2.0.0 → 2.0.1)
 ```
 
 ---
 
-> 이 CHANGELOG는 [Keep a Changelog](https://keepachangelog.com/) 형식을 따릅니다.
+> 이 CHANGELOG는 [Keep a Changelog](https://keepachangelog.com/) 및 [Gitmoji](https://gitmoji.dev/) 형식을 따릅니다.

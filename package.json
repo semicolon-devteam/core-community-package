@@ -2,7 +2,7 @@
   "name": "@team-semicolon/community-core",
   "version": "2.0.0",
   "type": "module",
-  "description": "cm-template 기반 Auth 훅 패키지 - 커뮤니티 플랫폼 인증 시스템",
+  "description": "Next.js 커뮤니티 플랫폼을 위한 공통 기능 패키지 - 훅, 유틸리티, 서비스 레이어",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -65,12 +65,10 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@number-flow/react": "^0.5.10",
-    "@reduxjs/toolkit": "^2.5.1",
     "@supabase/supabase-js": "^2.48.1",
     "@tanstack/react-query": "^5.69.0",
     "axios": "^1.8.1",
-    "clsx": "^2.1.1",
+    "zustand": "^4.5.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
@@ -95,12 +93,15 @@
   "keywords": [
     "react",
     "nextjs",
-    "auth",
-    "authentication",
-    "hooks",
+    "react",
+    "nextjs",
     "community",
-    "permissions",
-    "security"
+    "hooks",
+    "supabase",
+    "realtime",
+    "authentication",
+    "zustand",
+    "typescript"
   ],
   "author": "Team Semicolon",
   "license": "MIT"

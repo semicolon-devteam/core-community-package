@@ -1,472 +1,853 @@
-# @semicolon/community-core API Reference
+# 📚 @team-semicolon/community-core API Reference
 
-## 📋 Overview
+## 📋 목차
+1. [설치 및 설정](#설치-및-설정)
+2. [Hooks](#hooks)
+3. [Services](#services)
+4. [Stores](#stores)
+5. [Utils](#utils)
+6. [Types](#types)
+7. [Providers](#providers)
 
-`@semicolon/community-core`는 커뮤니티 플랫폼 개발을 위한 종합 패키지입니다. React 컴포넌트, 유틸리티 함수, 타입 정의, 설정 도구를 제공합니다.
+## 📦 설치 및 설정
 
-**Version**: 1.0.0  
-**License**: MIT  
-**TypeScript**: Full Support  
-
-## 🚀 Quick Start
-
-### Installation
-
+### 설치
 ```bash
-npm install @semicolon/community-core
+npm install @team-semicolon/community-core
+# or
+yarn add @team-semicolon/community-core
+# or
+pnpm add @team-semicolon/community-core
 ```
 
-### Basic Setup
+### 초기 설정
+```tsx
+// app/layout.tsx (Next.js App Router)
+import { CommunityProvider } from '@team-semicolon/community-core';
 
-```typescript
-import { initializeCommunityCore } from '@semicolon/community-core';
-
-// 앱 시작 시 초기화 (권장)
-initializeCommunityCore({
-  apiUrl: process.env.REACT_APP_API_URL,
-  supabase: {
-    url: process.env.REACT_APP_SUPABASE_URL,
-    anonKey: process.env.REACT_APP_SUPABASE_ANON_KEY,
-  },
-  locale: 'ko-KR',
-  development: process.env.NODE_ENV === 'development'
-});
-```
-
-## 📦 Main Exports
-
-### Essential Utilities
-
-```typescript
-import { 
-  formatNumberWithComma,
-  formatDate,
-  timeAgo,
-  isAdmin 
-} from '@semicolon/community-core';
-```
-
-### Core Components
-
-```typescript
-import { 
-  Button,
-  Badge,
-  Avatar 
-} from '@semicolon/community-core';
-```
-
-### Types
-
-```typescript
-import type { 
-  User,
-  CommonResponse,
-  ButtonProps,
-  BadgeProps,
-  AvatarProps 
-} from '@semicolon/community-core';
-```
-
-## 🧩 Components API
-
-### Button Component
-
-완전한 기능을 갖춘 버튼 컴포넌트입니다.
-
-#### Props
-
-```typescript
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  loading?: boolean;
-  fullWidth?: boolean;
-  startIcon?: React.ReactNode;
-  endIcon?: React.ReactNode;
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <CommunityProvider
+          supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL!}
+          supabaseAnonKey={process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}
+          apiBaseUrl={process.env.NEXT_PUBLIC_API_URL!}
+          options={{
+            auth: {
+              autoRefreshToken: true,
+              persistSession: true,
+            }
+          }}
+        >
+          {children}
+        </CommunityProvider>
+      </body>
+    </html>
+  );
 }
 ```
 
-#### Examples
+## 🪝 Hooks
+
+### Authentication Hooks
+
+#### `useAuth()`
+인증 상태 관리 및 인증 작업 수행
 
 ```typescript
-// 기본 사용법
-<Button>클릭하세요</Button>
-
-// 스타일과 크기
-<Button variant="primary" size="lg">저장</Button>
-
-// 로딩 상태
-<Button loading={isSubmitting} onClick={handleSubmit}>
-  제출하기
-</Button>
-
-// 아이콘과 함께
-<Button startIcon={<PlusIcon />} variant="secondary">
-  새로 만들기
-</Button>
-
-// 전체 너비
-<Button fullWidth variant="outline">
-  전체 너비 버튼
-</Button>
-```
-
-#### Accessibility
-
-- ARIA 속성 자동 설정
-- 키보드 네비게이션 지원
-- Screen reader 호환
-- Focus 상태 시각화
-
----
-
-### Badge Component
-
-상태, 레벨, 태그 표시용 뱃지 컴포넌트입니다.
-
-#### Props
-
-```typescript
-interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
-  size?: 'sm' | 'md' | 'lg';
-  rounded?: boolean;
-  dot?: boolean;
-}
-```
-
-#### Examples
-
-```typescript
-// 사용자 레벨
-<Badge variant="primary" rounded>Level 5</Badge>
-
-// 상태 표시
-<Badge variant="success" dot>온라인</Badge>
-
-// 알림 개수
-<Badge variant="danger" size="sm">3</Badge>
-
-// 태그
-<Badge variant="info">개발자</Badge>
-```
-
----
-
-### Avatar Component
-
-사용자 프로필 이미지 표시 컴포넌트입니다.
-
-#### Props
-
-```typescript
-interface AvatarProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  name?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-  status?: 'online' | 'offline' | 'away' | 'busy';
-  square?: boolean;
-}
-```
-
-#### Examples
-
-```typescript
-// 기본 아바타
-<Avatar src="/profile.jpg" name="김철수" />
-
-// 크기와 상태
-<Avatar 
-  src="/profile.jpg" 
-  name="김철수" 
-  size="lg"
-  status="online" 
-/>
-
-// 이미지 없을 때 이니셜 표시
-<Avatar name="김철수" size="xl" />
-
-// 정사각형 (브랜드 로고용)
-<Avatar src="/logo.jpg" name="회사명" square />
-```
-
-#### Features
-
-- 자동 이미지 최적화 (Supabase 통합)
-- 이미지 로드 실패 시 이니셜 폴백
-- 상태 표시 인디케이터
-- 다양한 크기 지원
-
-## 🛠️ Utilities API
-
-### Number Formatting
-
-#### `formatNumberWithComma(value)`
-
-숫자에 천 단위 쉼표를 추가합니다.
-
-```typescript
-formatNumberWithComma(1234567); // "1,234,567"
-formatNumberWithComma("98765");  // "98,765"
-formatNumberWithComma(null);     // ""
-```
-
-**Parameters:**
-- `value: number | string | null` - 포맷할 숫자
-
-**Returns:** `string` - 포맷된 문자열
-
----
-
-### Date Utilities
-
-#### `formatDate(dateString, isSimple?)`
-
-날짜를 한국어 형식으로 포맷팅합니다.
-
-```typescript
-formatDate("2024-01-15T10:30:00");        // "2024.01.15. 10:30:00"
-formatDate("2024-01-15T10:30:00", true);  // "2024.01.15"
-```
-
-**Parameters:**
-- `dateString: string` - ISO 날짜 문자열
-- `isSimple?: boolean` - 시간 제외 여부
-
-**Returns:** `string` - 포맷된 날짜 문자열
-
-#### `timeAgo(dateString, isSimple?)`
-
-상대적 시간을 반환합니다.
-
-```typescript
-timeAgo("2024-01-15T10:30:00"); // "2시간 전"
-```
-
-**Parameters:**
-- `dateString: string` - ISO 날짜 문자열  
-- `isSimple?: boolean` - 간단한 형식 여부
-
-**Returns:** `string` - 상대적 시간 문자열
-
----
-
-### Authentication Utilities
-
-#### `isAdmin(user)`
-
-사용자가 관리자인지 확인합니다.
-
-```typescript
-const user = { is_admin: true, level: 10 };
-isAdmin(user); // true
-```
-
-**Parameters:**
-- `user: any` - 사용자 객체
-
-**Returns:** `boolean` - 관리자 여부
-
-## 🔧 Configuration API
-
-### `initializeCommunityCore(config)`
-
-패키지를 초기화하고 전역 설정을 적용합니다.
-
-```typescript
-interface CommunityPackageConfig {
-  apiUrl?: string;
-  supabase?: {
-    url?: string;
-    anonKey?: string;
-  };
-  locale?: string;
-  development?: boolean;
+interface UseAuthReturn {
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  signIn: (credentials: SignInCredentials) => Promise<AuthResponse>;
+  signUp: (credentials: SignUpCredentials) => Promise<AuthResponse>;
+  signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
-initializeCommunityCore({
-  apiUrl: 'https://api.example.com',
-  supabase: {
-    url: 'https://project.supabase.co',
-    anonKey: 'your-anon-key'
-  },
-  locale: 'ko-KR',
-  development: true
-});
-```
+// 사용 예시
+const Component = () => {
+  const { user, signIn, signOut, isAuthenticated } = useAuth();
 
-### `getPackageConfig()`
+  if (!isAuthenticated) {
+    return <LoginForm onSubmit={signIn} />;
+  }
 
-현재 설정을 조회합니다.
-
-```typescript
-const config = getPackageConfig();
-console.log(config.apiUrl); // 'https://api.example.com'
-```
-
-## 🎯 Advanced Usage
-
-### Namespace Imports
-
-카테고리별 import로 번들 크기를 최적화할 수 있습니다.
-
-```typescript
-import { Utils, Constants } from '@semicolon/community-core';
-
-// 유틸리티 사용
-const formatted = Utils.formatNumberWithComma(12345);
-const isUserAdmin = Utils.AuthUtils.isAdmin(user);
-
-// 상수 사용 (향후 추가)
-const breakpoint = Constants.BREAKPOINTS?.md;
-```
-
-### Tree Shaking Optimization
-
-```typescript
-// ✅ 권장: 필요한 것만 import
-import { Button, formatNumberWithComma } from '@semicolon/community-core';
-
-// ✅ 좋음: 카테고리별 import
-import { Button } from '@semicolon/community-core/components';
-import { formatNumberWithComma } from '@semicolon/community-core/utils';
-
-// ❌ 비권장: 전체 패키지 import
-import * as CommunityCore from '@semicolon/community-core';
-```
-
-### Framework Integration
-
-#### Next.js Setup
-
-```javascript
-// next.config.js
-module.exports = {
-  transpilePackages: ['@semicolon/community-core'],
-  // ... other config
+  return <div>Welcome, {user?.email}!</div>;
 };
 ```
 
-#### TypeScript Integration
+#### `usePermission(options)`
+권한 체크 및 접근 제어
 
 ```typescript
-// tsconfig.json
-{
-  "compilerOptions": {
-    "types": ["@semicolon/community-core"]
+interface UsePermissionOptions {
+  requiredLevel?: number;
+  requiredRole?: 'user' | 'admin' | 'super_admin';
+  resource?: string;
+  action?: 'read' | 'write' | 'delete' | 'admin';
+}
+
+// 사용 예시
+const AdminPanel = () => {
+  const { hasPermission, isChecking } = usePermission({
+    requiredRole: 'admin',
+    resource: 'users',
+    action: 'admin'
+  });
+
+  if (isChecking) return <LoadingSpinner />;
+  if (!hasPermission) return <AccessDenied />;
+
+  return <AdminContent />;
+};
+```
+
+#### `useSession()`
+세션 상태 모니터링 및 갱신
+
+```typescript
+interface UseSessionReturn {
+  session: Session | null;
+  isExpired: boolean;
+  expiresAt: Date | null;
+  refresh: () => Promise<void>;
+}
+
+// 사용 예시
+const SessionMonitor = () => {
+  const { session, isExpired, refresh } = useSession();
+
+  useEffect(() => {
+    if (isExpired) {
+      refresh();
+    }
+  }, [isExpired]);
+
+  return <div>Session status: {isExpired ? 'Expired' : 'Active'}</div>;
+};
+```
+
+### Data Fetching Hooks (React Query)
+
+#### `useUser(userId, options)`
+사용자 정보 조회
+
+```typescript
+interface UseUserOptions {
+  enabled?: boolean;
+  includeProfile?: boolean;
+  includeStats?: boolean;
+}
+
+// 사용 예시
+const UserProfile = ({ userId }) => {
+  const { data: user, isLoading, error } = useUser(userId, {
+    includeProfile: true,
+    includeStats: true
+  });
+
+  if (isLoading) return <Skeleton />;
+  if (error) return <ErrorMessage error={error} />;
+
+  return <ProfileCard user={user} />;
+};
+```
+
+#### `usePosts(params)`
+게시물 목록 조회
+
+```typescript
+interface PostQueryParams {
+  page?: number;
+  limit?: number;
+  category?: string;
+  authorId?: string;
+  sortBy?: 'latest' | 'popular' | 'trending';
+}
+
+// 사용 예시
+const PostList = () => {
+  const { data, isLoading, fetchNextPage, hasNextPage } = usePosts({
+    page: 1,
+    limit: 10,
+    category: 'tech',
+    sortBy: 'latest'
+  });
+
+  return (
+    <InfiniteScroll
+      loadMore={fetchNextPage}
+      hasMore={hasNextPage}
+    >
+      {data?.posts.map(post => <PostCard key={post.id} post={post} />)}
+    </InfiniteScroll>
+  );
+};
+```
+
+#### `useComments(postId, options)`
+댓글 조회 및 관리
+
+```typescript
+interface UseCommentsOptions {
+  enabled?: boolean;
+  sortBy?: 'latest' | 'oldest' | 'popular';
+  includeReplies?: boolean;
+}
+
+// 사용 예시
+const Comments = ({ postId }) => {
+  const {
+    data: comments,
+    addComment,
+    updateComment,
+    deleteComment
+  } = useComments(postId, {
+    includeReplies: true,
+    sortBy: 'latest'
+  });
+
+  return <CommentSection comments={comments} onAdd={addComment} />;
+};
+```
+
+### Realtime Hooks
+
+#### `useRealtimeChat(roomId)`
+실시간 채팅 기능
+
+```typescript
+interface UseRealtimeChatReturn {
+  messages: Message[];
+  sendMessage: (text: string) => Promise<void>;
+  editMessage: (messageId: string, text: string) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<void>;
+  isConnected: boolean;
+  typingUsers: User[];
+  setTyping: (isTyping: boolean) => void;
+}
+
+// 사용 예시
+const ChatRoom = ({ roomId }) => {
+  const {
+    messages,
+    sendMessage,
+    isConnected,
+    typingUsers
+  } = useRealtimeChat(roomId);
+
+  return (
+    <div>
+      <ConnectionStatus connected={isConnected} />
+      <MessageList messages={messages} />
+      {typingUsers.length > 0 && (
+        <TypingIndicator users={typingUsers} />
+      )}
+      <MessageInput onSend={sendMessage} />
+    </div>
+  );
+};
+```
+
+#### `usePresence(channelId)`
+온라인 상태 추적
+
+```typescript
+interface UsePresenceReturn {
+  onlineUsers: User[];
+  setStatus: (status: 'online' | 'away' | 'busy') => void;
+  trackActivity: () => void;
+}
+
+// 사용 예시
+const OnlineUsers = ({ channelId }) => {
+  const { onlineUsers, setStatus } = usePresence(channelId);
+
+  return (
+    <div>
+      <h3>온라인 ({onlineUsers.length}명)</h3>
+      {onlineUsers.map(user => (
+        <UserAvatar key={user.id} user={user} showStatus />
+      ))}
+    </div>
+  );
+};
+```
+
+### Utility Hooks
+
+#### `useDebounce(value, delay)`
+값 디바운싱
+
+```typescript
+// 사용 예시
+const SearchBar = () => {
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 500);
+
+  const { data: results } = useSearch(debouncedQuery);
+
+  return (
+    <input
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      placeholder="검색..."
+    />
+  );
+};
+```
+
+#### `useLocalStorage(key, initialValue)`
+로컬 스토리지 상태 관리
+
+```typescript
+// 사용 예시
+const Settings = () => {
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  const [language, setLanguage] = useLocalStorage('language', 'ko');
+
+  return (
+    <div>
+      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+  );
+};
+```
+
+#### `usePrevious(value)`
+이전 값 추적
+
+```typescript
+// 사용 예시
+const Counter = () => {
+  const [count, setCount] = useState(0);
+  const prevCount = usePrevious(count);
+
+  return (
+    <div>
+      현재: {count}, 이전: {prevCount ?? 'N/A'}
+      <button onClick={() => setCount(c => c + 1)}>증가</button>
+    </div>
+  );
+};
+```
+
+## 🔧 Services
+
+### BaseService
+모든 서비스의 기본 클래스
+
+```typescript
+class BaseService<T = any> {
+  protected baseURL: string;
+  protected headers: Record<string, string>;
+
+  protected async get<R = T>(url: string, config?: RequestConfig): Promise<CommonResponse<R>>;
+  protected async post<R = T>(url: string, data?: any, config?: RequestConfig): Promise<CommonResponse<R>>;
+  protected async put<R = T>(url: string, data?: any, config?: RequestConfig): Promise<CommonResponse<R>>;
+  protected async delete<R = T>(url: string, config?: RequestConfig): Promise<CommonResponse<R>>;
+}
+
+// 커스텀 서비스 생성
+class CustomService extends BaseService<CustomData> {
+  async getCustomData(id: string) {
+    return this.get(`/custom/${id}`);
+  }
+
+  async updateCustomData(id: string, data: Partial<CustomData>) {
+    return this.put(`/custom/${id}`, data);
   }
 }
 ```
 
-## 📏 Type Definitions
+### AuthService
+Supabase Auth 통합
+
+```typescript
+class AuthService {
+  async signIn(credentials: SignInCredentials): Promise<AuthResponse>;
+  async signUp(credentials: SignUpCredentials): Promise<AuthResponse>;
+  async signOut(): Promise<void>;
+  async resetPassword(email: string): Promise<void>;
+  async updatePassword(newPassword: string): Promise<void>;
+  async getSession(): Promise<Session | null>;
+  async refreshSession(): Promise<Session | null>;
+}
+
+// 사용 예시
+const authService = new AuthService();
+const { user, session } = await authService.signIn({
+  email: 'user@example.com',
+  password: 'password123'
+});
+```
+
+### ChatService
+실시간 채팅 서비스
+
+```typescript
+class ChatService {
+  async getMessages(roomId: string, options?: GetMessagesOptions): Promise<Message[]>;
+  async sendMessage(roomId: string, text: string): Promise<Message>;
+  async updateMessage(messageId: string, text: string): Promise<Message>;
+  async deleteMessage(messageId: string): Promise<void>;
+  async markAsRead(messageId: string): Promise<void>;
+  subscribeToRoom(roomId: string, callbacks: ChatCallbacks): () => void;
+}
+```
+
+### createSupabaseClient
+Supabase 클라이언트 팩토리
+
+```typescript
+interface SupabaseConfig {
+  url: string;
+  anonKey: string;
+  options?: SupabaseClientOptions;
+}
+
+function createSupabaseClient(config: SupabaseConfig): SupabaseClient;
+
+// 사용 예시
+const supabase = createSupabaseClient({
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  options: {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      storage: customStorage // 선택적
+    }
+  }
+});
+```
+
+## 🗄️ Stores
+
+### useAuthStore
+인증 상태 전역 관리 (Zustand)
+
+```typescript
+interface AuthStore {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  setAuth: (user: User | null) => void;
+  clearAuth: () => void;
+  setLoading: (loading: boolean) => void;
+}
+
+// 사용 예시
+const Component = () => {
+  const { user, isAuthenticated, setAuth } = useAuthStore();
+
+  const handleLogin = async (credentials) => {
+    const response = await authService.signIn(credentials);
+    if (response.user) {
+      setAuth(response.user);
+    }
+  };
+
+  return <div>{isAuthenticated ? `Hello, ${user?.name}` : 'Please login'}</div>;
+};
+```
+
+### useUIStore
+UI 상태 전역 관리
+
+```typescript
+interface UIStore {
+  sidebarOpen: boolean;
+  theme: 'light' | 'dark' | 'system';
+  modalStack: Modal[];
+  toggleSidebar: () => void;
+  setTheme: (theme: Theme) => void;
+  openModal: (modal: Modal) => void;
+  closeModal: (id?: string) => void;
+}
+
+// 사용 예시
+const Layout = () => {
+  const { sidebarOpen, toggleSidebar, theme } = useUIStore();
+
+  return (
+    <div className={`layout ${theme}`}>
+      <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
+    </div>
+  );
+};
+```
+
+## 🛠️ Utils
+
+### Formatters
+
+#### Date Formatting
+```typescript
+formatDate(date: string | Date, format?: string): string;
+timeAgo(date: string | Date): string;
+formatDateTime(date: string | Date): string;
+formatTime(date: string | Date): string;
+
+// 예시
+formatDate('2024-01-15');          // "2024년 1월 15일"
+timeAgo('2024-01-15T10:30:00');   // "2시간 전"
+formatDateTime('2024-01-15T10:30'); // "2024년 1월 15일 오전 10:30"
+```
+
+#### Number Formatting
+```typescript
+formatNumber(num: number): string;
+formatNumberWithComma(num: number): string;
+formatCurrency(amount: number, currency?: string): string;
+formatPercentage(value: number, decimals?: number): string;
+
+// 예시
+formatNumberWithComma(1234567);        // "1,234,567"
+formatCurrency(50000, 'KRW');         // "₩50,000"
+formatPercentage(0.1234, 2);          // "12.34%"
+```
+
+### Validators
+
+#### Email Validation
+```typescript
+validateEmail(email: string): boolean;
+validateEmailWithDetails(email: string): ValidationResult;
+
+// 예시
+validateEmail('user@example.com');     // true
+validateEmailWithDetails('invalid');   // { valid: false, errors: [...] }
+```
+
+#### Password Validation
+```typescript
+interface PasswordOptions {
+  minLength?: number;
+  requireUppercase?: boolean;
+  requireLowercase?: boolean;
+  requireNumbers?: boolean;
+  requireSpecialChars?: boolean;
+}
+
+validatePassword(password: string, options?: PasswordOptions): ValidationResult;
+
+// 예시
+validatePassword('Pass123!', {
+  minLength: 8,
+  requireUppercase: true,
+  requireNumbers: true,
+  requireSpecialChars: true
+});
+```
+
+#### Username Validation
+```typescript
+validateUsername(username: string): boolean;
+isUsernameAvailable(username: string): Promise<boolean>;
+
+// 예시
+validateUsername('user_123');           // true
+await isUsernameAvailable('john_doe');  // false (이미 사용중)
+```
+
+### Helpers
+
+#### Debounce
+```typescript
+debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number,
+  options?: DebounceOptions
+): T & { cancel(): void; flush(): void };
+
+// 예시
+const debouncedSearch = debounce((query: string) => {
+  searchAPI(query);
+}, 500);
+```
+
+#### Throttle
+```typescript
+throttle<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number,
+  options?: ThrottleOptions
+): T & { cancel(): void };
+
+// 예시
+const throttledScroll = throttle(() => {
+  updateScrollPosition();
+}, 100);
+```
+
+#### Retry
+```typescript
+interface RetryOptions {
+  maxAttempts?: number;
+  delay?: number;
+  backoff?: 'linear' | 'exponential';
+  onRetry?: (attempt: number, error: Error) => void;
+}
+
+retry<T>(
+  fn: () => Promise<T>,
+  options?: RetryOptions
+): Promise<T>;
+
+// 예시
+const data = await retry(
+  () => fetchDataFromAPI(),
+  {
+    maxAttempts: 3,
+    delay: 1000,
+    backoff: 'exponential',
+    onRetry: (attempt, error) => {
+      console.log(`Retry attempt ${attempt}: ${error.message}`);
+    }
+  }
+);
+```
+
+## 📝 Types
 
 ### Core Types
-
-#### `User`
 
 ```typescript
 interface User {
   id: string;
-  name: string;
-  email?: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+  role: 'user' | 'admin' | 'super_admin';
   level?: number;
-  is_admin?: boolean;
-  profileImage?: string;
-  // ... other properties
+  createdAt: string;
+  updatedAt: string;
+  metadata?: Record<string, any>;
 }
-```
 
-#### `CommonResponse<T>`
+interface Session {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Date;
+  user: User;
+}
 
-API 응답의 표준 형식입니다.
-
-```typescript
-interface CommonResponse<T> {
-  successOrNot: string;
-  statusCode: number;
-  status?: number;
-  message?: string;
+interface CommonResponse<T = any> {
+  success: boolean;
   data: T | null;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    hasNext?: boolean;
+  };
 }
 ```
 
-## 🔄 Version History
-
-### v1.0.0 (Current)
-
-**새로운 기능:**
-- ✨ Button, Badge, Avatar 컴포넌트 추가
-- 🛠️ 핵심 유틸리티 함수 제공
-- ⚙️ 패키지 초기화 시스템
-- 📝 완전한 TypeScript 지원
-
-**개선사항:**
-- 🎨 접근성 준수 컴포넌트
-- 📱 반응형 디자인 지원
-- 🔧 Tree Shaking 최적화
-
-## 🐛 Troubleshooting
-
-### 공통 문제 해결
-
-#### 1. TypeScript 경고
+### Database Types
 
 ```typescript
-// 문제: 타입을 찾을 수 없음
-import { Button } from '@semicolon/community-core';
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  author?: User;
+  category: string;
+  tags: string[];
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  isPublished: boolean;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-// 해결책: 패키지 재설치
-npm install @semicolon/community-core
-```
+interface Comment {
+  id: string;
+  postId: string;
+  authorId: string;
+  author?: User;
+  content: string;
+  parentId?: string;
+  replies?: Comment[];
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
-#### 2. 스타일이 적용되지 않음
-
-```typescript
-// 문제: CSS 클래스가 작동하지 않음
-
-// 해결책: Tailwind CSS 설정 확인
-// tailwind.config.js
-module.exports = {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx}',
-    './node_modules/@semicolon/community-core/**/*.{js,ts,jsx,tsx}',
-  ],
+interface Message {
+  id: string;
+  roomId: string;
+  senderId: string;
+  sender?: User;
+  text: string;
+  attachments?: Attachment[];
+  isEdited: boolean;
+  editedAt?: string;
+  isDeleted: boolean;
+  deletedAt?: string;
+  readBy: string[];
+  createdAt: string;
 }
 ```
 
-#### 3. 빌드 에러
+## 🔌 Providers
 
-```bash
-# 문제: 빌드 시 모듈을 찾을 수 없음
+### CommunityProvider
+메인 Provider - 모든 기능 통합
 
-# 해결책: Next.js 설정 추가
-# next.config.js
-module.exports = {
-  transpilePackages: ['@semicolon/community-core'],
+```tsx
+interface CommunityProviderProps {
+  children: React.ReactNode;
+  supabaseUrl: string;
+  supabaseAnonKey: string;
+  apiBaseUrl: string;
+  options?: {
+    auth?: AuthOptions;
+    query?: QueryClientConfig;
+    realtime?: RealtimeOptions;
+  };
 }
+
+// 사용 예시
+<CommunityProvider
+  supabaseUrl={SUPABASE_URL}
+  supabaseAnonKey={SUPABASE_ANON_KEY}
+  apiBaseUrl={API_BASE_URL}
+  options={{
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+    },
+    query: {
+      defaultOptions: {
+        queries: {
+          staleTime: 5 * 60 * 1000,
+          cacheTime: 10 * 60 * 1000,
+        }
+      }
+    }
+  }}
+>
+  <App />
+</CommunityProvider>
 ```
 
-## 🔮 Roadmap
+### QueryProvider
+React Query Provider 래퍼
 
-### Phase 2 (계획중)
+```tsx
+interface QueryProviderProps {
+  children: React.ReactNode;
+  config?: QueryClientConfig;
+}
 
-- 🔤 Input, Select, Form 컴포넌트
-- 🪝 React Query 통합 훅들
-- 🌐 API 서비스 레이어
+// 단독 사용 예시 (CommunityProvider 없이)
+<QueryProvider
+  config={{
+    defaultOptions: {
+      queries: {
+        retry: 3,
+        refetchOnWindowFocus: false,
+      }
+    }
+  }}
+>
+  <App />
+</QueryProvider>
+```
 
-### Phase 3 (향후)
+### SupabaseProvider
+Supabase Context Provider
 
-- 📊 DataTable, Calendar 고급 컴포넌트  
-- 🎨 테마 시스템
-- 🌍 다국어 지원
-- 🧪 Storybook 통합
+```tsx
+interface SupabaseProviderProps {
+  children: React.ReactNode;
+  supabaseClient: SupabaseClient;
+}
 
-## 📞 Support
+// 단독 사용 예시 (CommunityProvider 없이)
+const supabase = createSupabaseClient({...});
 
-- **GitHub Issues**: [Report bugs and feature requests](https://github.com/semicolon-devteam/community-core/issues)
-- **Documentation**: [Full documentation] (준비중)
-- **Email**: support@semicolon-devteam.com
+<SupabaseProvider supabaseClient={supabase}>
+  <App />
+</SupabaseProvider>
+```
+
+## 🔗 통합 예시
+
+### 완전한 Next.js 통합 예시
+
+```tsx
+// app/layout.tsx
+import { CommunityProvider } from '@team-semicolon/community-core';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <CommunityProvider
+          supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL!}
+          supabaseAnonKey={process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}
+          apiBaseUrl={process.env.NEXT_PUBLIC_API_URL!}
+        >
+          {children}
+        </CommunityProvider>
+      </body>
+    </html>
+  );
+}
+
+// app/dashboard/page.tsx
+'use client';
+
+import {
+  useAuth,
+  usePermission,
+  usePosts,
+  useRealtimeChat
+} from '@team-semicolon/community-core';
+
+export default function Dashboard() {
+  const { user, isAuthenticated } = useAuth();
+  const { hasPermission } = usePermission({ requiredRole: 'admin' });
+  const { data: posts } = usePosts({ limit: 5 });
+  const { messages, sendMessage } = useRealtimeChat('general');
+
+  if (!isAuthenticated) {
+    return <LoginPrompt />;
+  }
+
+  return (
+    <div>
+      <h1>안녕하세요, {user?.name}님!</h1>
+
+      {hasPermission && <AdminPanel />}
+
+      <RecentPosts posts={posts} />
+
+      <ChatWidget
+        messages={messages}
+        onSend={sendMessage}
+      />
+    </div>
+  );
+}
+```
 
 ---
 
-**Made with ❤️ by Semicolon Community**
+더 자세한 정보와 예제는 [GitHub Repository](https://github.com/team-semicolon/community-core)를 참고하세요.
